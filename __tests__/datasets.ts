@@ -1,11 +1,7 @@
-// import {VideoDBType} from '../src/db/video-db-type'
-// import {Resolutions} from '../src/input-output-types/video-types'
-import {DBType} from '../src/db/db'
-import {Resolutions} from "../src/input-output-types/video-types";
-import {VideoDBType} from "../src/db/video-db-type";
-import {generateId} from "../src/shared/utils";
-
-// готовые данные для переиспользования в тестах
+import { DBType } from '../src/db/db';
+import { Resolutions } from '../src/input-output-types/video-types';
+import { VideoDBType } from '../src/db/video-db-type';
+import { generateId } from '../src/shared/utils';
 
 export const video1: VideoDBType = {
   id: generateId(),
@@ -16,10 +12,8 @@ export const video1: VideoDBType = {
   createdAt: new Date().toISOString(),
   publicationDate: new Date().toISOString(),
   availableResolutions: [Resolutions.P240],
-}
-
-// ...
+};
 
 export const dataset1: DBType = {
   videos: [video1],
-}
+};
