@@ -5,6 +5,10 @@ import { db, setDB } from '../src/db/db';
 import { InputVideoType, Resolutions } from '../src/input-output-types/video-types';
 
 describe('test for /videos', () => {
+  beforeEach(() => {
+    setDB();
+  });
+
   it('should clear database', async () => {
     setDB(dataset1);
 
@@ -58,6 +62,33 @@ describe('test for /videos', () => {
     const idToFind = resVideos.body[0].id;
 
     const res = await req.get(SETTINGS.PATH.VIDEOS + '/' + idToFind).expect(200);
+  });
+
+  it('should update video metadata', async () => {
+    setDB(dataset1);
+
+    const resVideos1 = await req.get(SETTINGS.PATH.VIDEOS).expect(200);
+
+    const idToUpdate = resVideos1.body[0].id;
+
+    const newTitle = 'updatedTitle';
+
+    expect(dataset1.videos[0].title).not.toEqual(newTitle);
+
+    const resVideos2 = await req
+      .put(SETTINGS.PATH.VIDEOS + '/' + idToUpdate)
+      .send({ title: newTitle })
+      .expect(204);
+
+    expect(dataset1.videos[0].title).toEqual(newTitle);
+  });
+
+  it('should not update video metadata', async () => {
+    setDB(dataset1);
+
+    const idToUpdate = Math.random();
+
+    const res = await req.put(SETTINGS.PATH.VIDEOS + '/' + idToUpdate).expect(404);
   });
 
   it('should delete video', async () => {
