@@ -35,11 +35,11 @@ const inputValidation = (video: InputVideoType) => {
 
 export const createVideoController = (
   req: Request<any, any, InputVideoType>,
-  res: Response<OutputVideoType | ErrorMessageType>,
+  res: Response<OutputVideoType | OutputErrorsType>,
 ) => {
   const errors = inputValidation(req.body);
   if (errors.errorsMessages.length) {
-    res.status(400).json(errors.errorsMessages.shift());
+    res.status(400).json({ errorsMessages: errors.errorsMessages.slice(1, 2) });
     return;
   }
 
