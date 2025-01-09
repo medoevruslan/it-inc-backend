@@ -31,11 +31,9 @@ describe('test for /videos', () => {
   });
 
   it('should create an video and return OutputVideoType', async () => {
-    const newVideo: InputVideoType = {
+    const newVideo: Partial<InputVideoType> = {
       author: 'a',
       title: 't',
-      minAgeRestriction: null,
-      canBeDownloaded: true,
       availableResolutions: [Resolutions.P1080],
     };
 
@@ -43,6 +41,8 @@ describe('test for /videos', () => {
 
     expect(res.body.availableResolutions).toEqual(newVideo.availableResolutions);
     expect(res.body.title).toEqual(newVideo.title);
+    expect(res.body.minAgeRestriction).toBeNull();
+    expect(res.body.canBeDownloaded).toBeFalsy();
   });
 
   it("shouldn't find video", async () => {
