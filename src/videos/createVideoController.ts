@@ -5,6 +5,9 @@ import { InputVideoType, OutputVideoType, Resolutions } from '../input-output-ty
 import { VideoDBType } from '../db/video-db-type';
 import { addDayTo, generateId } from '../shared/utils';
 
+const MAX_AUTHOR_LENGTH = 20;
+const MAX_TITLE_LENGTH = 40;
+
 const inputValidation = (video: InputVideoType) => {
   const errors: OutputErrorsType = {
     errorsMessages: [],
@@ -17,10 +20,31 @@ const inputValidation = (video: InputVideoType) => {
     });
   }
 
+  if (video.author.trim().length > MAX_AUTHOR_LENGTH) {
+    errors.errorsMessages.push({
+      message: 'author name should be equal or less than 20 chars',
+      field: 'author',
+    });
+  }
+
   if (!video?.title || !video?.title?.trim().length) {
     errors.errorsMessages.push({
       message: 'required',
       field: 'title',
+    });
+  }
+
+  if (video.title.trim().length > MAX_TITLE_LENGTH) {
+    errors.errorsMessages.push({
+      message: 'title should be equal or less than 40 chars',
+      field: 'title',
+    });
+  }
+
+  if (video?.minAgeRestriction && (video.minAgeRestriction < 1 || video.minAgeRestriction > 18)) {
+    errors.errorsMessages.push({
+      message: 'minAgeRestriction should be in range 1 to 18 include',
+      field: 'minAgeRestriction',
     });
   }
 
@@ -39,7 +63,7 @@ export const createVideoController = (
 ) => {
   const errors = inputValidation(req.body);
   if (errors.errorsMessages.length) {
-    res.status(400).json({ errorsMessages: errors.errorsMessages.slice(1, 2) });
+    res.status(400).send({ errorsMessages: errors.errorsMessages.slice(0, 1) });
     return;
   }
 
