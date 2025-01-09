@@ -77,6 +77,19 @@ describe('test for /videos', () => {
     expect(res.body.errorsMessages[0].message).toEqual('minAgeRestriction should be a number');
   });
 
+  it('should not create video and return canBeDownloaded field error not a boolean', async () => {
+    const newVideo: any = {
+      author: 'a',
+      title: 't',
+      canBeDownloaded: 'true',
+    };
+
+    const res = await req.post(SETTINGS.PATH.VIDEOS).send(newVideo).expect(400);
+
+    expect(res.body.errorsMessages[0].field).toEqual('canBeDownloaded');
+    expect(res.body.errorsMessages[0].message).toEqual('canBeDownloaded should be a boolean');
+  });
+
   it('should not create video and return title field error', async () => {
     const newVideo: Partial<InputVideoType> = {
       author: 'a'.repeat(21),

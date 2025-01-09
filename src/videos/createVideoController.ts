@@ -55,10 +55,17 @@ export const inputValidation = (video: Partial<InputVideoType>) => {
     });
   }
 
+  if ('canBeDownloaded' in video && typeof video.canBeDownloaded !== 'boolean') {
+    errors.errorsMessages.push({
+      message: 'canBeDownloaded should be a boolean',
+      field: 'canBeDownloaded',
+    });
+  }
+
   if (!Array.isArray(video?.availableResolutions) || video?.availableResolutions.find((p) => !Resolutions[p])) {
     errors.errorsMessages.push({
       message: 'error!!!!',
-      field: 'availableResolution',
+      field: 'availableResolutions',
     });
   }
   return errors;
