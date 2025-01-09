@@ -3,7 +3,7 @@ import { db } from '../db/db';
 export const deleteVideoController = (req: Request<{ id: string }>, res: Response) => {
   const videoId = req.params.id;
 
-  const foundVideoIndex = db.videos.findIndex((video) => video.id === videoId);
+  const foundVideoIndex = db.videos.findIndex((video) => video.id === Number(videoId));
 
   if (foundVideoIndex < 0) {
     res.status(404).send();
