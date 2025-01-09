@@ -14,7 +14,7 @@ describe('test for /videos', () => {
 
     expect(db.videos.length).toBe(1);
 
-    const res = await req.delete(SETTINGS.PATH.TESTING + '/all-data').expect(204);
+    const res = await req.delete(SETTINGS.PATH.TESTING + '/').expect(204);
 
     expect(db.videos.length).toBe(0);
   });
