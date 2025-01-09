@@ -5,8 +5,8 @@ import { generateId } from '../src/shared/utils';
 
 export const video1: VideoDBType = {
   id: generateId(),
-  title: 't' + Date.now() + Math.random(),
-  author: 'a' + Date.now() + Math.random(),
+  title: ('t' + Date.now() + Math.random()).slice(0, 5),
+  author: ('a' + Date.now() + Math.random()).slice(0, 5),
   canBeDownloaded: true,
   minAgeRestriction: null,
   createdAt: new Date().toISOString(),

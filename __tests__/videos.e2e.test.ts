@@ -14,7 +14,7 @@ describe('test for /videos', () => {
 
     expect(db.videos.length).toBe(1);
 
-    const res = await req.get(SETTINGS.PATH.TESTING + '/all-data').expect(204);
+    const res = await req.delete(SETTINGS.PATH.TESTING + '/all-data').expect(204);
 
     expect(db.videos.length).toBe(0);
   });
@@ -63,6 +63,20 @@ describe('test for /videos', () => {
     expect(res.body.errorsMessages[0].message).toEqual('minAgeRestriction should be in range 1 to 18 include');
   });
 
+  it('should not create video and return minAgeRestriction field error not a number', async () => {
+    const newVideo: any = {
+      author: 'a',
+      title: 't',
+      minAgeRestriction: 'random',
+      availableResolutions: [Resolutions.P1080],
+    };
+
+    const res = await req.post(SETTINGS.PATH.VIDEOS).send(newVideo).expect(400);
+
+    expect(res.body.errorsMessages[0].field).toEqual('minAgeRestriction');
+    expect(res.body.errorsMessages[0].message).toEqual('minAgeRestriction should be a number');
+  });
+
   it('should not create video and return title field error', async () => {
     const newVideo: Partial<InputVideoType> = {
       author: 'a'.repeat(21),
@@ -96,15 +110,15 @@ describe('test for /videos', () => {
 
     const resVideos1 = await req.get(SETTINGS.PATH.VIDEOS).expect(200);
 
-    const idToUpdate = resVideos1.body[0].id;
+    const video = resVideos1.body[0];
 
     const newTitle = 'updatedTitle';
 
     expect(dataset1.videos[0].title).not.toEqual(newTitle);
 
     const resVideos2 = await req
-      .put(SETTINGS.PATH.VIDEOS + '/' + idToUpdate)
-      .send({ title: newTitle })
+      .put(SETTINGS.PATH.VIDEOS + '/' + video.id)
+      .send({ ...video, title: newTitle })
       .expect(204);
 
     expect(dataset1.videos[0].title).toEqual(newTitle);
@@ -115,7 +129,36 @@ describe('test for /videos', () => {
 
     const idToUpdate = Math.random();
 
-    const res = await req.put(SETTINGS.PATH.VIDEOS + '/' + idToUpdate).expect(404);
+    const res = await req
+      .put(SETTINGS.PATH.VIDEOS + '/' + idToUpdate)
+      .send(dataset1.videos[0])
+      .expect(404);
+  });
+
+  it('should not update video metadata with bad title data', async () => {
+    setDB(dataset1);
+
+    const resVideos1 = await req.get(SETTINGS.PATH.VIDEOS).expect(200);
+
+    const video = resVideos1.body[0];
+
+    const resVideos2 = await req
+      .put(SETTINGS.PATH.VIDEOS + '/' + video.id)
+      .send({ ...video, title: null })
+      .expect(400);
+  });
+
+  it('should not update video metadata with bad author data', async () => {
+    setDB(dataset1);
+
+    const resVideos1 = await req.get(SETTINGS.PATH.VIDEOS).expect(200);
+
+    const video = resVideos1.body[0];
+
+    const resVideos2 = await req
+      .put(SETTINGS.PATH.VIDEOS + '/' + video.id)
+      .send({ ...video, author: null })
+      .expect(400);
   });
 
   it('should delete video', async () => {

@@ -3,4 +3,4 @@ import { clearDatabaseController } from './clearDatabaseController';
 
 export const testingRouter = Router();
 
-testingRouter.get('/all-data', clearDatabaseController);
+testingRouter.delete('/all-data', clearDatabaseController);

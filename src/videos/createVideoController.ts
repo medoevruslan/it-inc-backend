@@ -8,7 +8,7 @@ import { addDayTo, generateId } from '../shared/utils';
 const MAX_AUTHOR_LENGTH = 20;
 const MAX_TITLE_LENGTH = 40;
 
-const inputValidation = (video: InputVideoType) => {
+export const inputValidation = (video: Partial<InputVideoType>) => {
   const errors: OutputErrorsType = {
     errorsMessages: [],
   };
@@ -20,7 +20,7 @@ const inputValidation = (video: InputVideoType) => {
     });
   }
 
-  if (video.author.trim().length > MAX_AUTHOR_LENGTH) {
+  if (video?.author && video.author.trim().length > MAX_AUTHOR_LENGTH) {
     errors.errorsMessages.push({
       message: 'author name should be equal or less than 20 chars',
       field: 'author',
@@ -34,7 +34,7 @@ const inputValidation = (video: InputVideoType) => {
     });
   }
 
-  if (video.title.trim().length > MAX_TITLE_LENGTH) {
+  if (video?.title && video.title.trim().length > MAX_TITLE_LENGTH) {
     errors.errorsMessages.push({
       message: 'title should be equal or less than 40 chars',
       field: 'title',
@@ -44,6 +44,13 @@ const inputValidation = (video: InputVideoType) => {
   if (video?.minAgeRestriction && (video.minAgeRestriction < 1 || video.minAgeRestriction > 18)) {
     errors.errorsMessages.push({
       message: 'minAgeRestriction should be in range 1 to 18 include',
+      field: 'minAgeRestriction',
+    });
+  }
+
+  if (video?.minAgeRestriction && typeof video.minAgeRestriction !== 'number') {
+    errors.errorsMessages.push({
+      message: 'minAgeRestriction should be a number',
       field: 'minAgeRestriction',
     });
   }
