@@ -49,6 +49,33 @@ describe('test for /videos', () => {
     expect(res.body.canBeDownloaded).toBeFalsy();
   });
 
+  it('should not create video and return minAgeRestriction field error', async () => {
+    const newVideo: Partial<InputVideoType> = {
+      author: 'a',
+      title: 't',
+      minAgeRestriction: 20,
+      availableResolutions: [Resolutions.P1080],
+    };
+
+    const res = await req.post(SETTINGS.PATH.VIDEOS).send(newVideo).expect(400);
+
+    expect(res.body.errorsMessages[0].field).toEqual('minAgeRestriction');
+    expect(res.body.errorsMessages[0].message).toEqual('minAgeRestriction should be in range 1 to 18 include');
+  });
+
+  it('should not create video and return title field error', async () => {
+    const newVideo: Partial<InputVideoType> = {
+      author: 'a'.repeat(21),
+      title: 't',
+      availableResolutions: [Resolutions.P1080],
+    };
+
+    const res = await req.post(SETTINGS.PATH.VIDEOS).send(newVideo).expect(400);
+
+    expect(res.body.errorsMessages[0].field).toEqual('author');
+    expect(res.body.errorsMessages[0].message).toEqual('author name should be equal or less than 20 chars');
+  });
+
   it("shouldn't find video", async () => {
     setDB(dataset1);
     const res = await req.get(SETTINGS.PATH.VIDEOS + '/2').expect(404);
