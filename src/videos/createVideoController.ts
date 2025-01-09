@@ -47,9 +47,13 @@ export const createVideoController = (
   const pubDate = addDayTo(createdAt);
 
   const newVideo: VideoDBType = {
-    ...req.body,
+    title: req.body.title,
+    author: req.body.author,
+    minAgeRestriction: req.body?.minAgeRestriction ?? null,
+    canBeDownloaded: Boolean(req.body?.canBeDownloaded),
     createdAt: createdAt.toISOString(),
     publicationDate: pubDate.toISOString(),
+    availableResolutions: req.body.availableResolutions,
     id: generateId(),
   };
 
