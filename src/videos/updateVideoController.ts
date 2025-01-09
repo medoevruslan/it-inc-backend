@@ -1,7 +1,12 @@
-import { Response, Request } from 'express';
+import { Request, Response } from 'express';
 import { db } from '../db/db';
+import { InputVideoType } from '../input-output-types/video-types';
 import { OutputErrorsType } from '../input-output-types/output-errors-type';
-export const deleteVideoController = (req: Request<{ id: string }>, res: Response<OutputErrorsType>) => {
+
+export const updateVideoController = (
+  req: Request<{ id: string }, any, Partial<InputVideoType>>,
+  res: Response<OutputErrorsType>,
+) => {
   const videoId = parseFloat(req.params.id); // Safely parse the ID as float
 
   if (isNaN(videoId)) {
@@ -16,6 +21,8 @@ export const deleteVideoController = (req: Request<{ id: string }>, res: Respons
     return;
   }
 
-  db.videos.splice(foundVideoIndex, 1);
+  const foundVideo = db.videos[foundVideoIndex];
+
+  db.videos[foundVideoIndex] = { ...foundVideo, ...req.body };
   res.status(204).send();
 };
