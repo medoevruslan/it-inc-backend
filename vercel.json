@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "name": "it-inc/lesson-1",
+  "builds": [
+    {
+      "src": "src/index.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "src/index.ts"
+    }
+  ]
+}
