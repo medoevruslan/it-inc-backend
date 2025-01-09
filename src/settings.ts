@@ -1,5 +1,5 @@
 import { config } from 'dotenv';
-config(); // добавление переменных из файла .env в process.env
+config();
 
 const BASE_URL = '/hometask_01/api';
 
