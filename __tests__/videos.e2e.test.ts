@@ -1,10 +1,20 @@
 import { req } from './test-helpers';
 import { SETTINGS } from '../src/settings';
 import { dataset1 } from './datasets';
-import { setDB } from '../src/db/db';
+import { db, setDB } from '../src/db/db';
 import { InputVideoType, Resolutions } from '../src/input-output-types/video-types';
 
 describe('test for /videos', () => {
+  it('should clear database', async () => {
+    setDB(dataset1);
+
+    expect(db.videos.length).toBe(1);
+
+    const res = await req.get(SETTINGS.PATH.TESTING + '/all-data').expect(204);
+
+    expect(db.videos.length).toBe(0);
+  });
+
   it('should get empty array', async () => {
     const res = await req.get(SETTINGS.PATH.VIDEOS).expect(200);
 
