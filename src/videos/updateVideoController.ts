@@ -10,7 +10,8 @@ export const updateVideoController = (
 ) => {
   const errors = inputValidation(req.body);
   if (errors.errorsMessages.length) {
-    res.status(400).send({ errorsMessages: errors.errorsMessages.slice(0, 1) });
+    // res.status(400).send({ errorsMessages: errors.errorsMessages.slice(0, 1) });
+    res.status(400).send(errors);
     return;
   }
 
