@@ -7,6 +7,7 @@ import { addDayTo, generateId } from '../shared/utils';
 
 const MAX_AUTHOR_LENGTH = 20;
 const MAX_TITLE_LENGTH = 40;
+const dateIsoRegex = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?)?$/;
 
 export const inputValidation = (video: Partial<InputVideoType>) => {
   const errors: OutputErrorsType = {
@@ -48,7 +49,7 @@ export const inputValidation = (video: Partial<InputVideoType>) => {
     });
   }
 
-  if (video?.minAgeRestriction && typeof video.minAgeRestriction !== 'number') {
+  if ('minAgeRestriction' in video && video.minAgeRestriction !== null && typeof video.minAgeRestriction !== 'number') {
     errors.errorsMessages.push({
       message: 'minAgeRestriction should be a number',
       field: 'minAgeRestriction',
@@ -59,6 +60,23 @@ export const inputValidation = (video: Partial<InputVideoType>) => {
     errors.errorsMessages.push({
       message: 'canBeDownloaded should be a boolean',
       field: 'canBeDownloaded',
+    });
+  }
+
+  if (
+    'publicationDate' in video &&
+    (typeof video.publicationDate !== 'string' || !dateIsoRegex.test(video.publicationDate.trim()))
+  ) {
+    errors.errorsMessages.push({
+      message: 'publicationDate should be an date ISO string format',
+      field: 'publicationDate',
+    });
+  }
+
+  if ('createdAt' in video && (typeof video.createdAt !== 'string' || !dateIsoRegex.test(video.createdAt.trim()))) {
+    errors.errorsMessages.push({
+      message: 'createdAt should be an date ISO string format',
+      field: 'createdAt',
     });
   }
 
@@ -77,7 +95,6 @@ export const createVideoController = (
 ) => {
   const errors = inputValidation(req.body);
   if (errors.errorsMessages.length) {
-    // res.status(400).send({ errorsMessages: errors.errorsMessages.slice(0, 1) });
     res.status(400).send(errors);
     return;
   }
