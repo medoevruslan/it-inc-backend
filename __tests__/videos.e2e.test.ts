@@ -174,6 +174,52 @@ describe('test for /videos', () => {
       .expect(400);
   });
 
+  it('should not update video metadata with bad createdAt date', async () => {
+    setDB(dataset1);
+
+    const resVideos1 = await req.get(SETTINGS.PATH.VIDEOS).expect(200);
+
+    const video = resVideos1.body[0];
+
+    const resVideos2 = await req
+      .put(SETTINGS.PATH.VIDEOS + '/' + video.id)
+      .send({ ...video, createdAt: 'null' })
+      .expect(400);
+
+    const resVideos3 = await req
+      .put(SETTINGS.PATH.VIDEOS + '/' + video.id)
+      .send({ ...video, createdAt: null })
+      .expect(400);
+
+    const resVideos4 = await req
+      .put(SETTINGS.PATH.VIDEOS + '/' + video.id)
+      .send({ ...video, createdAt: 1111 })
+      .expect(400);
+  });
+
+  it('should not update video metadata with bad publicationDate date', async () => {
+    setDB(dataset1);
+
+    const resVideos1 = await req.get(SETTINGS.PATH.VIDEOS).expect(200);
+
+    const video = resVideos1.body[0];
+
+    const resVideos2 = await req
+      .put(SETTINGS.PATH.VIDEOS + '/' + video.id)
+      .send({ ...video, publicationDate: 'null' })
+      .expect(400);
+
+    const resVideos3 = await req
+      .put(SETTINGS.PATH.VIDEOS + '/' + video.id)
+      .send({ ...video, publicationDate: null })
+      .expect(400);
+
+    const resVideos4 = await req
+      .put(SETTINGS.PATH.VIDEOS + '/' + video.id)
+      .send({ ...video, publicationDate: 1111 })
+      .expect(400);
+  });
+
   it('should delete video', async () => {
     setDB(dataset1);
 
