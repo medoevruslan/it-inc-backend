@@ -18,18 +18,18 @@ export const video1: VideoDBType = {
 
 export const post1: PostDbType = {
   id: generateIdString(),
-  name: ('n' + Date.now() + Math.random()).slice(0, 5),
-  description: ('d' + Date.now() + Math.random()).slice(0, 5),
-  websiteUrl: ('url' + Date.now() + Math.random()).slice(0, 5),
-};
-
-export const blog1: BlogDbType = {
-  id: generateIdString(),
   title: ('t' + Date.now() + Math.random()).slice(0, 5),
   shortDescription: ('sd' + Date.now() + Math.random()).slice(0, 5),
   content: ('c' + Date.now() + Math.random()).slice(0, 5),
   blogName: ('bn' + Date.now() + Math.random()).slice(0, 5),
   blogId: generateIdString(),
+};
+
+export const blog1: BlogDbType = {
+  id: generateIdString(),
+  name: ('n' + Date.now() + Math.random()).slice(0, 5),
+  description: ('d' + Date.now() + Math.random()).slice(0, 5),
+  websiteUrl: ('url' + Date.now() + Math.random()).slice(0, 5),
 };
 
 export const dataset1: DBType = {
