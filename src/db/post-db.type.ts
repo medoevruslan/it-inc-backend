@@ -1,6 +1,10 @@
+import { Nullable } from '../shared/types';
+
 export type PostDbType = {
   id: string;
-  name: string;
-  description: string;
-  websiteUrl: string;
+  title: string;
+  shortDescription: string;
+  content: string;
+  blogId: string;
+  blogName: Nullable<string>;
 };
