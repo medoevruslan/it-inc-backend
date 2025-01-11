@@ -34,6 +34,6 @@ export const blog1: BlogDbType = {
 
 export const dataset1: DBType = {
   videos: [video1],
-  posts: [],
-  blogs: [],
+  posts: [post1],
+  blogs: [blog1],
 };
