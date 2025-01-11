@@ -2,6 +2,8 @@ import { req } from './test-helpers';
 import { SETTINGS } from '../src/settings';
 import { setDB } from '../src/db/db';
 import { dataset1 } from './datasets';
+import { PostDbType } from '../src/db/post-db.type';
+import { generateIdString } from '../src/shared/utils';
 
 describe('tests for /posts', () => {
   beforeEach(() => {
@@ -21,5 +23,18 @@ describe('tests for /posts', () => {
 
     expect(res.body.length).toBe(1);
     expect(res.body[0]).toEqual(dataset1.posts[0]);
+  });
+
+  it('should create new post', async () => {
+    const newPost: Partial<PostDbType> = {
+      title: 'new title',
+      content: 'new content',
+      shortDescription: 'new shortDescription',
+      blogId: generateIdString(),
+    };
+
+    const res = await req.post(SETTINGS.PATH.POSTS).send(newPost).expect(201);
+    expect(res.body.title).toEqual(newPost.title);
+    expect(res.body.blogName).toBeNull();
   });
 });
