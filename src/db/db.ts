@@ -1,24 +1,28 @@
-import {VideoDBType} from './video-db-type';
+import { VideoDBType } from './video-db-type';
+import { PostDbType } from './post-db.type';
+import { BlogDbType } from './blog-db-type';
 
-export type DBType = { // типизация базы данных (что мы будем в ней хранить)
-  videos: VideoDBType[]
-  // some: any[]
-}
+export type DBType = {
+  videos: VideoDBType[];
+  posts: PostDbType[];
+  blogs: BlogDbType[];
+};
 
-export const db: DBType = { // создаём базу данных (пока это просто переменная)
+export const db: DBType = {
   videos: [],
-  // some: []
-}
+  posts: [],
+  blogs: [],
+};
 
-// функция для быстрой очистки/заполнения базы данных для тестов
 export const setDB = (dataset?: Partial<DBType>) => {
-  if (!dataset) { // если в функцию ничего не передано - то очищаем базу данных
-    db.videos = []
-    // db.some = []
-    return
+  if (!dataset) {
+    db.videos = [];
+    db.posts = [];
+    db.blogs = [];
+    return;
   }
 
-  // если что-то передано - то заменяем старые значения новыми
-  db.videos = dataset.videos || db.videos
-  // db.some = dataset.some || db.some
-}
+  db.videos = dataset.videos || db.videos;
+  db.posts = dataset.posts || db.posts;
+  db.blogs = dataset.blogs || db.blogs;
+};
