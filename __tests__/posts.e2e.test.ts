@@ -1,4 +1,4 @@
-import { req } from './test-helpers';
+import { req, toBase64 } from './test-helpers';
 import { SETTINGS } from '../src/settings';
 import { db, DBType, setDB } from '../src/db/db';
 import { blog1, post1, video1 } from './datasets';
@@ -8,6 +8,9 @@ import { PostInputType } from '../src/input-output-types/post-types';
 
 describe('tests for /posts', () => {
   let dataset1: DBType;
+
+  const codedAuth = toBase64(SETTINGS.ADMIN_AUTH);
+
   beforeEach(() => {
     dataset1 = {
       videos: [video1],
@@ -39,7 +42,11 @@ describe('tests for /posts', () => {
       blogId: generateIdString(),
     };
 
-    const res = await req.post(SETTINGS.PATH.POSTS).send(newPost).expect(201);
+    const res = await req
+      .post(SETTINGS.PATH.POSTS)
+      .set('Authorization', `Basic ${codedAuth}`)
+      .send(newPost)
+      .expect(201);
     expect(res.body.title).toEqual(newPost.title);
     expect(res.body.blogName).toBeNull();
   });
@@ -52,8 +59,34 @@ describe('tests for /posts', () => {
       blogId: true,
     };
 
-    const res = await req.post(SETTINGS.PATH.POSTS).send(newPost).expect(400);
+    const res = await req
+      .post(SETTINGS.PATH.POSTS)
+      .set('Authorization', `Basic ${codedAuth}`)
+      .send(newPost)
+      .expect(400);
     expect(res.body.errorsMessages.length).toEqual(4);
+  });
+
+  it('should throw auth error on create new blog', async () => {
+    const newPost: Partial<PostDbType> = {
+      title: 'new title',
+      content: 'new content',
+      shortDescription: 'new shortDescription',
+      blogId: generateIdString(),
+    };
+
+    const res = await req.post(SETTINGS.PATH.POSTS).send(newPost).expect(401);
+  });
+
+  it('should throw auth error on create new blog because wrong auth', async () => {
+    const newPost: Partial<PostDbType> = {
+      title: 'new title',
+      content: 'new content',
+      shortDescription: 'new shortDescription',
+      blogId: generateIdString(),
+    };
+
+    const res = await req.post(SETTINGS.PATH.POSTS).set('Authorization', `Basic wrongauth`).send(newPost).expect(401);
   });
 
   it('should delete post by id', async () => {
@@ -63,7 +96,10 @@ describe('tests for /posts', () => {
 
     const postId = response1.body[0].id;
 
-    const response2 = await req.delete(`${SETTINGS.PATH.POSTS}/${postId}`).expect(204);
+    const response2 = await req
+      .delete(`${SETTINGS.PATH.POSTS}/${postId}`)
+      .set('Authorization', `Basic ${codedAuth}`)
+      .expect(204);
 
     expect(db.posts.length).toEqual(0);
   });
@@ -75,7 +111,41 @@ describe('tests for /posts', () => {
 
     expect(response1.body.length).toEqual(1);
 
-    const response2 = await req.delete(`${SETTINGS.PATH.POSTS}/${22}`).expect(404);
+    const response2 = await req
+      .delete(`${SETTINGS.PATH.POSTS}/${22}`)
+      .set('Authorization', `Basic ${codedAuth}`)
+      .expect(404);
+
+    expect(db.posts.length).toEqual(1);
+  });
+
+  it('should not delete post because unauthorized', async () => {
+    setDB(dataset1);
+
+    const response1 = await req.get(SETTINGS.PATH.POSTS).expect(200);
+
+    expect(response1.body.length).toEqual(1);
+
+    const postId = response1.body[0].id;
+
+    const response2 = await req.delete(`${SETTINGS.PATH.POSTS}/${postId}`).expect(401);
+
+    expect(db.posts.length).toEqual(1);
+  });
+
+  it('should not delete post because wrong auth', async () => {
+    setDB(dataset1);
+
+    const response1 = await req.get(SETTINGS.PATH.POSTS).expect(200);
+
+    expect(response1.body.length).toEqual(1);
+
+    const postId = response1.body[0].id;
+
+    const response2 = await req
+      .delete(`${SETTINGS.PATH.POSTS}/${postId}`)
+      .set('Authorization', `Basic wrongauth`)
+      .expect(401);
 
     expect(db.posts.length).toEqual(1);
   });
@@ -83,7 +153,7 @@ describe('tests for /posts', () => {
   it('should update post by id', async () => {
     setDB(dataset1);
 
-    const response1 = await req.get(SETTINGS.PATH.POSTS).expect(200);
+    const response1 = await req.get(SETTINGS.PATH.POSTS).set('Authorization', `Basic ${codedAuth}`).expect(200);
 
     const postId = response1.body[0].id;
 
@@ -95,7 +165,11 @@ describe('tests for /posts', () => {
       blogName: 'newBlogName',
     };
 
-    const response2 = await req.put(`${SETTINGS.PATH.POSTS}/${postId}`).send(update).expect(204);
+    const response2 = await req
+      .put(`${SETTINGS.PATH.POSTS}/${postId}`)
+      .set('Authorization', `Basic ${codedAuth}`)
+      .send(update)
+      .expect(204);
 
     expect(dataset1.posts[0].title).toEqual(update.title);
     expect(dataset1.posts[0].shortDescription).toEqual(update.shortDescription);
@@ -117,7 +191,11 @@ describe('tests for /posts', () => {
       content: 'updatedContent',
     };
 
-    const response2 = await req.put(`${SETTINGS.PATH.POSTS}/${postId}`).send(update).expect(400);
+    const response2 = await req
+      .put(`${SETTINGS.PATH.POSTS}/${postId}`)
+      .set('Authorization', `Basic ${codedAuth}`)
+      .send(update)
+      .expect(400);
     expect(response2.body.errorsMessages.length).toBeGreaterThan(0);
   });
 
@@ -132,6 +210,62 @@ describe('tests for /posts', () => {
       blogName: 'newBlogName',
     };
 
-    const response2 = await req.put(`${SETTINGS.PATH.POSTS}/${22}`).send(update).expect(404);
+    const response2 = await req
+      .put(`${SETTINGS.PATH.POSTS}/${22}`)
+      .set('Authorization', `Basic ${codedAuth}`)
+      .send(update)
+      .expect(404);
+  });
+
+  it('should not update post by id because unauthorized', async () => {
+    setDB(dataset1);
+
+    const response1 = await req.get(SETTINGS.PATH.POSTS).expect(200);
+
+    const postId = response1.body[0].id;
+
+    const update: PostInputType = {
+      title: 'updatedTitle',
+      shortDescription: 'updatedShortDescription',
+      blogId: 'updatedBlogId',
+      content: 'updatedContent',
+      blogName: 'newBlogName',
+    };
+
+    const response2 = await req.put(`${SETTINGS.PATH.POSTS}/${postId}`).send(update).expect(401);
+
+    expect(dataset1.posts[0].title).not.toEqual(update.title);
+    expect(dataset1.posts[0].shortDescription).not.toEqual(update.shortDescription);
+    expect(dataset1.posts[0].blogId).not.toEqual(update.blogId);
+    expect(dataset1.posts[0].content).not.toEqual(update.content);
+    expect(dataset1.posts[0].blogName).not.toEqual(update.blogName);
+  });
+
+  it('should not update post by id because wrong auth', async () => {
+    setDB(dataset1);
+
+    const response1 = await req.get(SETTINGS.PATH.POSTS).expect(200);
+
+    const postId = response1.body[0].id;
+
+    const update: PostInputType = {
+      title: 'updatedTitle',
+      shortDescription: 'updatedShortDescription',
+      blogId: 'updatedBlogId',
+      content: 'updatedContent',
+      blogName: 'newBlogName',
+    };
+
+    const response2 = await req
+      .put(`${SETTINGS.PATH.POSTS}/${postId}`)
+      .set('Authorization', `Basic wrongauth`)
+      .send(update)
+      .expect(401);
+
+    expect(dataset1.posts[0].title).not.toEqual(update.title);
+    expect(dataset1.posts[0].shortDescription).not.toEqual(update.shortDescription);
+    expect(dataset1.posts[0].blogId).not.toEqual(update.blogId);
+    expect(dataset1.posts[0].content).not.toEqual(update.content);
+    expect(dataset1.posts[0].blogName).not.toEqual(update.blogName);
   });
 });
