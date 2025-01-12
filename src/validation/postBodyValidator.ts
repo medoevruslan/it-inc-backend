@@ -1,5 +1,5 @@
 import { body } from 'express-validator';
-import { db } from '../db/db';
+import { blogRepository } from '../repository';
 
 export const postBodyValidator = [
   body('title')
@@ -34,9 +34,9 @@ export const postBodyValidator = [
     .notEmpty()
     .withMessage('required')
     .custom(async (value) => {
-      const isBlogIdExist = db.posts.some((post) => post.blogId === value);
-      if (isBlogIdExist) {
-        throw new Error('[blogId] is already exists');
+      const blog = await blogRepository.findById(value);
+      if (blog === null) {
+        throw new Error('blog is not found');
       }
       return true;
     }),
