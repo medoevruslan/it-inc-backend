@@ -1,4 +1,3 @@
-import { DBType } from '../src/db/db';
 import { Resolutions } from '../src/input-output-types/video-types';
 import { VideoDBType } from '../src/db/video-db-type';
 import { generateId, generateIdString } from '../src/shared/utils';
@@ -30,10 +29,4 @@ export const blog1: BlogDbType = {
   name: ('n' + Date.now() + Math.random()).slice(0, 5),
   description: ('d' + Date.now() + Math.random()).slice(0, 5),
   websiteUrl: ('url' + Date.now() + Math.random()).slice(0, 5),
-};
-
-export const dataset1: DBType = {
-  videos: [video1],
-  posts: [post1],
-  blogs: [blog1],
 };
