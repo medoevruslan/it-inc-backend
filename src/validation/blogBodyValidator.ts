@@ -21,6 +21,6 @@ export const blogBodyValidator = [
     .matches(/^https:\/\/([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$/)
     .withMessage('websiteUrl should be a proper url')
     .trim()
-    .isLength({ max: 500 })
+    .isLength({ max: 100 })
     .withMessage('websiteUrl should be less than 100 chars'),
 ];
