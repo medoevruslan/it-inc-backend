@@ -37,6 +37,7 @@ describe('tests for /posts', () => {
   });
 
   it('should create new post', async () => {
+    // create blog to get its ID
     const newBlog: Partial<BlogDbType> = {
       name: 'new blog',
       websiteUrl: 'https://new.some.com',
@@ -56,6 +57,7 @@ describe('tests for /posts', () => {
       content: 'new content',
       shortDescription: 'new shortDescription',
       blogId: blogs[0].id,
+      blogName: 'new blogName',
     };
 
     const res = await req
@@ -65,7 +67,6 @@ describe('tests for /posts', () => {
       .expect(201);
 
     expect(res.body.title).toEqual(newPost.title);
-    expect(res.body.blogName).toBeNull();
   });
 
   it('should throw validation error on create new post', async () => {
@@ -74,6 +75,7 @@ describe('tests for /posts', () => {
       content: false,
       shortDescription: 2211,
       blogId: true,
+      blogName: 'new blogName',
     };
 
     const res = await req
@@ -90,6 +92,7 @@ describe('tests for /posts', () => {
       content: 'new content',
       shortDescription: 'new shortDescription',
       blogId: generateIdString(),
+      blogName: 'new blogName',
     };
 
     const res = await req.post(SETTINGS.PATH.POSTS).send(newPost).expect(401);
@@ -101,6 +104,7 @@ describe('tests for /posts', () => {
       content: 'new content',
       shortDescription: 'new shortDescription',
       blogId: generateIdString(),
+      blogName: 'new blogName',
     };
 
     const res = await req.post(SETTINGS.PATH.POSTS).set('Authorization', `Basic wrongauth`).send(newPost).expect(401);

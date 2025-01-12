@@ -6,5 +6,5 @@ export type PostDbType = {
   shortDescription: string;
   content: string;
   blogId: string;
-  blogName: Nullable<string>;
+  blogName: string;
 };

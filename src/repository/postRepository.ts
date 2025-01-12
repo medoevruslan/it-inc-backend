@@ -9,11 +9,7 @@ export const postRepository = {
   async create(input: InputPostType): Promise<OutputPostType> {
     const newPost: PostDbType = {
       id: generateIdString(),
-      content: input.content,
-      blogId: input.blogId,
-      title: input.title,
-      shortDescription: input.shortDescription,
-      blogName: input?.blogName ?? null,
+      ...input,
     };
 
     db.posts.push(newPost);
