@@ -2,9 +2,6 @@ import { req } from './test-helpers';
 import { SETTINGS } from '../src/settings';
 import { db, DBType, setDB } from '../src/db/db';
 import { blog1, post1, video1 } from './datasets';
-import { PostDbType } from '../src/db/post-db.type';
-import { generateIdString } from '../src/shared/utils';
-import { PostInputType } from '../src/input-output-types/post-types';
 import { BlogDbType } from '../src/db/blog-db-type';
 import { BlogInputType } from '../src/input-output-types/blog-types';
 
@@ -36,7 +33,7 @@ describe('tests for /blogs', () => {
   it('should create new blog', async () => {
     const newBlog: Partial<BlogDbType> = {
       name: 'new blog',
-      websiteUrl: 'new url',
+      websiteUrl: 'https://new.some.com',
       description: 'new description',
     };
 
@@ -88,7 +85,7 @@ describe('tests for /blogs', () => {
 
     const update: BlogInputType = {
       name: 'updatedName',
-      websiteUrl: 'updatedWebsiteUrl',
+      websiteUrl: 'https://updated.some.com',
       description: 'updatedDescription',
     };
 
@@ -119,7 +116,7 @@ describe('tests for /blogs', () => {
 
     const update: BlogInputType = {
       name: 'updatedName',
-      websiteUrl: 'updatedWebsiteUrl',
+      websiteUrl: 'https://some.com',
       description: 'updatedDescription',
     };
 
