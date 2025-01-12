@@ -3,7 +3,7 @@ import { SETTINGS } from '../src/settings';
 import { db, DBType, setDB } from '../src/db/db';
 import { blog1, post1, video1 } from './datasets';
 import { BlogDbType } from '../src/db/blog-db-type';
-import { BlogInputType } from '../src/input-output-types/blog-types';
+import { InputBlogType } from '../src/input-output-types/blog-types';
 
 describe('tests for /blogs', () => {
   let dataset1: DBType;
@@ -134,7 +134,7 @@ describe('tests for /blogs', () => {
 
     const blogId = response1.body[0].id;
 
-    const update: BlogInputType = {
+    const update: InputBlogType = {
       name: 'updatedName',
       websiteUrl: 'https://updated.some.com',
       description: 'updatedDescription',
@@ -158,7 +158,7 @@ describe('tests for /blogs', () => {
 
     const blogId = response1.body[0].id;
 
-    const update: Partial<BlogInputType> = {
+    const update: Partial<InputBlogType> = {
       name: 'updatedName',
     };
 
@@ -173,7 +173,7 @@ describe('tests for /blogs', () => {
   it('should not update blog by id because wrong id', async () => {
     setDB(dataset1);
 
-    const update: BlogInputType = {
+    const update: InputBlogType = {
       name: 'updatedName',
       websiteUrl: 'https://some.com',
       description: 'updatedDescription',
@@ -193,7 +193,7 @@ describe('tests for /blogs', () => {
 
     const blogId = response1.body[0].id;
 
-    const update: BlogInputType = {
+    const update: InputBlogType = {
       name: 'updatedName',
       websiteUrl: ' https://updated.some.com',
       description: 'updatedDescription',
@@ -213,7 +213,7 @@ describe('tests for /blogs', () => {
 
     const blogId = response1.body[0].id;
 
-    const update: BlogInputType = {
+    const update: InputBlogType = {
       name: 'updatedName',
       websiteUrl: ' https://updated.some.com',
       description: 'updatedDescription',

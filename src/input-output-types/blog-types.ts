@@ -1,3 +1,4 @@
 import { BlogDbType } from '../db/blog-db-type';
 
-export type BlogInputType = Omit<BlogDbType, 'id'>;
+export type InputBlogType = Omit<BlogDbType, 'id'>;
+export type OutputBlogType = BlogDbType;

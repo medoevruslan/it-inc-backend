@@ -4,7 +4,7 @@ import { db, DBType, setDB } from '../src/db/db';
 import { blog1, post1, video1 } from './datasets';
 import { PostDbType } from '../src/db/post-db.type';
 import { generateIdString } from '../src/shared/utils';
-import { PostInputType } from '../src/input-output-types/post-types';
+import { InputPostType } from '../src/input-output-types/post-types';
 
 describe('tests for /posts', () => {
   let dataset1: DBType;
@@ -157,7 +157,7 @@ describe('tests for /posts', () => {
 
     const postId = response1.body[0].id;
 
-    const update: PostInputType = {
+    const update: InputPostType = {
       title: 'updatedTitle',
       shortDescription: 'updatedShortDescription',
       blogId: 'updatedBlogId',
@@ -185,7 +185,7 @@ describe('tests for /posts', () => {
 
     const postId = response1.body[0].id;
 
-    const update: Partial<PostInputType> = {
+    const update: Partial<InputPostType> = {
       title: 'updatedTitle',
       shortDescription: 'updatedShortDescription',
       content: 'updatedContent',
@@ -202,7 +202,7 @@ describe('tests for /posts', () => {
   it('should not update post by id because wrong id', async () => {
     setDB(dataset1);
 
-    const update: Partial<PostInputType> = {
+    const update: Partial<InputPostType> = {
       title: 'updatedTitle',
       shortDescription: 'updatedShortDescription',
       blogId: 'updatedBlogId',
@@ -224,7 +224,7 @@ describe('tests for /posts', () => {
 
     const postId = response1.body[0].id;
 
-    const update: PostInputType = {
+    const update: InputPostType = {
       title: 'updatedTitle',
       shortDescription: 'updatedShortDescription',
       blogId: 'updatedBlogId',
@@ -248,7 +248,7 @@ describe('tests for /posts', () => {
 
     const postId = response1.body[0].id;
 
-    const update: PostInputType = {
+    const update: InputPostType = {
       title: 'updatedTitle',
       shortDescription: 'updatedShortDescription',
       blogId: 'updatedBlogId',
