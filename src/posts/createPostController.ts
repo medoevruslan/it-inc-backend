@@ -4,7 +4,7 @@ import { PostDbType } from '../db/post-db.type';
 import { PostInputType } from '../input-output-types/post-types';
 import { generateIdString } from '../shared/utils';
 import { db } from '../db/db';
-export const createPostController = (req: Request<{}, PostInputType>, res: Response) => {
+export const createPostController = (req: Request<{}, {}, PostInputType>, res: Response) => {
   const { body } = req;
 
   const newPost: PostDbType = {
