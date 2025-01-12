@@ -1,17 +1,16 @@
 import { Request, Response } from 'express';
-import { db } from '../db/db';
-import { BlogInputType } from '../input-output-types/blog-types';
+import { InputBlogType } from '../input-output-types/blog-types';
+import { blogRepository } from '../repository';
 
-export const updateBlogController = (req: Request<{ blogId: string }, {}, BlogInputType>, res: Response) => {
+export const updateBlogController = async (req: Request<{ blogId: string }, {}, InputBlogType>, res: Response) => {
   const blogId = req.params.blogId;
 
-  const foundIndex = db.blogs.findIndex((blog) => blog.id === blogId);
+  const success = await blogRepository.update({ blogId, update: req.body });
 
-  if (foundIndex < 0) {
+  if (!success) {
     res.status(404).send();
     return;
   }
 
-  db.blogs[foundIndex] = { id: blogId, ...req.body };
   res.status(204).send();
 };

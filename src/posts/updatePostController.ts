@@ -1,18 +1,16 @@
 import { Request, Response } from 'express';
 import { db } from '../db/db';
-import { PostInputType } from '../input-output-types/post-types';
-export const updatePostController = (req: Request<{ postId: string }, {}, PostInputType>, res: Response) => {
+import { InputPostType } from '../input-output-types/post-types';
+import { postRepository } from '../repository';
+export const updatePostController = async (req: Request<{ postId: string }, {}, InputPostType>, res: Response) => {
   const postId = req.params.postId;
 
-  const foundIndex = db.posts.findIndex((post) => post.id === postId);
+  const success = await postRepository.update({ postId, update: req.body });
 
-  if (foundIndex < 0) {
+  if (!success) {
     res.status(404).send();
     return;
   }
 
-  const newPostData = req.body;
-
-  db.posts[foundIndex] = { id: postId, ...newPostData, blogName: newPostData?.blogName ?? null };
   res.status(204).send();
 };
