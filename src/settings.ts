@@ -11,4 +11,5 @@ export const SETTINGS = {
     POSTS: `${BASE_URL}/posts`,
     TESTING: `${BASE_URL}/testing/all-data`,
   },
+  ADMIN_AUTH: 'admin:qwerty',
 };
