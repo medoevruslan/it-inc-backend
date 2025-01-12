@@ -17,7 +17,7 @@ export const postBodyValidator = [
     .notEmpty()
     .withMessage('required')
     .isLength({ max: 100 })
-    .withMessage('title should be less than 100 chars'),
+    .withMessage('shortDescription should be less than 100 chars'),
 
   body('content')
     .isString()
@@ -26,7 +26,7 @@ export const postBodyValidator = [
     .notEmpty()
     .withMessage('required')
     .isLength({ max: 1000 })
-    .withMessage('title should be less than 1000 chars'),
+    .withMessage('content should be less than 1000 chars'),
   body('blogId')
     .isString()
     .withMessage('[blogId] should be a string')
