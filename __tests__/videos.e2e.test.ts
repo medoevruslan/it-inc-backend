@@ -1,12 +1,17 @@
 import { req } from './test-helpers';
 import { SETTINGS } from '../src/settings';
-import { dataset1 } from './datasets';
-import { db, setDB } from '../src/db/db';
+import { blog1, post1, video1 } from './datasets';
+import { db, DBType, setDB } from '../src/db/db';
 import { InputVideoType, Resolutions } from '../src/input-output-types/video-types';
 
 describe('test for /videos', () => {
+  let dataset1: DBType;
   beforeEach(() => {
-    setDB();
+    dataset1 = {
+      videos: [video1],
+      posts: [post1],
+      blogs: [blog1],
+    };
   });
 
   it('should clear database', async () => {
