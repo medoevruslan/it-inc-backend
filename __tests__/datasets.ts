@@ -28,5 +28,5 @@ export const blog1: BlogDbType = {
   id: generateIdString(),
   name: ('n' + Date.now() + Math.random()).slice(0, 5),
   description: ('d' + Date.now() + Math.random()).slice(0, 5),
-  websiteUrl: ('url' + Date.now() + Math.random()).slice(0, 5),
+  websiteUrl: 'https://some.com',
 };
