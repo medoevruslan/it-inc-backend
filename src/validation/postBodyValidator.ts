@@ -18,7 +18,6 @@ export const postBodyValidator = [
     .withMessage('required')
     .isLength({ max: 100 })
     .withMessage('shortDescription should be less than 100 chars'),
-
   body('content')
     .isString()
     .withMessage('[content] should be a string')
