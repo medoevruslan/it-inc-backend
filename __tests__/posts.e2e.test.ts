@@ -5,6 +5,8 @@ import { blog1, post1, video1 } from './datasets';
 import { PostDbType } from '../src/db/post-db.type';
 import { generateIdString } from '../src/shared/utils';
 import { InputPostType } from '../src/input-output-types/post-types';
+import { BlogDbType } from '../src/db/blog-db-type';
+import { blogRepository } from '../src/repository';
 
 describe('tests for /posts', () => {
   let dataset1: DBType;
@@ -35,11 +37,25 @@ describe('tests for /posts', () => {
   });
 
   it('should create new post', async () => {
+    const newBlog: Partial<BlogDbType> = {
+      name: 'new blog',
+      websiteUrl: 'https://new.some.com',
+      description: 'new description',
+    };
+
+    const resBlog = await req
+      .post(SETTINGS.PATH.BLOGS)
+      .set('Authorization', `Basic ${codedAuth}`)
+      .send(newBlog)
+      .expect(201);
+
+    const blogs = await blogRepository.findAll();
+
     const newPost: Partial<PostDbType> = {
       title: 'new title',
       content: 'new content',
       shortDescription: 'new shortDescription',
-      blogId: generateIdString(),
+      blogId: blogs[0].id,
     };
 
     const res = await req
@@ -47,6 +63,7 @@ describe('tests for /posts', () => {
       .set('Authorization', `Basic ${codedAuth}`)
       .send(newPost)
       .expect(201);
+
     expect(res.body.title).toEqual(newPost.title);
     expect(res.body.blogName).toBeNull();
   });
@@ -160,7 +177,7 @@ describe('tests for /posts', () => {
     const update: InputPostType = {
       title: 'updatedTitle',
       shortDescription: 'updatedShortDescription',
-      blogId: 'updatedBlogId',
+      blogId: dataset1.blogs[0].id,
       content: 'updatedContent',
       blogName: 'newBlogName',
     };
@@ -205,7 +222,7 @@ describe('tests for /posts', () => {
     const update: Partial<InputPostType> = {
       title: 'updatedTitle',
       shortDescription: 'updatedShortDescription',
-      blogId: 'updatedBlogId',
+      blogId: dataset1.blogs[0].id,
       content: 'updatedContent',
       blogName: 'newBlogName',
     };
@@ -227,7 +244,7 @@ describe('tests for /posts', () => {
     const update: InputPostType = {
       title: 'updatedTitle',
       shortDescription: 'updatedShortDescription',
-      blogId: 'updatedBlogId',
+      blogId: dataset1.blogs[0].id,
       content: 'updatedContent',
       blogName: 'newBlogName',
     };
@@ -251,7 +268,7 @@ describe('tests for /posts', () => {
     const update: InputPostType = {
       title: 'updatedTitle',
       shortDescription: 'updatedShortDescription',
-      blogId: 'updatedBlogId',
+      blogId: dataset1.blogs[0].id,
       content: 'updatedContent',
       blogName: 'newBlogName',
     };
