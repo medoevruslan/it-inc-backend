@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { blogRepository } from '../repository';
 
-export const deleteBlogController = async (req: Request<{ blogId: string }>, res: Response) => {
-  const blogId = req.params.blogId;
+export const deleteBlogController = async (req: Request<{ id: string }>, res: Response) => {
+  const blogId = req.params.id;
 
   const success = await blogRepository.deleteById(blogId);
 

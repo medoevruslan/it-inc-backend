@@ -6,10 +6,12 @@ import { deletePostController } from './deletePostController';
 import { postBodyValidator } from '../validation/postBodyValidator';
 import { validationErrorMiddleware } from '../middlewares/validationErrorMiddleware';
 import { authMiddleware } from '../middlewares';
+import { getPostByIdController } from './getPostByIdController';
 
 export const postsRouter = Router();
 
 postsRouter.get('/', getPostsController);
+postsRouter.get('/:id', getPostByIdController);
 postsRouter.post('/', postBodyValidator, authMiddleware, validationErrorMiddleware, createPostController);
-postsRouter.put('/:postId', postBodyValidator, authMiddleware, validationErrorMiddleware, updatePostController);
-postsRouter.delete('/:postId', authMiddleware, deletePostController);
+postsRouter.put('/:id', postBodyValidator, authMiddleware, validationErrorMiddleware, updatePostController);
+postsRouter.delete('/:id', authMiddleware, deletePostController);

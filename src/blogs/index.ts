@@ -6,10 +6,12 @@ import { deleteBlogController } from './deleteBlogController';
 import { blogBodyValidator } from '../validation/blogBodyValidator';
 import { validationErrorMiddleware } from '../middlewares/validationErrorMiddleware';
 import { authMiddleware } from '../middlewares';
+import { getBlogByIdController } from './getBlogByIdController';
 
 export const blogsRouter = Router();
 
 blogsRouter.get('/', getBlogsController);
+blogsRouter.get('/:id', getBlogByIdController);
 blogsRouter.post('/', blogBodyValidator, authMiddleware, validationErrorMiddleware, createBlogController);
-blogsRouter.put('/:blogId', blogBodyValidator, authMiddleware, validationErrorMiddleware, updateBlogController);
-blogsRouter.delete('/:blogId', authMiddleware, deleteBlogController);
+blogsRouter.put('/:id', blogBodyValidator, authMiddleware, validationErrorMiddleware, updateBlogController);
+blogsRouter.delete('/:id', authMiddleware, deleteBlogController);
