@@ -1,11 +1,16 @@
 import { Request, Response } from 'express';
-import { BlogDbType } from '../db/blog-db-type';
-import { PostDbType } from '../db/post-db.type';
 import { InputPostType } from '../input-output-types/post-types';
-import { generateIdString } from '../shared/utils';
-import { db } from '../db/db';
-import { postRepository } from '../repository';
+import { blogRepository, postRepository } from '../repository';
+
 export const createPostController = async (req: Request<{}, {}, InputPostType>, res: Response) => {
-  const created = await postRepository.create(req.body);
+  const foundBlog = await blogRepository.findById(req.body.blogId);
+
+  if (!foundBlog) {
+    res.status(404).send();
+    return;
+  }
+
+  const created = await postRepository.create({ ...req.body, blogName: foundBlog.name });
+
   res.status(201).send(created);
 };
