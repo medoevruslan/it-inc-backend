@@ -6,7 +6,7 @@ import { PostDbType } from '../db/post-db.type';
 type UpdatePostType = { postId: string; update: InputPostType };
 
 export const postRepository = {
-  async create(input: InputPostType): Promise<OutputPostType> {
+  async create(input: InputPostType & { blogName: string }): Promise<OutputPostType> {
     const newPost: PostDbType = {
       id: generateIdString(),
       ...input,
@@ -21,7 +21,7 @@ export const postRepository = {
     if (foundIndex < 0) {
       return false;
     }
-    db.posts[foundIndex] = { id: postId, ...update };
+    db.posts[foundIndex] = { ...db.posts[foundIndex], ...update };
     return true;
   },
   async findAll(): Promise<OutputPostType[]> {

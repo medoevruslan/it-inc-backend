@@ -6,7 +6,7 @@ import { PostDbType } from '../src/db/post-db.type';
 import { generateIdString } from '../src/shared/utils';
 import { InputPostType } from '../src/input-output-types/post-types';
 import { BlogDbType } from '../src/db/blog-db-type';
-import { blogRepository } from '../src/repository';
+import { blogRepository, postRepository } from '../src/repository';
 
 describe('tests for /posts', () => {
   let dataset1: DBType;
@@ -36,7 +36,29 @@ describe('tests for /posts', () => {
     expect(res.body[0]).toEqual(dataset1.posts[0]);
   });
 
+  it('should not create new post because wrong blogId', async () => {
+    setDB();
+
+    const newPost: InputPostType = {
+      title: 'new title',
+      content: 'new content',
+      shortDescription: 'new shortDescription',
+      blogId: 'wrongId',
+    };
+
+    const resPost = await req
+      .post(SETTINGS.PATH.POSTS)
+      .set('Authorization', `Basic ${codedAuth}`)
+      .send(newPost)
+      .expect(404);
+
+    const posts = await postRepository.findAll();
+
+    expect(posts.length).toEqual(0);
+  });
+
   it('should create new post', async () => {
+    setDB();
     // create blog to get its ID
     const newBlog: Partial<BlogDbType> = {
       name: 'new blog',
@@ -52,21 +74,26 @@ describe('tests for /posts', () => {
 
     const blogs = await blogRepository.findAll();
 
-    const newPost: Partial<PostDbType> = {
+    const newPost: InputPostType = {
       title: 'new title',
       content: 'new content',
       shortDescription: 'new shortDescription',
       blogId: blogs[0].id,
-      blogName: 'new blogName',
     };
 
-    const res = await req
+    const resPost = await req
       .post(SETTINGS.PATH.POSTS)
       .set('Authorization', `Basic ${codedAuth}`)
       .send(newPost)
       .expect(201);
 
-    expect(res.body.title).toEqual(newPost.title);
+    const foundPost = await postRepository.findById(resPost.body.id);
+
+    expect(foundPost).not.toBeNull();
+    expect(foundPost?.blogId).toEqual(blogs[0].id);
+    expect(foundPost?.title).toEqual(resPost.body.title);
+    expect(foundPost?.blogName).toEqual(resPost.body.blogName);
+    expect(foundPost?.blogId).toEqual(resBlog.body.id);
   });
 
   it('should throw validation error on create new post', async () => {
@@ -183,7 +210,6 @@ describe('tests for /posts', () => {
       shortDescription: 'updatedShortDescription',
       blogId: dataset1.blogs[0].id,
       content: 'updatedContent',
-      blogName: 'newBlogName',
     };
 
     const response2 = await req
@@ -196,7 +222,6 @@ describe('tests for /posts', () => {
     expect(dataset1.posts[0].shortDescription).toEqual(update.shortDescription);
     expect(dataset1.posts[0].blogId).toEqual(update.blogId);
     expect(dataset1.posts[0].content).toEqual(update.content);
-    expect(dataset1.posts[0].blogName).toEqual(update.blogName);
   });
 
   it('should not update post by id because partial update data', async () => {
@@ -228,7 +253,6 @@ describe('tests for /posts', () => {
       shortDescription: 'updatedShortDescription',
       blogId: dataset1.blogs[0].id,
       content: 'updatedContent',
-      blogName: 'newBlogName',
     };
 
     const response2 = await req
@@ -250,7 +274,6 @@ describe('tests for /posts', () => {
       shortDescription: 'updatedShortDescription',
       blogId: dataset1.blogs[0].id,
       content: 'updatedContent',
-      blogName: 'newBlogName',
     };
 
     const response2 = await req.put(`${SETTINGS.PATH.POSTS}/${postId}`).send(update).expect(401);
@@ -259,7 +282,6 @@ describe('tests for /posts', () => {
     expect(dataset1.posts[0].shortDescription).not.toEqual(update.shortDescription);
     expect(dataset1.posts[0].blogId).not.toEqual(update.blogId);
     expect(dataset1.posts[0].content).not.toEqual(update.content);
-    expect(dataset1.posts[0].blogName).not.toEqual(update.blogName);
   });
 
   it('should not update post by id because wrong auth', async () => {
@@ -274,7 +296,6 @@ describe('tests for /posts', () => {
       shortDescription: 'updatedShortDescription',
       blogId: dataset1.blogs[0].id,
       content: 'updatedContent',
-      blogName: 'newBlogName',
     };
 
     const response2 = await req
@@ -287,6 +308,5 @@ describe('tests for /posts', () => {
     expect(dataset1.posts[0].shortDescription).not.toEqual(update.shortDescription);
     expect(dataset1.posts[0].blogId).not.toEqual(update.blogId);
     expect(dataset1.posts[0].content).not.toEqual(update.content);
-    expect(dataset1.posts[0].blogName).not.toEqual(update.blogName);
   });
 });
