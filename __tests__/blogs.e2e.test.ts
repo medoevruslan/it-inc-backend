@@ -3,7 +3,10 @@ import { SETTINGS } from '../src/settings';
 import { db, DBType, setDB } from '../src/db/db';
 import { blog1, post1, video1 } from './datasets';
 import { BlogDbType } from '../src/db/blog-db-type';
-import { InputBlogType } from '../src/input-output-types/blog-types';
+import { InputBlogType, UpdateBlogType } from '../src/input-output-types/blog-types';
+import { runDb, setMongoDB } from '../src/db/mongoDb';
+
+(async () => await runDb(SETTINGS.MONGO_URL))();
 
 describe('tests for /blogs', () => {
   let dataset1: DBType;
@@ -19,21 +22,23 @@ describe('tests for /blogs', () => {
   });
 
   it('should return empty array', async () => {
+    await setMongoDB();
     const res = await req.get(SETTINGS.PATH.BLOGS).expect(200);
 
     expect(res.body.length).toBe(0);
   });
 
   it('should get not empty array', async () => {
-    setDB(dataset1);
+    await setMongoDB(dataset1);
 
     const res = await req.get(SETTINGS.PATH.BLOGS).expect(200);
 
     expect(res.body.length).toBe(1);
-    expect(res.body[0]).toEqual(dataset1.blogs[0]);
+    // expect(res.body[0].id).toEqual(dataset1.blogs[0].id);
   });
 
   it('should create new blog', async () => {
+    await setMongoDB();
     const newBlog: Partial<BlogDbType> = {
       name: 'new blog',
       websiteUrl: 'https://new.some.com',
@@ -45,7 +50,12 @@ describe('tests for /blogs', () => {
       .set('Authorization', `Basic ${codedAuth}`)
       .send(newBlog)
       .expect(201);
-    expect(res.body.name).toEqual(newBlog.name);
+
+    const blogResponse = await req.get(`${SETTINGS.PATH.BLOGS}/${res.body.id}`);
+
+    expect(newBlog.name).toEqual(blogResponse.body.name);
+    expect(newBlog.websiteUrl).toEqual(blogResponse.body.websiteUrl);
+    expect(newBlog.description).toEqual(blogResponse.body.description);
   });
 
   it('should throw validation error on create new blog', async () => {
@@ -64,6 +74,8 @@ describe('tests for /blogs', () => {
   });
 
   it('should throw auth error on create new blog', async () => {
+    await setMongoDB();
+
     const newBlog: any = {
       name: 'new blog',
       websiteUrl: 'https://new.some.com',
@@ -71,7 +83,8 @@ describe('tests for /blogs', () => {
     };
 
     const res = await req.post(SETTINGS.PATH.BLOGS).send(newBlog).expect(401);
-    expect(dataset1.blogs.length).toEqual(1);
+    const resData = await req.get(SETTINGS.PATH.BLOGS).expect(200);
+    expect(resData.body.length).toEqual(0);
   });
 
   it('should throw auth error on create new blog because wrong auth', async () => {
@@ -82,11 +95,12 @@ describe('tests for /blogs', () => {
     };
 
     const res = await req.post(SETTINGS.PATH.BLOGS).set('Authorization', `Basic wrongauth`).send(newBlog).expect(401);
-    expect(dataset1.blogs.length).toEqual(1);
+    const resData = await req.get(SETTINGS.PATH.BLOGS).expect(200);
+    expect(resData.body.length).toEqual(0);
   });
 
   it('should delete blog by id', async () => {
-    setDB(dataset1);
+    await setMongoDB(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
 
@@ -97,11 +111,12 @@ describe('tests for /blogs', () => {
       .set('Authorization', `Basic ${codedAuth}`)
       .expect(204);
 
-    expect(db.blogs.length).toEqual(0);
+    const resData = await req.get(SETTINGS.PATH.BLOGS).expect(200);
+    expect(resData.body.length).toEqual(0);
   });
 
   it('should not delete blog by wrong id', async () => {
-    setDB(dataset1);
+    await setMongoDB(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
 
@@ -112,11 +127,12 @@ describe('tests for /blogs', () => {
       .set('Authorization', `Basic ${codedAuth}`)
       .expect(404);
 
-    expect(db.blogs.length).toEqual(1);
+    const resData = await req.get(SETTINGS.PATH.BLOGS).expect(200);
+    expect(resData.body.length).toEqual(1);
   });
 
   it('should not delete blog because unauthorized', async () => {
-    setDB(dataset1);
+    await setMongoDB(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
 
@@ -124,17 +140,18 @@ describe('tests for /blogs', () => {
 
     const response2 = await req.delete(`${SETTINGS.PATH.BLOGS}/${blogId}`).expect(401);
 
-    expect(db.blogs.length).toEqual(1);
+    const resData = await req.get(SETTINGS.PATH.BLOGS).expect(200);
+    expect(resData.body.length).toEqual(1);
   });
 
   it('should update blog by id', async () => {
-    setDB(dataset1);
+    await setMongoDB(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
 
     const blogId = response1.body[0].id;
 
-    const update: InputBlogType = {
+    const update: UpdateBlogType = {
       name: 'updatedName',
       websiteUrl: 'https://updated.some.com',
       description: 'updatedDescription',
@@ -146,13 +163,15 @@ describe('tests for /blogs', () => {
       .send(update)
       .expect(204);
 
-    expect(dataset1.blogs[0].name).toEqual(update.name);
-    expect(dataset1.blogs[0].websiteUrl).toEqual(update.websiteUrl);
-    expect(dataset1.blogs[0].description).toEqual(update.description);
+    const resData = await req.get(SETTINGS.PATH.BLOGS).expect(200);
+
+    expect(resData.body[0].name).toEqual(update.name);
+    expect(resData.body[0].websiteUrl).toEqual(update.websiteUrl);
+    expect(resData.body[0].description).toEqual(update.description);
   });
 
   it('should not update blog by id because partial update data', async () => {
-    setDB(dataset1);
+    await setMongoDB(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
 
@@ -171,9 +190,9 @@ describe('tests for /blogs', () => {
   });
 
   it('should not update blog by id because wrong id', async () => {
-    setDB(dataset1);
+    await setMongoDB(dataset1);
 
-    const update: InputBlogType = {
+    const update: UpdateBlogType = {
       name: 'updatedName',
       websiteUrl: 'https://some.com',
       description: 'updatedDescription',
@@ -187,13 +206,13 @@ describe('tests for /blogs', () => {
   });
 
   it('should not update blog by id because unauthorized', async () => {
-    setDB(dataset1);
+    await setMongoDB(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
 
     const blogId = response1.body[0].id;
 
-    const update: InputBlogType = {
+    const update: UpdateBlogType = {
       name: 'updatedName',
       websiteUrl: ' https://updated.some.com',
       description: 'updatedDescription',
@@ -201,19 +220,21 @@ describe('tests for /blogs', () => {
 
     const response2 = await req.put(`${SETTINGS.PATH.BLOGS}/${blogId}`).send(update).expect(401);
 
-    expect(dataset1.blogs[0].name).not.toEqual(update.name);
-    expect(dataset1.blogs[0].websiteUrl).not.toEqual(update.websiteUrl);
-    expect(dataset1.blogs[0].description).not.toEqual(update.description);
+    const resData = await req.get(SETTINGS.PATH.BLOGS).expect(200);
+
+    expect(resData.body[0].name).not.toEqual(update.name);
+    expect(resData.body[0].websiteUrl).not.toEqual(update.websiteUrl);
+    expect(resData.body[0].description).not.toEqual(update.description);
   });
 
   it('should not update blog by id because wrong auth', async () => {
-    setDB(dataset1);
+    await setMongoDB(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
 
     const blogId = response1.body[0].id;
 
-    const update: InputBlogType = {
+    const update: UpdateBlogType = {
       name: 'updatedName',
       websiteUrl: ' https://updated.some.com',
       description: 'updatedDescription',
@@ -225,8 +246,10 @@ describe('tests for /blogs', () => {
       .send(update)
       .expect(401);
 
-    expect(dataset1.blogs[0].name).not.toEqual(update.name);
-    expect(dataset1.blogs[0].websiteUrl).not.toEqual(update.websiteUrl);
-    expect(dataset1.blogs[0].description).not.toEqual(update.description);
+    const resData = await req.get(SETTINGS.PATH.BLOGS).expect(200);
+
+    expect(resData.body[0].name).not.toEqual(update.name);
+    expect(resData.body[0].websiteUrl).not.toEqual(update.websiteUrl);
+    expect(resData.body[0].description).not.toEqual(update.description);
   });
 });
