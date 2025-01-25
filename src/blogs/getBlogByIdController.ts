@@ -4,10 +4,8 @@ import { blogRepository } from '../repository';
 import { ObjectId } from 'mongodb';
 
 export const getBlogByIdController = async (req: Request<{ id: string }>, res: Response<OutputBlogType>) => {
-  const isValidId = ObjectId.isValid(req.params.id);
-
-  if (!isValidId) {
-    res.status(404).send();
+  if (!ObjectId.isValid(req.params.id)) {
+    res.status(400).send();
     return;
   }
 

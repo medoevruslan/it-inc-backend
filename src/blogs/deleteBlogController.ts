@@ -5,10 +5,8 @@ import { ObjectId } from 'mongodb';
 export const deleteBlogController = async (req: Request<{ id: string }>, res: Response) => {
   const blogId = req.params.id;
 
-  const isValidId = ObjectId.isValid(blogId);
-
-  if (!isValidId) {
-    res.status(404).send();
+  if (!ObjectId.isValid(blogId)) {
+    res.status(400).send();
     return;
   }
 
