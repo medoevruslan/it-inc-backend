@@ -1,35 +1,39 @@
 import { InputBlogType, OutputBlogType } from '../input-output-types/blog-types';
-import { db } from '../db/db';
-import { generateIdString } from '../shared/utils';
+import { blogsCollection } from '../db/mongoDb';
+import { ObjectId } from 'mongodb';
+import { BlogDbType } from '../db/blog-db-type';
 
 type UpdateBlogType = { blogId: string; update: InputBlogType };
 
 export const blogRepository = {
-  async create(input: InputBlogType): Promise<OutputBlogType> {
-    const newBlog = { id: generateIdString(), ...input };
-    db.blogs.push(newBlog);
-    return newBlog;
+  async create(input: InputBlogType): Promise<string> {
+    const result = await blogsCollection.insertOne(input);
+    return result.insertedId.toString();
   },
   async update({ blogId, update }: UpdateBlogType): Promise<boolean> {
-    const foundIndex = db.blogs.findIndex((blog) => blog.id === blogId);
-    if (foundIndex < 0) {
-      return false;
-    }
-    db.blogs[foundIndex] = { id: blogId, ...update };
-    return true;
+    const result = await blogsCollection.updateOne({ _id: new ObjectId(blogId) }, { $set: { ...update } });
+    return result.modifiedCount > 0;
   },
   async findAll(): Promise<OutputBlogType[]> {
-    return db.blogs;
+    const blogs = await blogsCollection.find({}).toArray();
+    if (!blogs.length) return [];
+    return blogs.map(this.mapToOutputType);
   },
   async findById(id: string): Promise<OutputBlogType | null> {
-    return db.blogs.find((blog) => blog.id === id) || null;
+    const blog = await blogsCollection.findOne({ _id: new ObjectId(id) });
+    return blog === null ? null : this.mapToOutputType(blog);
   },
   async deleteById(id: string): Promise<boolean> {
-    const foundIndex = db.blogs.findIndex((blog) => blog.id === id);
-    if (foundIndex < 0) {
-      return false;
-    }
-    db.blogs.splice(foundIndex, 1);
-    return true;
+    const result = await blogsCollection.deleteOne({ _id: new ObjectId(id) });
+    return result.deletedCount > 0;
+  },
+
+  mapToOutputType(blog: BlogDbType): OutputBlogType {
+    return {
+      id: blog._id.toString(),
+      name: blog.name,
+      websiteUrl: blog.websiteUrl,
+      description: blog.description,
+    };
   },
 };
