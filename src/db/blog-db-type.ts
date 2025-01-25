@@ -1,7 +1,7 @@
-import { Nullable } from '../shared/types';
+import { ObjectId } from 'mongodb';
 
 export type BlogDbType = {
-  id: string;
+  _id: ObjectId;
   name: string;
   description: string;
   websiteUrl: string;
