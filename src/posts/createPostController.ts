@@ -11,7 +11,11 @@ export const createPostController = async (req: Request<{}, {}, InputPostType>, 
     return;
   }
 
-  const created = await postRepository.create({ ...req.body, blogName: foundBlog.name });
+  const created = await postRepository.create({
+    ...req.body,
+    blogName: foundBlog.name,
+    createdAt: new Date().toISOString(),
+  });
 
   res.status(201).send({ id: created });
 };

@@ -37,6 +37,7 @@ export const postRepository = {
       blogId: post.blogId,
       content: post.content,
       shortDescription: post.shortDescription,
+      createdAt: post.createdAt,
     };
   },
 };
