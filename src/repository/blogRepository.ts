@@ -34,6 +34,8 @@ export const blogRepository = {
       name: blog.name,
       websiteUrl: blog.websiteUrl,
       description: blog.description,
+      createdAt: blog.createdAt,
+      isMembership: blog.isMembership,
     };
   },
 };

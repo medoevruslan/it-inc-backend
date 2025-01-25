@@ -23,6 +23,7 @@ export const post1: PostDbType = {
   content: ('c' + Date.now() + Math.random()).slice(0, 5),
   blogName: ('bn' + Date.now() + Math.random()).slice(0, 5),
   blogId: generateIdString(),
+  createdAt: new Date().toISOString(),
 };
 
 export const blog1: BlogDbType = {
@@ -30,4 +31,6 @@ export const blog1: BlogDbType = {
   name: ('n' + Date.now() + Math.random()).slice(0, 5),
   description: ('d' + Date.now() + Math.random()).slice(0, 5),
   websiteUrl: 'https://some.com',
+  createdAt: new Date().toISOString(),
+  isMembership: false,
 };
