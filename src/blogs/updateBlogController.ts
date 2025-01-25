@@ -1,9 +1,17 @@
 import { Request, Response } from 'express';
 import { InputBlogType } from '../input-output-types/blog-types';
 import { blogRepository } from '../repository';
+import { ObjectId } from 'mongodb';
 
 export const updateBlogController = async (req: Request<{ id: string }, {}, InputBlogType>, res: Response) => {
   const blogId = req.params.id;
+
+  const isValidId = ObjectId.isValid(blogId);
+
+  if (!isValidId) {
+    res.status(404).send();
+    return;
+  }
 
   const success = await blogRepository.update({ blogId, update: req.body });
 
