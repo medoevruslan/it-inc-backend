@@ -1,6 +1,6 @@
 import { req, toBase64 } from './test-helpers';
 import { SETTINGS } from '../src/settings';
-import { db, DBType, setDB } from '../src/db/db';
+import { DBType } from '../src/db/db';
 import { blog1, post1, video1 } from './datasets';
 import { BlogDbType } from '../src/db/blog-db-type';
 import { InputBlogType, UpdateBlogType } from '../src/input-output-types/blog-types';
@@ -125,7 +125,7 @@ describe('tests for /blogs', () => {
     const response2 = await req
       .delete(`${SETTINGS.PATH.BLOGS}/${22}`)
       .set('Authorization', `Basic ${codedAuth}`)
-      .expect(404);
+      .expect(400);
 
     const resData = await req.get(SETTINGS.PATH.BLOGS).expect(200);
     expect(resData.body.length).toEqual(1);
@@ -202,7 +202,7 @@ describe('tests for /blogs', () => {
       .put(`${SETTINGS.PATH.BLOGS}/${22}`)
       .set('Authorization', `Basic ${codedAuth}`)
       .send(update)
-      .expect(404);
+      .expect(400);
   });
 
   it('should not update blog by id because unauthorized', async () => {
