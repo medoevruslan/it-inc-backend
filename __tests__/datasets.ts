@@ -3,6 +3,7 @@ import { VideoDBType } from '../src/db/video-db-type';
 import { generateId, generateIdString } from '../src/shared/utils';
 import { PostDbType } from '../src/db/post-db.type';
 import { BlogDbType } from '../src/db/blog-db-type';
+import { ObjectId } from 'mongodb';
 
 export const video1: VideoDBType = {
   id: generateId(),
@@ -16,7 +17,7 @@ export const video1: VideoDBType = {
 };
 
 export const post1: PostDbType = {
-  id: generateIdString(),
+  _id: new ObjectId(),
   title: ('t' + Date.now() + Math.random()).slice(0, 5),
   shortDescription: ('sd' + Date.now() + Math.random()).slice(0, 5),
   content: ('c' + Date.now() + Math.random()).slice(0, 5),
@@ -25,7 +26,7 @@ export const post1: PostDbType = {
 };
 
 export const blog1: BlogDbType = {
-  id: generateIdString(),
+  _id: new ObjectId(),
   name: ('n' + Date.now() + Math.random()).slice(0, 5),
   description: ('d' + Date.now() + Math.random()).slice(0, 5),
   websiteUrl: 'https://some.com',
