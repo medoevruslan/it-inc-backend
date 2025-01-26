@@ -16,7 +16,7 @@ export const postRepository = {
   },
   async update({ postId, update }: UpdatePostType): Promise<boolean> {
     const result = await postCollection.updateOne({ _id: new ObjectId(postId) }, { $set: update });
-    return result.modifiedCount > 0;
+    return result.matchedCount === 1;
   },
   async findAll(): Promise<OutputPostType[]> {
     return (await postCollection.find({}).toArray()).map(this.mapToOutputType);
@@ -27,7 +27,7 @@ export const postRepository = {
   },
   async deleteById(id: string): Promise<boolean> {
     const result = await postCollection.deleteOne({ _id: new ObjectId(id) });
-    return result.deletedCount > 0;
+    return result.deletedCount === 1;
   },
   mapToOutputType(post: PostDbType): OutputPostType {
     return {
