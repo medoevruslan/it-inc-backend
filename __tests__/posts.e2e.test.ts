@@ -89,12 +89,11 @@ describe('tests for /posts', () => {
       .send(newPost)
       .expect(201);
 
-    const foundPost = await req.get(`${SETTINGS.PATH.POSTS}/${resCreatedPost.body.id}`);
-
-    expect(foundPost.body).not.toBeNull();
-    expect(foundPost.body.blogId).toEqual(resCreatedBlog.body.id);
-    expect(foundPost.body.blogId).toEqual(resCreatedBlog.body.id);
-    expect(foundPost.body.title).toEqual(newPost.title);
+    expect(resCreatedPost.body).not.toBeNull();
+    expect(resCreatedPost.body.blogId).toEqual(resCreatedBlog.body.id);
+    expect(resCreatedPost.body.title).toEqual(newPost.title);
+    expect(resCreatedPost.body.shortDescription).toEqual(newPost.shortDescription);
+    expect(resCreatedPost.body.content).toEqual(newPost.content);
   });
 
   it('should throw validation error on create new post', async () => {
