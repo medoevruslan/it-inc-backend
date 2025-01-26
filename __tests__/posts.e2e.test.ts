@@ -212,7 +212,7 @@ describe('tests for /posts', () => {
 
     const postId = postsResponse1.body[0].id;
 
-    const update: Partial<UpdatePostType> = {
+    const update: Partial<UpdatePostType['update']> = {
       title: 'updatedTitle',
       shortDescription: 'updatedShortDescription',
       blogId: blogsResponse1.body[0].id,
@@ -278,7 +278,7 @@ describe('tests for /posts', () => {
 
     const postId = postsResponse1.body[0].id;
 
-    const update: Partial<UpdatePostType> = {
+    const update: Partial<UpdatePostType['update']> = {
       title: 'updatedTitle',
       shortDescription: 'updatedShortDescription',
       blogId: dataset1.blogs[0]._id.toString(),
@@ -301,7 +301,7 @@ describe('tests for /posts', () => {
 
     const postId = response1.body[0].id;
 
-    const update: Partial<UpdatePostType> = {
+    const update: Partial<UpdatePostType['update']> = {
       title: 'updatedTitle',
       shortDescription: 'updatedShortDescription',
       blogId: dataset1.blogs[0]._id.toString(),

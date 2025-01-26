@@ -4,7 +4,7 @@ import { createPostController } from './createPostController';
 import { updatePostController } from './updatePostController';
 import { deletePostController } from './deletePostController';
 import { postBodyValidator } from '../validation/postBodyValidator';
-import { validationErrorMiddleware } from '../middlewares/validationErrorMiddleware';
+import { validationErrorMiddleware } from '../middlewares';
 import { authMiddleware } from '../middlewares';
 import { getPostByIdController } from './getPostByIdController';
 
