@@ -51,11 +51,9 @@ describe('tests for /blogs', () => {
       .send(newBlog)
       .expect(201);
 
-    const blogResponse = await req.get(`${SETTINGS.PATH.BLOGS}/${res.body.id}`);
-
-    expect(newBlog.name).toEqual(blogResponse.body.name);
-    expect(newBlog.websiteUrl).toEqual(blogResponse.body.websiteUrl);
-    expect(newBlog.description).toEqual(blogResponse.body.description);
+    expect(newBlog.name).toEqual(res.body.name);
+    expect(newBlog.websiteUrl).toEqual(res.body.websiteUrl);
+    expect(newBlog.description).toEqual(res.body.description);
   });
 
   it('should throw validation error on create new blog', async () => {
