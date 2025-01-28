@@ -40,7 +40,7 @@ export const postService = {
   async findAll(): Promise<OutputPostType[]> {
     return postRepository.findAll();
   },
-  async findById(id: string): Promise<OutputPostType | null> {
+  async findById(id: string): Promise<OutputPostType> {
     if (!ObjectId.isValid(id)) {
       throw new Error('400');
     }
