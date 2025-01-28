@@ -1,20 +1,19 @@
 import { Request, Response } from 'express';
 import { InputBlogType, OutputBlogType } from '../input-output-types/blog-types';
 import { blogRepository } from '../repository';
+import { blogService } from '../service/blogService';
 
-export const createBlogController = async (req: Request<{}, {}, InputBlogType>, res: Response<OutputBlogType>) => {
-  const createdId = await blogRepository.create({
-    ...req.body,
-    createdAt: new Date().toISOString(),
-    isMembership: false,
-  });
-
-  const createdBlog = await blogRepository.findById(createdId);
-
-  if (!createdBlog) {
-    res.status(400).send();
-    return;
+export const createBlogController = async (req: Request<{}, {}, InputBlogType>, res: Response) => {
+  try {
+    const createdBlog = await blogService.create(req.body);
+    res.status(201).send(createdBlog);
+  } catch (err: unknown) {
+    const error = err as Error;
+    const errorCode = Number(error.message);
+    if (!isNaN(errorCode)) {
+      res.status(errorCode).send();
+    } else {
+      res.status(500).send(error.message);
+    }
   }
-
-  res.status(201).send(createdBlog);
 };
