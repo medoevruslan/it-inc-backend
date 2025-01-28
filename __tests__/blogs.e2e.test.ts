@@ -149,7 +149,7 @@ describe('tests for /blogs', () => {
 
     const blogId = response1.body[0].id;
 
-    const update: Partial<UpdateBlogType> = {
+    const update: Partial<UpdateBlogType['update']> = {
       name: 'updatedName',
       websiteUrl: 'https://updated.some.com',
       description: 'updatedDescription',
@@ -190,7 +190,7 @@ describe('tests for /blogs', () => {
   it('should not update blog by id because wrong id', async () => {
     await setMongoDB(dataset1);
 
-    const update: Partial<UpdateBlogType> = {
+    const update: Partial<UpdateBlogType['update']> = {
       name: 'updatedName',
       websiteUrl: 'https://some.com',
       description: 'updatedDescription',
@@ -210,7 +210,7 @@ describe('tests for /blogs', () => {
 
     const blogId = response1.body[0].id;
 
-    const update: Partial<UpdateBlogType> = {
+    const update: Partial<UpdateBlogType['update']> = {
       name: 'updatedName',
       websiteUrl: ' https://updated.some.com',
       description: 'updatedDescription',
@@ -232,7 +232,7 @@ describe('tests for /blogs', () => {
 
     const blogId = response1.body[0].id;
 
-    const update: Partial<UpdateBlogType> = {
+    const update: Partial<UpdateBlogType['update']> = {
       name: 'updatedName',
       websiteUrl: ' https://updated.some.com',
       description: 'updatedDescription',

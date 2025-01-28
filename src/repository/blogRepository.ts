@@ -1,18 +1,16 @@
-import { InputBlogType, OutputBlogType } from '../input-output-types/blog-types';
+import { BlogDbTypeWithoutId, InputBlogType, OutputBlogType, UpdateBlogType } from '../input-output-types/blog-types';
 import { blogsCollection } from '../db/mongoDb';
 import { ObjectId } from 'mongodb';
 import { BlogDbType } from '../db/blog-db-type';
 
-type UpdateBlogType = { blogId: string; update: InputBlogType };
-
 export const blogRepository = {
-  async create(input: InputBlogType): Promise<string> {
+  async create(input: BlogDbTypeWithoutId): Promise<string> {
     const result = await blogsCollection.insertOne(input);
     return result.insertedId.toString();
   },
   async update({ blogId, update }: UpdateBlogType): Promise<boolean> {
     const result = await blogsCollection.updateOne({ _id: new ObjectId(blogId) }, { $set: { ...update } });
-    return result.modifiedCount > 0;
+    return result.matchedCount === 1;
   },
   async findAll(): Promise<OutputBlogType[]> {
     const blogs = await blogsCollection.find({}).toArray();
@@ -25,7 +23,7 @@ export const blogRepository = {
   },
   async deleteById(id: string): Promise<boolean> {
     const result = await blogsCollection.deleteOne({ _id: new ObjectId(id) });
-    return result.deletedCount > 0;
+    return result.deletedCount === 1;
   },
 
   mapToOutputType(blog: BlogDbType): OutputBlogType {
