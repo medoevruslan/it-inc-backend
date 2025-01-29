@@ -1,7 +1,14 @@
-import { BlogDbTypeWithoutId, InputBlogType, OutputBlogType, UpdateBlogType } from '../input-output-types/blog-types';
+import {
+  BlogDbTypeWithoutId,
+  InputBlogType,
+  OutputBlogType,
+  OutputBlogTypeWithInfo,
+  UpdateBlogType,
+} from '../input-output-types/blog-types';
 import { blogsCollection } from '../db/mongoDb';
-import { ObjectId } from 'mongodb';
+import { ObjectId, SortDirection, WithId } from 'mongodb';
 import { BlogDbType } from '../db/blog-db-type';
+import { AllBlogsQueryParams } from '../blogs/getBlogsController';
 
 export const blogRepository = {
   async create(input: BlogDbTypeWithoutId): Promise<string> {
@@ -12,10 +19,30 @@ export const blogRepository = {
     const result = await blogsCollection.updateOne({ _id: new ObjectId(blogId) }, { $set: { ...update } });
     return result.matchedCount === 1;
   },
-  async findAll(): Promise<OutputBlogType[]> {
-    const blogs = await blogsCollection.find({}).toArray();
-    if (!blogs.length) return [];
-    return blogs.map(this.mapToOutputType);
+  async findAll(inputFilter: AllBlogsQueryParams): Promise<OutputBlogTypeWithInfo> {
+    const { sortDirection, sortBy, pageSize, pageNumber, searchNameTerm } = inputFilter;
+    const filter = searchNameTerm ? { name: { $regex: searchNameTerm, $options: 'i' } } : {};
+
+    const skip = (inputFilter.pageNumber - 1) * inputFilter.pageSize;
+
+    // Execute queries in parallel for better performance
+    const [totalCount, blogs]: [number, WithId<BlogDbType>[]] = await Promise.all([
+      blogsCollection.countDocuments(filter), // Fetch total count
+      blogsCollection
+        .find(filter)
+        .sort({ [sortBy]: sortDirection })
+        .skip(skip)
+        .limit(pageSize)
+        .toArray(),
+    ]);
+
+    return {
+      pagesCount: Math.ceil(totalCount / pageSize),
+      page: pageNumber,
+      pageSize,
+      totalCount,
+      items: blogs.map(this.mapToOutputType),
+    };
   },
   async findById(id: string): Promise<OutputBlogType | null> {
     const blog = await blogsCollection.findOne({ _id: new ObjectId(id) });
@@ -36,4 +63,6 @@ export const blogRepository = {
       isMembership: blog.isMembership,
     };
   },
+
+  mapToOutputTypeWithInfo() {},
 };
