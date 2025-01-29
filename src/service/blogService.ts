@@ -1,6 +1,12 @@
-import { InputBlogType, OutputBlogType, UpdateBlogType } from '../input-output-types/blog-types';
+import {
+  InputBlogType,
+  OutputBlogType,
+  OutputBlogTypeWithInfo,
+  UpdateBlogType,
+} from '../input-output-types/blog-types';
 import { ObjectId } from 'mongodb';
 import { blogRepository } from '../repository';
+import { AllBlogsQueryParams } from '../blogs/getBlogsController';
 
 export const blogService = {
   async create(input: InputBlogType): Promise<OutputBlogType> {
@@ -31,8 +37,8 @@ export const blogService = {
 
     return success;
   },
-  async findAll(): Promise<OutputBlogType[]> {
-    return blogRepository.findAll();
+  async findAll(filter: AllBlogsQueryParams): Promise<OutputBlogTypeWithInfo> {
+    return blogRepository.findAll(filter);
   },
   async findById(id: string): Promise<OutputBlogType> {
     if (!ObjectId.isValid(id)) {

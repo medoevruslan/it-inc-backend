@@ -1,11 +1,21 @@
 import { Request, Response } from 'express';
 import { blogRepository } from '../repository';
-import { OutputBlogType } from '../input-output-types/blog-types';
+import { BlogType, OutputBlogType } from '../input-output-types/blog-types';
 import { blogService } from '../service/blogService';
+import { BlogDbType } from '../db/blog-db-type';
+import { SortDirection } from 'mongodb';
 
-export const getBlogsController = async (req: Request, res: Response) => {
+export type AllBlogsQueryParams = {
+  searchNameTerm: string;
+  sortBy: keyof BlogType;
+  sortDirection: Pick<SortDirection, 'asc' | 'desc'>;
+  pageNumber: number;
+  pageSize: number;
+};
+
+export const getBlogsController = async (req: Request<{}, {}, {}, AllBlogsQueryParams>, res: Response) => {
   try {
-    const blogs = await blogService.findAll();
+    const blogs = await blogService.findAll(req.query);
     res.send(blogs);
   } catch (err: unknown) {
     const error = err as Error;
