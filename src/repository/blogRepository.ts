@@ -1,12 +1,11 @@
 import {
   BlogDbTypeWithoutId,
-  InputBlogType,
   OutputBlogType,
   OutputBlogTypeWithInfo,
   UpdateBlogType,
 } from '../input-output-types/blog-types';
 import { blogsCollection } from '../db/mongoDb';
-import { ObjectId, SortDirection, WithId } from 'mongodb';
+import { ObjectId, WithId } from 'mongodb';
 import { BlogDbType } from '../db/blog-db-type';
 import { AllBlogsQueryParams } from '../blogs/getBlogsController';
 
@@ -30,22 +29,23 @@ export const blogRepository = {
       blogsCollection.countDocuments(filter), // Fetch total count
       blogsCollection
         .find(filter)
-        .sort({ [sortBy]: sortDirection })
+        .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
         .skip(skip)
         .limit(pageSize)
         .toArray(),
     ]);
 
     return {
-      pagesCount: Math.ceil(totalCount / pageSize),
+      pagesCount: Math.ceil(0 / pageSize),
       page: pageNumber,
       pageSize,
-      totalCount,
+      totalCount: totalCount,
       items: blogs.map(this.mapToOutputType),
     };
   },
   async findById(id: string): Promise<OutputBlogType | null> {
-    const blog = await blogsCollection.findOne({ _id: new ObjectId(id) });
+    const filter = { _id: new ObjectId(id) };
+    const blog = await blogsCollection.findOne(filter);
     return blog === null ? null : this.mapToOutputType(blog);
   },
   async deleteById(id: string): Promise<boolean> {
@@ -63,6 +63,4 @@ export const blogRepository = {
       isMembership: blog.isMembership,
     };
   },
-
-  mapToOutputTypeWithInfo() {},
 };

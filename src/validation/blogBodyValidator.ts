@@ -1,4 +1,5 @@
 import { body } from 'express-validator';
+import { ObjectId } from 'mongodb';
 
 export const blogBodyValidator = [
   body('name')
@@ -23,4 +24,10 @@ export const blogBodyValidator = [
     .trim()
     .isLength({ max: 100 })
     .withMessage('websiteUrl should be less than 100 chars'),
+  body('_id').customSanitizer((value) => {
+    if (value && !ObjectId.isValid(value)) {
+      throw new Error('400');
+    }
+    return value ? new ObjectId(value) : undefined;
+  }),
 ];

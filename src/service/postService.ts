@@ -1,7 +1,6 @@
 import { InputPostType, OutputPostType, UpdatePostType } from '../input-output-types/post-types';
 import { blogRepository, postRepository } from '../repository';
 import { ObjectId } from 'mongodb';
-import { req } from '../../__tests__/test-helpers';
 
 export const postService = {
   async create(input: InputPostType): Promise<OutputPostType> {
