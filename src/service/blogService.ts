@@ -5,8 +5,9 @@ import {
   UpdateBlogType,
 } from '../input-output-types/blog-types';
 import { ObjectId } from 'mongodb';
-import { blogRepository } from '../repository';
+import { blogRepository, postRepository } from '../repository';
 import { AllBlogsQueryParams } from '../blogs/getBlogsController';
+import { OutputPostTypeWithInfo } from '../input-output-types/post-types';
 
 export const blogService = {
   async create(input: InputBlogType): Promise<OutputBlogType> {
@@ -51,6 +52,12 @@ export const blogService = {
     }
 
     return found;
+  },
+  async findPostsByBlogId(id: string, filter: AllBlogsQueryParams): Promise<OutputPostTypeWithInfo> {
+    if (!ObjectId.isValid(id)) {
+      throw new Error('400');
+    }
+    return await postRepository.findByBlogId(id, filter);
   },
   async deleteById(id: string): Promise<boolean> {
     if (!ObjectId.isValid(id)) {
