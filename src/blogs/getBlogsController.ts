@@ -8,7 +8,7 @@ import { SortDirection } from 'mongodb';
 export type AllBlogsQueryParams = {
   searchNameTerm: string;
   sortBy: keyof BlogType;
-  sortDirection: Pick<SortDirection, 'asc' | 'desc'>;
+  sortDirection: 'asc' | 'desc';
   pageNumber: number;
   pageSize: number;
 };
