@@ -28,7 +28,7 @@ describe('tests for /posts', () => {
     await setMongoDB();
     const res = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
-    expect(res.body.length).toBe(0);
+    expect(res.body.items.length).toBe(0);
   });
 
   it('should get not empty array', async () => {
@@ -36,8 +36,8 @@ describe('tests for /posts', () => {
 
     const res = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
-    expect(res.body.length).toBe(1);
-    expect(res.body[0].title).toEqual(dataset1.posts[0].title);
+    expect(res.body.items.length).toBe(1);
+    expect(res.body.items[0].title).toEqual(dataset1.posts[0].title);
   });
 
   it('should not create new post because wrong blogId', async () => {
@@ -58,7 +58,7 @@ describe('tests for /posts', () => {
 
     const resPosts = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
-    expect(resPosts.body.length).toEqual(0);
+    expect(resPosts.body.items.length).toEqual(0);
   });
 
   it('should create new post', async () => {
@@ -142,14 +142,16 @@ describe('tests for /posts', () => {
 
     const response1 = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
-    const postId = response1.body[0].id;
+    const postId = response1.body.items[0].id;
 
     const response2 = await req
       .delete(`${SETTINGS.PATH.POSTS}/${postId}`)
       .set('Authorization', `Basic ${codedAuth}`)
       .expect(204);
 
-    expect(db.posts.length).toEqual(0);
+    const resAllPosts = await req.get(SETTINGS.PATH.POSTS).expect(200);
+
+    expect(resAllPosts.body.items.length).toEqual(0);
   });
 
   it('should not delete post by wrong id', async () => {
@@ -157,7 +159,7 @@ describe('tests for /posts', () => {
 
     const postsResponse1 = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
-    expect(postsResponse1.body.length).toEqual(1);
+    expect(postsResponse1.body.items.length).toEqual(1);
 
     const deletedPostsRes = await req
       .delete(`${SETTINGS.PATH.POSTS}/${22}`)
@@ -166,7 +168,7 @@ describe('tests for /posts', () => {
 
     const postsResponse2 = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
-    expect(postsResponse2.body.length).toEqual(1);
+    expect(postsResponse2.body.items.length).toEqual(1);
   });
 
   it('should not delete post because unauthorized', async () => {
@@ -174,15 +176,15 @@ describe('tests for /posts', () => {
 
     const postsResponse1 = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
-    expect(postsResponse1.body.length).toEqual(1);
+    expect(postsResponse1.body.items.length).toEqual(1);
 
-    const postId = postsResponse1.body[0].id;
+    const postId = postsResponse1.body.items[0].id;
 
     const deletedPostsRes = await req.delete(`${SETTINGS.PATH.POSTS}/${postId}`).expect(401);
 
     const postsResponse2 = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
-    expect(postsResponse2.body.length).toEqual(1);
+    expect(postsResponse2.body.items.length).toEqual(1);
   });
 
   it('should not delete post because wrong auth', async () => {
@@ -190,9 +192,9 @@ describe('tests for /posts', () => {
 
     const response1 = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
-    expect(response1.body.length).toEqual(1);
+    expect(response1.body.items.length).toEqual(1);
 
-    const postId = response1.body[0].id;
+    const postId = response1.body.items[0].id;
 
     const response2 = await req
       .delete(`${SETTINGS.PATH.POSTS}/${postId}`)
@@ -201,7 +203,7 @@ describe('tests for /posts', () => {
 
     const postsResponse2 = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
-    expect(postsResponse2.body.length).toEqual(1);
+    expect(postsResponse2.body.items.length).toEqual(1);
   });
 
   it('should update post by id', async () => {
@@ -210,12 +212,12 @@ describe('tests for /posts', () => {
     const postsResponse1 = await req.get(SETTINGS.PATH.POSTS).expect(200);
     const blogsResponse1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
 
-    const postId = postsResponse1.body[0].id;
+    const postId = postsResponse1.body.items[0].id;
 
     const update: Partial<UpdatePostType['update']> = {
       title: 'updatedTitle',
       shortDescription: 'updatedShortDescription',
-      blogId: blogsResponse1.body[0].id,
+      blogId: blogsResponse1.body.items[0].id,
       content: 'updatedContent',
     };
 
@@ -227,10 +229,10 @@ describe('tests for /posts', () => {
 
     const postsResponse2 = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
-    expect(postsResponse2.body[0].title).toEqual(update.title);
-    expect(postsResponse2.body[0].shortDescription).toEqual(update.shortDescription);
-    expect(postsResponse2.body[0].blogId).toEqual(update.blogId);
-    expect(postsResponse2.body[0].content).toEqual(update.content);
+    expect(postsResponse2.body.items[0].title).toEqual(update.title);
+    expect(postsResponse2.body.items[0].shortDescription).toEqual(update.shortDescription);
+    expect(postsResponse2.body.items[0].blogId).toEqual(update.blogId);
+    expect(postsResponse2.body.items[0].content).toEqual(update.content);
   });
 
   it('should not update post by id because partial update data', async () => {
