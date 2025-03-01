@@ -1,20 +1,17 @@
 import { Request, Response } from 'express';
-import { OutputBlogType } from '../input-output-types/blog-types';
-import { blogRepository } from '../repository';
-import { ObjectId } from 'mongodb';
+import { blogService } from '../service/blogService';
 
-export const getBlogByIdController = async (req: Request<{ id: string }>, res: Response<OutputBlogType>) => {
-  if (!ObjectId.isValid(req.params.id)) {
-    res.status(400).send();
-    return;
+export const getBlogByIdController = async (req: Request<{ id: string }>, res: Response) => {
+  try {
+    const blog = await blogService.findById(req.params.id);
+    res.send(blog);
+  } catch (err: unknown) {
+    const error = err as Error;
+    const errorCode = Number(error.message);
+    if (!isNaN(errorCode)) {
+      res.status(errorCode).send();
+    } else {
+      res.status(500).send(error.message);
+    }
   }
-
-  const found = await blogRepository.findById(req.params.id);
-
-  if (found === null) {
-    res.status(404).send();
-    return;
-  }
-
-  res.send(found);
 };

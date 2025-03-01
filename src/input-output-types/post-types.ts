@@ -1,9 +1,17 @@
 import { PostDbType } from '../db/post-db.type';
-import { Nullable } from '../shared/types';
 import { OptionalUnlessRequiredId } from 'mongodb';
 
 export type InputPostType = OptionalUnlessRequiredId<Omit<PostDbType, 'blogName'>>;
-export type UpdatePostType = Omit<InputPostType, '_id'>;
+export type PostDbTypeWithoutId = OptionalUnlessRequiredId<PostDbType>;
+export type PostType = Omit<PostDbType, '_id'>;
+export type UpdatePostType = { postId: string; update: PostType };
 
 // Represents the output when sending data to client
-export type OutputPostType = Omit<PostDbType, '_id'> & { id: string };
+export type OutputPostType = PostType & { id: string };
+export type OutputPostTypeWithInfo = {
+  pagesCount: number;
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  items: OutputPostType[];
+};

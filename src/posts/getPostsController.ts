@@ -1,10 +1,12 @@
 import { Request, Response } from 'express';
-import { db } from '../db/db';
-import { PostDbType } from '../db/post-db.type';
-import { postRepository } from '../repository';
-import { OutputPostType } from '../input-output-types/post-types';
-export const getPostsController = async (req: Request, res: Response<OutputPostType[]>) => {
-  const posts = await postRepository.findAll();
+import { OutputPostTypeWithInfo, PostType } from '../input-output-types/post-types';
+import { postService } from '../service/postService';
+import { GetAllQueryParams } from '../shared/types';
 
+export const getPostsController = async (
+  req: Request<{}, {}, {}, GetAllQueryParams<PostType>>,
+  res: Response<OutputPostTypeWithInfo>,
+) => {
+  const posts = await postService.findAll(req.query);
   res.status(200).send(posts);
 };

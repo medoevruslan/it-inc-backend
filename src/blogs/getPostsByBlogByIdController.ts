@@ -1,12 +1,15 @@
 import { Request, Response } from 'express';
-import { BlogType } from '../input-output-types/blog-types';
 import { blogService } from '../service/blogService';
+import { PostType } from '../input-output-types/post-types';
 import { GetAllQueryParams } from '../shared/types';
 
-export const getBlogsController = async (req: Request<{}, {}, {}, GetAllQueryParams<BlogType>>, res: Response) => {
+export const getPostsByBlogByIdController = async (
+  req: Request<{ blogId: string }, {}, {}, GetAllQueryParams<PostType>>,
+  res: Response,
+) => {
   try {
-    const blogs = await blogService.findAll(req.query);
-    res.send(blogs);
+    const posts = await blogService.findPostsByBlogId(req.params.blogId, req.query);
+    res.send(posts);
   } catch (err: unknown) {
     const error = err as Error;
     const errorCode = Number(error.message);
