@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
 import { blogService } from '../service/blogService';
-import { AllBlogsQueryParams } from './getBlogsController';
+import { PostType } from '../input-output-types/post-types';
+import { GetAllQueryParams } from '../shared/types';
 
 export const getPostsByBlogByIdController = async (
-  req: Request<{ blogId: string }, {}, {}, AllBlogsQueryParams>,
+  req: Request<{ blogId: string }, {}, {}, GetAllQueryParams<PostType>>,
   res: Response,
 ) => {
   try {

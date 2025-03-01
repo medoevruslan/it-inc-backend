@@ -1,19 +1,9 @@
 import { Request, Response } from 'express';
-import { blogRepository } from '../repository';
-import { BlogType, OutputBlogType } from '../input-output-types/blog-types';
+import { BlogType } from '../input-output-types/blog-types';
 import { blogService } from '../service/blogService';
-import { BlogDbType } from '../db/blog-db-type';
-import { SortDirection } from 'mongodb';
+import { GetAllQueryParams } from '../shared/types';
 
-export type AllBlogsQueryParams = {
-  searchNameTerm: string;
-  sortBy: keyof BlogType;
-  sortDirection: 'asc' | 'desc';
-  pageNumber: number;
-  pageSize: number;
-};
-
-export const getBlogsController = async (req: Request<{}, {}, {}, AllBlogsQueryParams>, res: Response) => {
+export const getBlogsController = async (req: Request<{}, {}, {}, GetAllQueryParams<BlogType>>, res: Response) => {
   try {
     const blogs = await blogService.findAll(req.query);
     res.send(blogs);
