@@ -1,6 +1,13 @@
-import { InputPostType, OutputPostType, UpdatePostType } from '../input-output-types/post-types';
+import {
+  InputPostType,
+  OutputPostType,
+  OutputPostTypeWithInfo,
+  PostType,
+  UpdatePostType,
+} from '../input-output-types/post-types';
 import { blogRepository, postRepository } from '../repository';
 import { ObjectId } from 'mongodb';
+import { GetAllQueryParams } from '../shared/types';
 
 export const postService = {
   async create(input: InputPostType): Promise<OutputPostType> {
@@ -36,8 +43,8 @@ export const postService = {
     }
     return success;
   },
-  async findAll(): Promise<OutputPostType[]> {
-    return postRepository.findAll();
+  async findAll(filter: GetAllQueryParams<PostType>): Promise<OutputPostTypeWithInfo> {
+    return postRepository.findAll(filter);
   },
   async findById(id: string): Promise<OutputPostType> {
     if (!ObjectId.isValid(id)) {
