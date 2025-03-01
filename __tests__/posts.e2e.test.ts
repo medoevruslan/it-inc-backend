@@ -240,7 +240,7 @@ describe('tests for /posts', () => {
 
     const postsResponse1 = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
-    const postId = postsResponse1.body[0].id;
+    const postId = postsResponse1.body.items[0].id;
 
     const update: Partial<InputPostType> = {
       title: 'updatedTitle',
@@ -278,7 +278,7 @@ describe('tests for /posts', () => {
 
     const postsResponse1 = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
-    const postId = postsResponse1.body[0].id;
+    const postId = postsResponse1.body.items[0].id;
 
     const update: Partial<UpdatePostType['update']> = {
       title: 'updatedTitle',
@@ -290,18 +290,18 @@ describe('tests for /posts', () => {
     const updatedResponse = await req.put(`${SETTINGS.PATH.POSTS}/${postId}`).send(update).expect(401);
     const postsResponse2 = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
-    expect(postsResponse2.body[0].title).not.toEqual(update.title);
-    expect(postsResponse2.body[0].shortDescription).not.toEqual(update.shortDescription);
-    expect(postsResponse2.body[0].blogId).not.toEqual(update.blogId);
-    expect(postsResponse2.body[0].content).not.toEqual(update.content);
+    expect(postsResponse2.body.items[0].title).not.toEqual(update.title);
+    expect(postsResponse2.body.items[0].shortDescription).not.toEqual(update.shortDescription);
+    expect(postsResponse2.body.items[0].blogId).not.toEqual(update.blogId);
+    expect(postsResponse2.body.items[0].content).not.toEqual(update.content);
   });
 
   it('should not update post by id because wrong auth', async () => {
-    setDB(dataset1);
+    await setMongoDB(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
-    const postId = response1.body[0].id;
+    const postId = response1.body.items[0].id;
 
     const update: Partial<UpdatePostType['update']> = {
       title: 'updatedTitle',
@@ -316,9 +316,9 @@ describe('tests for /posts', () => {
       .send(update)
       .expect(401);
 
-    expect(dataset1.posts[0].title).not.toEqual(update.title);
-    expect(dataset1.posts[0].shortDescription).not.toEqual(update.shortDescription);
-    expect(dataset1.posts[0].blogId).not.toEqual(update.blogId);
-    expect(dataset1.posts[0].content).not.toEqual(update.content);
+    expect(response1.body.items[0].title).not.toEqual(update.title);
+    expect(response1.body.items[0].shortDescription).not.toEqual(update.shortDescription);
+    expect(response1.body.items[0].blogId).not.toEqual(update.blogId);
+    expect(response1.body.items[0].content).not.toEqual(update.content);
   });
 });
