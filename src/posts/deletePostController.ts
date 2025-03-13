@@ -10,7 +10,7 @@ export const deletePostController = async (req: Request<{ id: string }>, res: Re
   } catch (err: unknown) {
     const error = err as Error;
     const errorCode = Number(error.message);
-    if (!isNaN(errorCode)) {
+    if (isFinite(errorCode)) {
       res.status(errorCode).send();
     } else {
       res.status(500).send(error.message);

@@ -58,7 +58,13 @@ export const blogService = {
     if (!ObjectId.isValid(id)) {
       throw new Error('400');
     }
-    return await postRepository.findByBlogId(id, filter);
+    const found = await postRepository.findByBlogId(id, filter);
+
+    if (found.items.length === 0) {
+      throw new Error('404');
+    }
+
+    return found;
   },
   async deleteById(id: string): Promise<boolean> {
     if (!ObjectId.isValid(id)) {

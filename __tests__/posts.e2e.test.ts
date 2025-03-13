@@ -1,6 +1,6 @@
 import { req, toBase64 } from './test-helpers';
 import { SETTINGS } from '../src/settings';
-import { db, DBType, setDB } from '../src/db/db';
+import { DBType } from '../src/db/db';
 import { blog1, post1, video1 } from './datasets';
 import { PostDbType } from '../src/db/post-db.type';
 import { generateIdString } from '../src/shared/utils';
