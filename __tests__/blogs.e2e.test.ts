@@ -260,23 +260,11 @@ describe('tests for /blogs', () => {
     expect(resPosts.body.items.length).toBe(1);
   });
 
-  it('should get empty post list by wrong blogId', async () => {
-    await setMongoDB(dataset1);
-
-    const wrongBlogId = new ObjectId().toString();
-
-    const resPosts = await req.get(`${SETTINGS.PATH.BLOGS}/${wrongBlogId}/posts`).expect(200);
-
-    expect(resPosts.body.items.length).toBe(0);
-  });
-
   it('should not get posts by wrong blogId', async () => {
     await setMongoDB(dataset1);
 
     const nonExistingBlogId = new ObjectId().toString();
-    const resPosts = await req.get(`${SETTINGS.PATH.BLOGS}/${nonExistingBlogId}/posts`);
-
-    expect(resPosts.body.items.length).toBe(0);
+    const resPosts = await req.get(`${SETTINGS.PATH.BLOGS}/${nonExistingBlogId}/posts`).expect(404);
   });
 
   it('should throw validation error on create new blog', async () => {
@@ -472,5 +460,18 @@ describe('tests for /blogs', () => {
     expect(resData.body.items[0].name).not.toEqual(update.name);
     expect(resData.body.items[0].websiteUrl).not.toEqual(update.websiteUrl);
     expect(resData.body.items[0].description).not.toEqual(update.description);
+  });
+
+  it('should return error if :id from uri param not found', async () => {
+    await setMongoDB(dataset1);
+
+    const response1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
+
+    const blogId = response1.body.items[0].id;
+
+    const response2 = await req
+      .get(`${SETTINGS.PATH.BLOGS}/${blogId}/posts`)
+      .set('Authorization', `Basic ${codedAuth}`)
+      .expect(404);
   });
 });
