@@ -26,15 +26,23 @@ export const blogRepository = {
     const skip = (inputFilter.pageNumber - 1) * inputFilter.pageSize;
 
     // Execute queries in parallel for better performance
-    const [totalCount, blogs]: [number, WithId<BlogDbType>[]] = await Promise.all([
-      blogsCollection.countDocuments(filter), // Fetch total count
-      blogsCollection
-        .find(filter)
-        .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
-        .skip(skip)
-        .limit(pageSize)
-        .toArray(),
-    ]);
+    // const [totalCount, blogs]: [number, WithId<BlogDbType>[]] = await Promise.all([
+    //   blogsCollection.countDocuments(filter), // Fetch total count
+    //   blogsCollection
+    //     .find(filter)
+    //     .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+    //     .skip(skip)
+    //     .limit(pageSize)
+    //     .toArray(),
+    // ]);
+
+    const totalCount = await blogsCollection.countDocuments(filter); // Fetch total count
+    const blogs = await blogsCollection
+      .find(filter)
+      .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+      .skip(skip)
+      .limit(pageSize)
+      .toArray();
 
     return {
       pagesCount: Math.ceil(totalCount / pageSize),
