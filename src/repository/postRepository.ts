@@ -26,22 +26,30 @@ export const postRepository = {
     const skip = (inputFilter.pageNumber - 1) * inputFilter.pageSize;
 
     // Execute queries in parallel for better performance
-    const [totalCount, blogs]: [number, WithId<PostDbType>[]] = await Promise.all([
-      postCollection.countDocuments(filter), // Fetch total count
-      postCollection
-        .find(filter)
-        .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
-        .skip(skip)
-        .limit(pageSize)
-        .toArray(),
-    ]);
+    // const [totalCount, posts]: [number, WithId<PostDbType>[]] = await Promise.all([
+    //   postCollection.countDocuments(filter), // Fetch total count
+    //   postCollection
+    //     .find(filter)
+    //     .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+    //     .skip(skip)
+    //     .limit(pageSize)
+    //     .toArray(),
+    // ]);
+
+    const totalCount = await postCollection.countDocuments(filter); // Fetch total count
+    const posts = await postCollection
+      .find(filter)
+      .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+      .skip(skip)
+      .limit(pageSize)
+      .toArray();
 
     return {
       pagesCount: Math.ceil(totalCount / pageSize),
       page: pageNumber,
       pageSize,
       totalCount: totalCount,
-      items: blogs.map(this.mapToOutputType),
+      items: posts.map(this.mapToOutputType),
     };
   },
   async findById(id: string): Promise<OutputPostType | null> {
@@ -55,15 +63,23 @@ export const postRepository = {
     const skip = (inputFilter.pageNumber - 1) * inputFilter.pageSize;
 
     // Execute queries in parallel for better performance
-    const [totalCount, posts]: [number, WithId<PostDbType>[]] = await Promise.all([
-      postCollection.countDocuments(filter), // Fetch total count
-      postCollection
-        .find(filter)
-        .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
-        .skip(skip)
-        .limit(pageSize)
-        .toArray(),
-    ]);
+    // const [totalCount, posts]: [number, WithId<PostDbType>[]] = await Promise.all([
+    //   postCollection.countDocuments(filter), // Fetch total count
+    //   postCollection
+    //     .find(filter)
+    //     .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+    //     .skip(skip)
+    //     .limit(pageSize)
+    //     .toArray(),
+    // ]);
+
+    const totalCount = await postCollection.countDocuments(filter); // Fetch total count
+    const posts = await postCollection
+      .find(filter)
+      .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+      .skip(skip)
+      .limit(pageSize)
+      .toArray();
 
     return {
       pagesCount: Math.ceil(totalCount / pageSize),
