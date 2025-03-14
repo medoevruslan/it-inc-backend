@@ -37,7 +37,7 @@ export const blogRepository = {
     ]);
 
     return {
-      pagesCount: Math.ceil(totalCount ?? 0 / pageSize),
+      pagesCount: Math.ceil(totalCount / pageSize),
       page: pageNumber,
       pageSize,
       totalCount: totalCount,
