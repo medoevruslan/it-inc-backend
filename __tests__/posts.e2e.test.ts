@@ -40,6 +40,41 @@ describe('tests for /posts', () => {
     expect(res.body.items[0].title).toEqual(dataset1.posts[0].title);
   });
 
+  it('should create multiple posts and return proper response', async () => {
+    await setMongoDB();
+
+    const newBlog: Partial<BlogDbType> = {
+      name: 'new blog',
+      websiteUrl: 'https://new.some.com',
+      description: 'new description',
+    };
+
+    const resCreatedBlog = await req
+      .post(SETTINGS.PATH.BLOGS)
+      .set('Authorization', `Basic ${codedAuth}`)
+      .send(newBlog)
+      .expect(201);
+
+    const newPosts = Array.from({ length: 15 }).map((_, idx) => ({
+      title: 'new title' + idx,
+      content: 'new content' + idx,
+      shortDescription: 'new shortDescription' + idx,
+      blogId: resCreatedBlog.body.id,
+    }));
+
+    for (const post of newPosts) {
+      await req.post(SETTINGS.PATH.POSTS).set('Authorization', `Basic ${codedAuth}`).send(post).expect(201);
+    }
+
+    const postsResponse = await req.get(`${SETTINGS.PATH.POSTS}?sortDirection=asc`).expect(200);
+
+    expect(postsResponse.body.items.length).toBe(10);
+    expect(postsResponse.body.totalCount).toBe(15);
+    expect(postsResponse.body.page).toBe(1);
+    expect(postsResponse.body.pageSize).toBe(10);
+    expect(postsResponse.body.pagesCount).toBe(2);
+  });
+
   it('should not create new post because wrong blogId', async () => {
     await setMongoDB();
 

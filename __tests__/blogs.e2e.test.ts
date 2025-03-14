@@ -36,7 +36,27 @@ describe('tests for /blogs', () => {
     const res = await req.get(SETTINGS.PATH.BLOGS).expect(200);
 
     expect(res.body.items.length).toBe(1);
-    // expect(res.body[0].id).toEqual(dataset1.blogs[0].id);
+  });
+
+  it('should create multiple blogs and return proper response', async () => {
+    await setMongoDB();
+    const newBlogs = Array.from({ length: 15 }).map((_, idx) => ({
+      name: 'new blog' + idx,
+      websiteUrl: 'https://new.some.com',
+      description: 'new description' + idx,
+    }));
+
+    for (const blog of newBlogs) {
+      await req.post(SETTINGS.PATH.BLOGS).set('Authorization', `Basic ${codedAuth}`).send(blog).expect(201);
+    }
+
+    const blogsResponse = await req.get(SETTINGS.PATH.BLOGS).expect(200);
+
+    expect(blogsResponse.body.items.length).toBe(10);
+    expect(blogsResponse.body.totalCount).toBe(15);
+    expect(blogsResponse.body.page).toBe(1);
+    expect(blogsResponse.body.pageSize).toBe(10);
+    expect(blogsResponse.body.pagesCount).toBe(2);
   });
 
   it('should set default query parameters', async () => {
