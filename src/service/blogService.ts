@@ -18,6 +18,7 @@ export const blogService = {
       isMembership: false,
     });
 
+    // or we just should  skip this step and return just object what we have created here
     const createdBlog = await blogRepository.findById(createdId);
 
     if (createdBlog === null) {
