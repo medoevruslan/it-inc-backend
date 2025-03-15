@@ -23,6 +23,8 @@ export const blogRepository = {
     const { sortDirection, sortBy, pageSize, pageNumber, searchNameTerm } = inputFilter;
     const filter = searchNameTerm ? { name: { $regex: searchNameTerm, $options: 'i' } } : {};
 
+    const convertedPageSize = Number(pageSize);
+
     const skip = (inputFilter.pageNumber - 1) * inputFilter.pageSize;
 
     // Execute queries in parallel for better performance
@@ -32,14 +34,14 @@ export const blogRepository = {
         .find(filter)
         .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
         .skip(skip)
-        .limit(pageSize)
+        .limit(convertedPageSize)
         .toArray(),
     ]);
 
     return {
-      pagesCount: Math.ceil(totalCount / pageSize),
-      page: pageNumber,
-      pageSize,
+      pagesCount: Math.ceil(totalCount / convertedPageSize),
+      page: Number(pageNumber),
+      pageSize: convertedPageSize,
       totalCount: totalCount,
       items: blogs.map(this.mapToOutputType),
     };
