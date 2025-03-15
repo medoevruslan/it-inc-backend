@@ -25,6 +25,8 @@ export const postRepository = {
 
     const skip = (inputFilter.pageNumber - 1) * inputFilter.pageSize;
 
+    const convertedPageSize = Number(pageSize);
+
     // Execute queries in parallel for better performance
     const [totalCount, posts]: [number, WithId<PostDbType>[]] = await Promise.all([
       postCollection.countDocuments(filter), // Fetch total count
@@ -32,14 +34,14 @@ export const postRepository = {
         .find(filter)
         .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
         .skip(skip)
-        .limit(pageSize)
+        .limit(convertedPageSize)
         .toArray(),
     ]);
 
     return {
-      pagesCount: Math.ceil(totalCount / pageSize),
-      page: pageNumber,
-      pageSize,
+      pagesCount: Math.ceil(totalCount / convertedPageSize),
+      page: Number(pageNumber),
+      pageSize: convertedPageSize,
       totalCount: totalCount,
       items: posts.map(this.mapToOutputType),
     };
@@ -54,6 +56,8 @@ export const postRepository = {
 
     const skip = (inputFilter.pageNumber - 1) * inputFilter.pageSize;
 
+    const convertedPageSize = Number(pageSize);
+
     // Execute queries in parallel for better performance
     const [totalCount, posts]: [number, WithId<PostDbType>[]] = await Promise.all([
       postCollection.countDocuments(filter), // Fetch total count
@@ -61,14 +65,14 @@ export const postRepository = {
         .find(filter)
         .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
         .skip(skip)
-        .limit(pageSize)
+        .limit(convertedPageSize)
         .toArray(),
     ]);
 
     return {
-      pagesCount: Math.ceil(totalCount / pageSize),
-      page: pageNumber,
-      pageSize,
+      pagesCount: Math.ceil(totalCount / convertedPageSize),
+      page: Number(pageNumber),
+      pageSize: convertedPageSize,
       totalCount: totalCount,
       items: posts.map(this.mapToOutputType),
     };

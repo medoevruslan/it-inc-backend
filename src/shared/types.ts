@@ -4,6 +4,6 @@ export type GetAllQueryParams<Model> = {
   searchNameTerm: string;
   sortBy: keyof Model;
   sortDirection: 'asc' | 'desc';
-  pageNumber: number;
-  pageSize: number;
+  pageNumber: string;
+  pageSize: string;
 };
