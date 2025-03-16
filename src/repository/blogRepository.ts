@@ -25,7 +25,7 @@ export const blogRepository = {
 
     const convertedPageSize = Number(pageSize);
 
-    const skip = (inputFilter.pageNumber - 1) * inputFilter.pageSize;
+    const skip = (Number(pageNumber) - 1) * convertedPageSize;
 
     // Execute queries in parallel for better performance
     const [totalCount, blogs]: [number, WithId<BlogDbType>[]] = await Promise.all([

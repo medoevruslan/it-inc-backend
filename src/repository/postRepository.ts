@@ -23,9 +23,9 @@ export const postRepository = {
     const { sortDirection, sortBy, pageSize, pageNumber, searchNameTerm } = inputFilter;
     const filter = searchNameTerm ? { name: { $regex: searchNameTerm, $options: 'i' } } : {};
 
-    const skip = (inputFilter.pageNumber - 1) * inputFilter.pageSize;
-
     const convertedPageSize = Number(pageSize);
+
+    const skip = (Number(pageNumber) - 1) * convertedPageSize;
 
     // Execute queries in parallel for better performance
     const [totalCount, posts]: [number, WithId<PostDbType>[]] = await Promise.all([
@@ -54,9 +54,9 @@ export const postRepository = {
     const { sortDirection, sortBy, pageSize, pageNumber, searchNameTerm } = inputFilter;
     const filter = searchNameTerm ? { blogId: id, name: { $regex: searchNameTerm, $options: 'i' } } : { blogId: id };
 
-    const skip = (inputFilter.pageNumber - 1) * inputFilter.pageSize;
-
     const convertedPageSize = Number(pageSize);
+
+    const skip = (Number(pageNumber) - 1) * convertedPageSize;
 
     // Execute queries in parallel for better performance
     const [totalCount, posts]: [number, WithId<PostDbType>[]] = await Promise.all([
