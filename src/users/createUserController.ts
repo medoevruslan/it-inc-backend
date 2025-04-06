@@ -1,6 +1,20 @@
 import { Request, Response } from 'express';
-export const createUserController = (req: Request, res: Response) => {
+import { HttpStatuses } from '../shared/enums';
+import { userService } from '../service/userService';
+import { InputUserType } from '../input-output-types/user-types';
+import { userQueryRepository } from '../repository/userQueryRepository';
+export const createUserController = async (req: Request<{}, {}, InputUserType>, res: Response) => {
   try {
-    res.status(201).send('createUserController');
-  } catch (err) {}
+    const createdId = await userService.create(req.body);
+    const createdUser = await userQueryRepository.findById(createdId);
+    res.status(HttpStatuses.Created).send(createdUser);
+  } catch (err) {
+    const error = err as Error;
+    const errorCode = Number(error.message);
+    if (isFinite(errorCode)) {
+      res.status(errorCode).send();
+    } else {
+      res.status(500).send(error.message);
+    }
+  }
 };
