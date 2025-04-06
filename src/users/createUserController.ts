@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 export const createUserController = (req: Request, res: Response) => {
   try {
-    res.send('createUserController');
+    res.status(201).send('createUserController');
   } catch (err) {}
 };

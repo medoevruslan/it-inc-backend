@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
-export const getUsersController = (req: Request, res: Response) => {
+import { userService } from '../service/userService';
+export const getUsersController = async (req: Request, res: Response) => {
   try {
-    res.send('getUsersController');
+    const users = await userService.findAll();
+    res.send(users);
   } catch (err) {}
 };
