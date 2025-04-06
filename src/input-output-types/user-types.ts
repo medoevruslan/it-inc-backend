@@ -1,4 +1,6 @@
-import { OptionalUnlessRequiredId } from 'mongodb';
 import { UserDbType } from '../db/user-db-type';
 
-export type InputUserType = OptionalUnlessRequiredId<UserDbType>;
+export type InputUserType = Omit<UserDbType, 'createdAt'>;
+export type OutputUserType = Omit<UserType, 'password'>;
+
+export type UserType = Omit<UserDbType, '_id'> & { id: string };
