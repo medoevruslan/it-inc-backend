@@ -33,9 +33,9 @@ export const runDb = async (uri: string) => {
 };
 
 export const setMongoDB = async (dataset?: Partial<DBType>) => {
-  await postCollection.drop();
-  await blogsCollection.drop();
-  await usersCollection.drop();
+  await postCollection?.drop();
+  await blogsCollection?.drop();
+  await usersCollection?.drop();
   if (!dataset) return;
 
   if (dataset.blogs) await blogsCollection.insertMany(dataset.blogs);
