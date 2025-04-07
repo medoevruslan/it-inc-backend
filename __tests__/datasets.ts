@@ -3,7 +3,7 @@ import { VideoDBType } from '../src/db/video-db-type';
 import { generateId, generateIdString } from '../src/shared/utils';
 import { PostDbType } from '../src/db/post-db.type';
 import { BlogDbType } from '../src/db/blog-db-type';
-import { ObjectId } from 'mongodb';
+import { ObjectId, WithId } from 'mongodb';
 import { UserDbType } from '../src/db/user-db-type';
 
 export const video1: VideoDBType = {
@@ -36,9 +36,10 @@ export const blog1: BlogDbType = {
   isMembership: false,
 };
 
-export const user1: UserDbType = {
+export const user1: WithId<UserDbType> = {
   _id: new ObjectId(),
   login: ('n' + Date.now() + Math.random()).slice(0, 5),
   email: 'some@email.com',
   password: ('n' + Date.now() + Math.random()).slice(0, 5),
+  createdAt: new Date(),
 };

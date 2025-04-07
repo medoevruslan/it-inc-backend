@@ -4,11 +4,11 @@ import { DBType } from '../src/db/db';
 import { blog1, post1, user1, video1 } from './datasets';
 import { BlogDbType } from '../src/db/blog-db-type';
 import { InputBlogType, UpdateBlogType } from '../src/input-output-types/blog-types';
-import { runDb, setMongoDB } from '../src/db/mongoDb';
 import { ObjectId } from 'mongodb';
 import { InputPostType } from '../src/input-output-types/post-types';
+import { db } from '../src/db/mongoDb';
 
-(async () => await runDb(SETTINGS.MONGO_URL))();
+(async () => await db.run(SETTINGS.MONGO_URL))();
 
 describe('tests for /blogs', () => {
   let dataset1: DBType;
@@ -25,14 +25,14 @@ describe('tests for /blogs', () => {
   });
 
   it('should return empty array', async () => {
-    await setMongoDB();
+    await db.dropCollections();
     const res = await req.get(SETTINGS.PATH.BLOGS).expect(200);
 
     expect(res.body.items.length).toBe(0);
   });
 
   it('should get not empty array', async () => {
-    await setMongoDB(dataset1);
+    await db.seed(dataset1);
 
     const res = await req.get(SETTINGS.PATH.BLOGS).expect(200);
 
@@ -40,7 +40,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should create multiple blogs and return proper response', async () => {
-    await setMongoDB();
+    await db.dropCollections();
 
     const newBlogs = Array.from({ length: 15 }).map((_, idx) => ({
       name: 'new blog' + idx,
@@ -62,7 +62,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should set default query parameters', async () => {
-    await setMongoDB();
+    await db.dropCollections();
 
     const res = await req.get(SETTINGS.PATH.BLOGS).expect(200);
 
@@ -74,7 +74,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should create new blog', async () => {
-    await setMongoDB();
+    await db.dropCollections();
     const newBlog: Partial<BlogDbType> = {
       name: 'new blog',
       websiteUrl: 'https://new.some.com',
@@ -93,7 +93,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should create new post by existing blogId', async () => {
-    await setMongoDB();
+    await db.dropCollections();
     const initialBlogId = new ObjectId();
     const newBlog: Partial<BlogDbType> = {
       _id: initialBlogId,
@@ -129,7 +129,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should find blog by searchNameTerm', async () => {
-    await setMongoDB();
+    await db.dropCollections();
     const newBlog: Partial<BlogDbType> = {
       name: 'new blog',
       websiteUrl: 'https://new.some.com',
@@ -148,7 +148,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should not find any blog by searchNameTerm', async () => {
-    await setMongoDB();
+    await db.dropCollections();
     const newBlog: Partial<BlogDbType> = {
       name: 'new blog',
       websiteUrl: 'https://new.some.com',
@@ -169,7 +169,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should sortBy name ascending', async () => {
-    await setMongoDB();
+    await db.dropCollections();
     const aNewBlog: Partial<BlogDbType> = {
       name: 'a blog',
       websiteUrl: 'https://new.some.com',
@@ -215,7 +215,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should sortBy name descending', async () => {
-    await setMongoDB();
+    await db.dropCollections();
     const aNewBlog: Partial<BlogDbType> = {
       name: 'a blog',
       websiteUrl: 'https://new.some.com',
@@ -261,7 +261,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should get posts by blogId', async () => {
-    await setMongoDB();
+    await db.dropCollections();
 
     const newBlog: Partial<BlogDbType> = {
       name: 'new blog',
@@ -297,7 +297,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should not get posts by wrong blogId', async () => {
-    await setMongoDB(dataset1);
+    await db.seed(dataset1);
 
     const nonExistingBlogId = new ObjectId().toString();
     const resPosts = await req.get(`${SETTINGS.PATH.BLOGS}/${nonExistingBlogId}/posts`).expect(404);
@@ -319,7 +319,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should throw auth error on create new blog', async () => {
-    await setMongoDB();
+    await db.dropCollections();
 
     const newBlog: any = {
       name: 'new blog',
@@ -345,7 +345,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should delete blog by id', async () => {
-    await setMongoDB(dataset1);
+    await db.seed(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
 
@@ -361,7 +361,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should not delete blog by wrong id', async () => {
-    await setMongoDB(dataset1);
+    await db.seed(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
 
@@ -377,7 +377,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should not delete blog because unauthorized', async () => {
-    await setMongoDB(dataset1);
+    await db.seed(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
 
@@ -390,7 +390,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should update blog by id', async () => {
-    await setMongoDB(dataset1);
+    await db.seed(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
 
@@ -416,7 +416,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should not update blog by id because partial update data', async () => {
-    await setMongoDB(dataset1);
+    await db.seed(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
 
@@ -435,7 +435,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should not update blog by id because wrong id', async () => {
-    await setMongoDB(dataset1);
+    await db.seed(dataset1);
 
     const update: Partial<UpdateBlogType['update']> = {
       name: 'updatedName',
@@ -451,7 +451,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should not update blog by id because unauthorized', async () => {
-    await setMongoDB(dataset1);
+    await db.seed(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
 
@@ -473,7 +473,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should not update blog by id because wrong auth', async () => {
-    await setMongoDB(dataset1);
+    await db.seed(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
 
@@ -499,7 +499,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should return error if :id from uri param not found', async () => {
-    await setMongoDB(dataset1);
+    await db.seed(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
 

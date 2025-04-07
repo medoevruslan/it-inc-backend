@@ -1,21 +1,21 @@
 import { req, toBase64 } from './test-helpers';
 import { SETTINGS } from '../src/settings';
 import { InputUserType } from '../src/input-output-types/user-types';
-import { runDb, setMongoDB } from '../src/db/mongoDb';
+import { db } from '../src/db/mongoDb';
 
-(async () => await runDb(SETTINGS.MONGO_URL))();
+(async () => await db.run(SETTINGS.MONGO_URL))();
 
 describe('tests for /users', () => {
   const codedAuth = toBase64(SETTINGS.ADMIN_AUTH);
 
   it('should get all users', async () => {
-    await setMongoDB();
+    await db.dropCollections();
     const usersResponse = await req.get(SETTINGS.PATH.USERS).expect(200);
 
     expect(usersResponse.body.length).toBe(0);
   });
   it('should create new user', async () => {
-    await setMongoDB();
+    await db.dropCollections();
     const newUser: Partial<InputUserType> = {
       login: 'new login',
       email: 'new email',
@@ -33,7 +33,7 @@ describe('tests for /users', () => {
   });
   it('should not create new user because unauthorized', async () => {});
   it('should delete user', async () => {
-    await setMongoDB();
+    await db.dropCollections();
     const user: Partial<InputUserType> = {
       login: 'new login',
       email: 'new email',
