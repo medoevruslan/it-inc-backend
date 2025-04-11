@@ -1,10 +1,10 @@
 import { app } from './app';
 import { SETTINGS } from './settings';
-import { runDb } from './db/mongoDb';
 import * as Process from 'process';
+import { db } from './db/mongoDb';
 
 const startApp = async () => {
-  const isDbStarted = runDb(SETTINGS.MONGO_URL);
+  const isDbStarted = db.run(SETTINGS.MONGO_URL);
 
   if (!isDbStarted) {
     Process.exit(1);
