@@ -4,7 +4,7 @@ import * as Process from 'process';
 import { db } from './db/mongoDb';
 
 const startApp = async () => {
-  const isDbStarted = db.run(SETTINGS.MONGO_URL);
+  const isDbStarted = await db.run(SETTINGS.MONGO_URL);
 
   if (!isDbStarted) {
     Process.exit(1);
