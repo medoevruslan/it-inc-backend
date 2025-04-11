@@ -7,6 +7,6 @@ import { userQueryValidator } from '../validation/userQueryValidator';
 
 export const usersRouter = Router();
 
-usersRouter.get('/', userQueryValidator, getUsersController);
+usersRouter.get('/', userQueryValidator, authMiddleware, getUsersController);
 usersRouter.post('/', authMiddleware, createUserController);
 usersRouter.delete('/:id', authMiddleware, deleteUserController);
