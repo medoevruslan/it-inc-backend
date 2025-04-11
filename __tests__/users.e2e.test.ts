@@ -11,9 +11,62 @@ describe('tests for /users', () => {
 
   it('should get all users', async () => {
     await db.dropCollections();
+
+    const newUsers: Partial<InputUserType[]> = Array.from({ length: 5 }).map((_, idx) => ({
+      login: 'new login' + idx,
+      email: 'new email' + idx,
+      password: 'new password' + idx,
+    }));
+
+    await Promise.all(
+      newUsers.map((user) =>
+        req.post(SETTINGS.PATH.USERS).set('Authorization', `Basic ${codedAuth}`).send(user).expect(201),
+      ),
+    );
+
     const usersResponse = await req.get(SETTINGS.PATH.USERS).expect(200);
 
-    expect(usersResponse.body.length).toBe(0);
+    expect(usersResponse.body.items.length).toBe(5);
+  });
+  it('should get all users by searchLoginTerm', async () => {
+    await db.dropCollections();
+
+    const newUsers: Partial<InputUserType[]> = Array.from({ length: 5 }).map((_, idx) => ({
+      login: 'new login' + idx,
+      email: 'new email' + idx,
+      password: 'new password' + idx,
+    }));
+
+    await Promise.all(
+      newUsers.map((user) =>
+        req.post(SETTINGS.PATH.USERS).set('Authorization', `Basic ${codedAuth}`).send(user).expect(201),
+      ),
+    );
+
+    const usersResponse = await req.get(`${SETTINGS.PATH.USERS}?searchLoginTerm=1`).expect(200);
+
+    expect(usersResponse.body.items.length).toBe(1);
+    expect(usersResponse.body.items[0].login).toBe(newUsers[1]?.login);
+  });
+  it('should get all users by searchEmailTerm', async () => {
+    await db.dropCollections();
+
+    const newUsers: Partial<InputUserType[]> = Array.from({ length: 5 }).map((_, idx) => ({
+      login: 'new login' + idx,
+      email: 'new email' + idx,
+      password: 'new password' + idx,
+    }));
+
+    await Promise.all(
+      newUsers.map((user) =>
+        req.post(SETTINGS.PATH.USERS).set('Authorization', `Basic ${codedAuth}`).send(user).expect(201),
+      ),
+    );
+
+    const usersResponse = await req.get(`${SETTINGS.PATH.USERS}?searchEmailTerm=3`).expect(200);
+
+    expect(usersResponse.body.items.length).toBe(1);
+    expect(usersResponse.body.items[0].email).toBe(newUsers[3]?.email);
   });
   it('should create new user', async () => {
     await db.dropCollections();
