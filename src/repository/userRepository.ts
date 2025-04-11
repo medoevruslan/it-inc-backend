@@ -12,10 +12,9 @@ export const userRepository = {
   },
 
   async findByLoginOrEmail(loginOrEmail: string) {
-    const result = await db
+    return await db
       .getCollections()
       .usersCollection.findOne({ $or: [{ email: loginOrEmail }, { login: loginOrEmail }] });
-    return result ? userMapper.mapUserToOutputType(result) : null;
   },
 
   async deleteById(userId: string) {
