@@ -3,6 +3,8 @@ import { HttpStatuses } from '../shared/enums';
 import { userRepository } from '../repository/userRepository';
 import { UserDbType } from '../db/user-db-type';
 import bcrypt from 'bcrypt';
+import { ObjectId } from 'mongodb';
+import { OutputErrorsType } from '../input-output-types/output-errors-type';
 
 export const userService = {
   async create(user: InputUserType) {
@@ -10,7 +12,11 @@ export const userService = {
     const isAlreadyExists = await userRepository.findByLoginOrEmail(email);
 
     if (isAlreadyExists) {
-      throw Error(HttpStatuses.BadRequest.toString());
+      return {
+        success: false,
+        errors: { errorsMessages: [{ field: 'email', message: 'email should be unique' }] },
+        value: null,
+      };
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -22,7 +28,19 @@ export const userService = {
       createdAt: new Date(),
     };
 
-    return userRepository.create(newUser);
+    return { success: true, errors: null, value: await userRepository.create(newUser) };
+  },
+  async deleteById(userId: string) {
+    if (!ObjectId.isValid(userId)) {
+      throw new Error('400');
+    }
+
+    const success = await userRepository.deleteById(userId);
+
+    if (!success) {
+      throw new Error('404');
+    }
+    return success;
   },
   update() {},
 };
