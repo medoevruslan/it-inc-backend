@@ -114,4 +114,66 @@ describe('tests for /users', () => {
 
     const deleteUserResponse = await req.delete(`${SETTINGS.PATH.USERS}/${createUserResponse.body.id}`).expect(401);
   });
+  it('should login successfully', async () => {
+    await db.dropCollections();
+    const newUser: Partial<InputUserType> = {
+      login: 'new login',
+      email: 'new email',
+      password: 'new password',
+    };
+
+    const createUserResponse = await req
+      .post(SETTINGS.PATH.USERS)
+      .set('Authorization', `Basic ${codedAuth}`)
+      .send(newUser)
+      .expect(201);
+
+    const loginResponse = await req
+      .post(`${SETTINGS.PATH.AUTH}/login`)
+      .send({ loginOrEmail: newUser.login, password: newUser.password })
+      .expect(204);
+  });
+  it('should not login because user not exist', async () => {
+    await db.dropCollections();
+    const newUser: Partial<InputUserType> = {
+      login: 'new login',
+      email: 'new email',
+      password: 'new password',
+    };
+
+    const createUserResponse = await req
+      .post(SETTINGS.PATH.USERS)
+      .set('Authorization', `Basic ${codedAuth}`)
+      .send(newUser)
+      .expect(201);
+
+    const loginResponse = await req
+      .post(`${SETTINGS.PATH.AUTH}/login`)
+      .send({ loginOrEmail: 'incorrect login', password: newUser.password })
+      .expect(404);
+  });
+  it('should not login because password is incorrect', async () => {
+    await db.dropCollections();
+    const newUser: Partial<InputUserType> = {
+      login: 'new login',
+      email: 'new email',
+      password: 'new password',
+    };
+
+    const createUserResponse = await req
+      .post(SETTINGS.PATH.USERS)
+      .set('Authorization', `Basic ${codedAuth}`)
+      .send(newUser)
+      .expect(201);
+
+    const loginResponse = await req
+      .post(`${SETTINGS.PATH.AUTH}/login`)
+      .send({ loginOrEmail: newUser.login, password: 'incorrect' })
+      .expect(401);
+
+    expect(loginResponse.body.errorsMessages).toEqual([
+      { field: 'email', message: 'login or password is incorrect' },
+      { field: 'password', message: 'login or password is incorrect' },
+    ]);
+  });
 });
