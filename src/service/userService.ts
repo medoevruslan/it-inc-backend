@@ -1,10 +1,8 @@
 import { InputUserType } from '../input-output-types/user-types';
-import { HttpStatuses } from '../shared/enums';
 import { userRepository } from '../repository/userRepository';
 import { UserDbType } from '../db/user-db-type';
 import bcrypt from 'bcrypt';
 import { ObjectId } from 'mongodb';
-import { OutputErrorsType } from '../input-output-types/output-errors-type';
 
 export const userService = {
   async create(user: InputUserType) {
