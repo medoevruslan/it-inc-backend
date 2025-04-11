@@ -1,14 +1,9 @@
-import {
-  BlogDbTypeWithoutId,
-  BlogType,
-  OutputBlogType,
-  OutputBlogTypeWithInfo,
-  UpdateBlogType,
-} from '../input-output-types/blog-types';
+import { BlogDbTypeWithoutId, BlogType, OutputBlogType, UpdateBlogType } from '../input-output-types/blog-types';
 import { ObjectId, WithId } from 'mongodb';
 import { BlogDbType } from '../db/blog-db-type';
 import { GetAllQueryParams } from '../shared/types';
 import { db } from '../db/mongoDb';
+import { OutputModelTypeWithInfo } from '../input-output-types/common-types';
 
 export const blogRepository = {
   async create(input: BlogDbTypeWithoutId): Promise<string> {
@@ -21,7 +16,7 @@ export const blogRepository = {
       .blogsCollection.updateOne({ _id: new ObjectId(blogId) }, { $set: { ...update } });
     return result.matchedCount === 1;
   },
-  async findAll(inputFilter: GetAllQueryParams<BlogType>): Promise<OutputBlogTypeWithInfo> {
+  async findAll(inputFilter: GetAllQueryParams<BlogType>): Promise<OutputModelTypeWithInfo<OutputBlogType>> {
     const { sortDirection, sortBy, pageSize, pageNumber, searchNameTerm } = inputFilter;
     const filter = searchNameTerm ? { name: { $regex: searchNameTerm, $options: 'i' } } : {};
 

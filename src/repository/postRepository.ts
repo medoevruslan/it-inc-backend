@@ -1,14 +1,9 @@
-import {
-  InputPostType,
-  OutputPostType,
-  OutputPostTypeWithInfo,
-  PostType,
-  UpdatePostType,
-} from '../input-output-types/post-types';
+import { InputPostType, OutputPostType, PostType, UpdatePostType } from '../input-output-types/post-types';
 import { PostDbType } from '../db/post-db.type';
 import { ObjectId, WithId } from 'mongodb';
 import { GetAllQueryParams } from '../shared/types';
 import { db } from '../db/mongoDb';
+import { OutputModelTypeWithInfo } from '../input-output-types/common-types';
 
 export const postRepository = {
   async create(input: InputPostType & { blogName: string }): Promise<string> {
@@ -19,7 +14,7 @@ export const postRepository = {
     const result = await db.getCollections().postCollection.updateOne({ _id: new ObjectId(postId) }, { $set: update });
     return result.matchedCount === 1;
   },
-  async findAll(inputFilter: GetAllQueryParams<PostType>): Promise<OutputPostTypeWithInfo> {
+  async findAll(inputFilter: GetAllQueryParams<PostType>): Promise<OutputModelTypeWithInfo<OutputPostType>> {
     const { sortDirection, sortBy, pageSize, pageNumber, searchNameTerm } = inputFilter;
     const filter = searchNameTerm ? { name: { $regex: searchNameTerm, $options: 'i' } } : {};
 
@@ -51,7 +46,10 @@ export const postRepository = {
     const post = await db.getCollections().postCollection.findOne({ _id: new ObjectId(id) });
     return post === null ? null : this.mapToOutputType(post);
   },
-  async findByBlogId(id: string, inputFilter: GetAllQueryParams<PostType>): Promise<OutputPostTypeWithInfo> {
+  async findByBlogId(
+    id: string,
+    inputFilter: GetAllQueryParams<PostType>,
+  ): Promise<OutputModelTypeWithInfo<OutputPostType>> {
     const { sortDirection, sortBy, pageSize, pageNumber, searchNameTerm } = inputFilter;
     const filter = searchNameTerm ? { blogId: id, name: { $regex: searchNameTerm, $options: 'i' } } : { blogId: id };
 

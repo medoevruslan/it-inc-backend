@@ -8,10 +8,3 @@ export type UpdatePostType = { postId: string; update: PostType };
 
 // Represents the output when sending data to client
 export type OutputPostType = PostType & { id: string };
-export type OutputPostTypeWithInfo = {
-  pagesCount: number;
-  page: number;
-  pageSize: number;
-  totalCount: number;
-  items: OutputPostType[];
-};
