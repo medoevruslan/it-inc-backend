@@ -1,4 +1,3 @@
-import { userMapper } from '../mapping/userMapper';
 import { UserDbType } from '../db/user-db-type';
 import { db } from '../db/mongoDb';
 import { ObjectId } from 'mongodb';
