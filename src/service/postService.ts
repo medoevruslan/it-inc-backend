@@ -1,13 +1,8 @@
-import {
-  InputPostType,
-  OutputPostType,
-  OutputPostTypeWithInfo,
-  PostType,
-  UpdatePostType,
-} from '../input-output-types/post-types';
+import { InputPostType, OutputPostType, PostType, UpdatePostType } from '../input-output-types/post-types';
 import { blogRepository, postRepository } from '../repository';
 import { ObjectId } from 'mongodb';
 import { GetAllQueryParams } from '../shared/types';
+import { OutputModelTypeWithInfo } from '../input-output-types/common-types';
 
 export const postService = {
   async create(input: InputPostType): Promise<OutputPostType> {
@@ -43,7 +38,7 @@ export const postService = {
     }
     return success;
   },
-  async findAll(filter: GetAllQueryParams<PostType>): Promise<OutputPostTypeWithInfo> {
+  async findAll(filter: GetAllQueryParams<PostType>): Promise<OutputModelTypeWithInfo<OutputPostType>> {
     return postRepository.findAll(filter);
   },
   async findById(id: string): Promise<OutputPostType> {

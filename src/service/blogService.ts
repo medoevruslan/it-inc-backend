@@ -1,14 +1,9 @@
-import {
-  BlogType,
-  InputBlogType,
-  OutputBlogType,
-  OutputBlogTypeWithInfo,
-  UpdateBlogType,
-} from '../input-output-types/blog-types';
+import { BlogType, InputBlogType, OutputBlogType, UpdateBlogType } from '../input-output-types/blog-types';
 import { ObjectId } from 'mongodb';
 import { blogRepository, postRepository } from '../repository';
-import { OutputPostTypeWithInfo, PostType } from '../input-output-types/post-types';
+import { OutputPostType, PostType } from '../input-output-types/post-types';
 import { GetAllQueryParams } from '../shared/types';
+import { OutputModelTypeWithInfo } from '../input-output-types/common-types';
 
 export const blogService = {
   async create(input: InputBlogType): Promise<OutputBlogType> {
@@ -40,7 +35,7 @@ export const blogService = {
 
     return success;
   },
-  async findAll(filter: GetAllQueryParams<BlogType>): Promise<OutputBlogTypeWithInfo> {
+  async findAll(filter: GetAllQueryParams<BlogType>): Promise<OutputModelTypeWithInfo<OutputBlogType>> {
     return blogRepository.findAll(filter);
   },
   async findById(id: string): Promise<OutputBlogType> {
@@ -55,7 +50,10 @@ export const blogService = {
 
     return found;
   },
-  async findPostsByBlogId(id: string, filter: GetAllQueryParams<PostType>): Promise<OutputPostTypeWithInfo> {
+  async findPostsByBlogId(
+    id: string,
+    filter: GetAllQueryParams<PostType>,
+  ): Promise<OutputModelTypeWithInfo<OutputPostType>> {
     if (!ObjectId.isValid(id)) {
       throw new Error('400');
     }

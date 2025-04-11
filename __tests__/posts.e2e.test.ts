@@ -1,15 +1,15 @@
 import { req, toBase64 } from './test-helpers';
 import { SETTINGS } from '../src/settings';
 import { DBType } from '../src/db/db';
-import { blog1, post1, video1 } from './datasets';
+import { blog1, post1, user1, video1 } from './datasets';
 import { PostDbType } from '../src/db/post-db.type';
 import { generateIdString } from '../src/shared/utils';
 import { InputPostType, UpdatePostType } from '../src/input-output-types/post-types';
 import { BlogDbType } from '../src/db/blog-db-type';
-import { runDb, setMongoDB } from '../src/db/mongoDb';
 import { ObjectId } from 'mongodb';
+import { db } from '../src/db/mongoDb';
 
-(async () => await runDb(SETTINGS.MONGO_URL))();
+(async () => await db.run(SETTINGS.MONGO_URL))();
 
 describe('tests for /posts', () => {
   let dataset1: DBType;
@@ -21,18 +21,19 @@ describe('tests for /posts', () => {
       videos: [video1],
       posts: [post1],
       blogs: [blog1],
+      users: [user1],
     };
   });
 
   it('should return empty array', async () => {
-    await setMongoDB();
+    await db.dropCollections();
     const res = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
     expect(res.body.items.length).toBe(0);
   });
 
   it('should get not empty array', async () => {
-    await setMongoDB(dataset1);
+    await db.seed(dataset1);
 
     const res = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
@@ -41,7 +42,7 @@ describe('tests for /posts', () => {
   });
 
   it('should create multiple posts and return proper response', async () => {
-    await setMongoDB();
+    await db.dropCollections();
 
     const newBlog: Partial<BlogDbType> = {
       name: 'new blog',
@@ -76,7 +77,7 @@ describe('tests for /posts', () => {
   });
 
   it('should not create new post because wrong blogId', async () => {
-    await setMongoDB();
+    await db.dropCollections();
 
     const newPost: Partial<InputPostType> = {
       title: 'new title',
@@ -97,7 +98,7 @@ describe('tests for /posts', () => {
   });
 
   it('should create new post', async () => {
-    await setMongoDB();
+    await db.dropCollections();
     // create blog to get its ID
     const newBlog: Partial<BlogDbType> = {
       name: 'new blog',
@@ -173,7 +174,7 @@ describe('tests for /posts', () => {
   });
 
   it('should delete post by id', async () => {
-    await setMongoDB(dataset1);
+    await db.seed(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
@@ -190,7 +191,7 @@ describe('tests for /posts', () => {
   });
 
   it('should not delete post by wrong id', async () => {
-    await setMongoDB(dataset1);
+    await db.seed(dataset1);
 
     const postsResponse1 = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
@@ -207,7 +208,7 @@ describe('tests for /posts', () => {
   });
 
   it('should not delete post because unauthorized', async () => {
-    await setMongoDB(dataset1);
+    await db.seed(dataset1);
 
     const postsResponse1 = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
@@ -223,7 +224,7 @@ describe('tests for /posts', () => {
   });
 
   it('should not delete post because wrong auth', async () => {
-    await setMongoDB(dataset1);
+    await db.seed(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
@@ -242,7 +243,7 @@ describe('tests for /posts', () => {
   });
 
   it('should update post by id', async () => {
-    await setMongoDB(dataset1);
+    await db.seed(dataset1);
 
     const postsResponse1 = await req.get(SETTINGS.PATH.POSTS).expect(200);
     const blogsResponse1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
@@ -271,7 +272,7 @@ describe('tests for /posts', () => {
   });
 
   it('should not update post by id because partial update data', async () => {
-    await setMongoDB(dataset1);
+    await db.seed(dataset1);
 
     const postsResponse1 = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
@@ -292,7 +293,7 @@ describe('tests for /posts', () => {
   });
 
   it('should not update post by id because wrong id', async () => {
-    await setMongoDB(dataset1);
+    await db.seed(dataset1);
 
     const update: Partial<InputPostType> = {
       title: 'updatedTitle',
@@ -309,7 +310,7 @@ describe('tests for /posts', () => {
   });
 
   it('should not update post by id because unauthorized', async () => {
-    await setMongoDB(dataset1);
+    await db.seed(dataset1);
 
     const postsResponse1 = await req.get(SETTINGS.PATH.POSTS).expect(200);
 
@@ -332,7 +333,7 @@ describe('tests for /posts', () => {
   });
 
   it('should not update post by id because wrong auth', async () => {
-    await setMongoDB(dataset1);
+    await db.seed(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.POSTS).expect(200);
 

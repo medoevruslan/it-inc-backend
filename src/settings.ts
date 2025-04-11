@@ -2,7 +2,7 @@ import { config } from 'dotenv';
 import * as Process from 'process';
 config();
 
-const BASE_URL = '/ht_02/api';
+const BASE_URL = '/ht_05/api';
 
 export const SETTINGS = {
   PORT: process.env.PORT || 3003,
@@ -10,6 +10,8 @@ export const SETTINGS = {
     VIDEOS: `${BASE_URL}/videos`,
     BLOGS: `${BASE_URL}/blogs`,
     POSTS: `${BASE_URL}/posts`,
+    USERS: `${BASE_URL}/users`,
+    AUTH: `${BASE_URL}/auth`,
     TESTING: `${BASE_URL}/testing/all-data`,
   },
   ADMIN_AUTH: 'admin:qwerty',

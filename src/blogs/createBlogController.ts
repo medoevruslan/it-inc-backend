@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
-import { InputBlogType, OutputBlogType } from '../input-output-types/blog-types';
-import { blogRepository } from '../repository';
+import { InputBlogType } from '../input-output-types/blog-types';
 import { blogService } from '../service/blogService';
 
 export const createBlogController = async (req: Request<{}, {}, InputBlogType>, res: Response) => {
