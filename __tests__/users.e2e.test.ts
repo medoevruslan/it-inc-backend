@@ -12,7 +12,7 @@ describe('tests for /users', () => {
   it('should get all users', async () => {
     await db.dropCollections();
 
-    const newUsers: Partial<InputUserType[]> = Array.from({ length: 5 }).map((_, idx) => ({
+    const newUsers: Partial<InputUserType[]> = Array.from({ length: 12 }).map((_, idx) => ({
       login: 'new login' + idx,
       email: 'new email' + idx,
       password: 'new password' + idx,
@@ -24,9 +24,12 @@ describe('tests for /users', () => {
       ),
     );
 
-    const usersResponse = await req.get(SETTINGS.PATH.USERS).expect(200);
+    const usersResponse = await req.get(SETTINGS.PATH.USERS).set('Authorization', `Basic ${codedAuth}`).expect(200);
 
-    expect(usersResponse.body.items.length).toBe(5);
+    expect(usersResponse.body.totalCount).toBe(12);
+    expect(usersResponse.body.pageSize).toBe(10);
+    expect(usersResponse.body.pagesCount).toBe(2);
+    expect(usersResponse.body.page).toBe(1);
   });
   it('should get all users by searchLoginTerm', async () => {
     await db.dropCollections();
@@ -43,7 +46,10 @@ describe('tests for /users', () => {
       ),
     );
 
-    const usersResponse = await req.get(`${SETTINGS.PATH.USERS}?searchLoginTerm=1`).expect(200);
+    const usersResponse = await req
+      .get(`${SETTINGS.PATH.USERS}?searchLoginTerm=1`)
+      .set('Authorization', `Basic ${codedAuth}`)
+      .expect(200);
 
     expect(usersResponse.body.items.length).toBe(1);
     expect(usersResponse.body.items[0].login).toBe(newUsers[1]?.login);
@@ -63,7 +69,10 @@ describe('tests for /users', () => {
       ),
     );
 
-    const usersResponse = await req.get(`${SETTINGS.PATH.USERS}?searchEmailTerm=3`).expect(200);
+    const usersResponse = await req
+      .get(`${SETTINGS.PATH.USERS}?searchEmailTerm=3`)
+      .set('Authorization', `Basic ${codedAuth}`)
+      .expect(200);
 
     expect(usersResponse.body.items.length).toBe(1);
     expect(usersResponse.body.items[0].email).toBe(newUsers[3]?.email);
@@ -85,9 +94,9 @@ describe('tests for /users', () => {
     expect(createUserResponse.body.login).toBe(newUser.login);
     expect(createUserResponse.body.email).toBe(newUser.email);
 
-    const usersResponse = await req.get(SETTINGS.PATH.USERS).expect(200);
+    const usersResponse = await req.get(SETTINGS.PATH.USERS).set('Authorization', `Basic ${codedAuth}`).expect(200);
 
-    expect(usersResponse.body.length).toBe(1);
+    expect(usersResponse.body.totalCount).toBe(1);
   });
   it('should not create new user because unauthorized', async () => {
     await db.dropCollections();
@@ -147,9 +156,9 @@ describe('tests for /users', () => {
       .set('Authorization', `Basic ${codedAuth}`)
       .expect(204);
 
-    const getUsersResponse = await req.get(SETTINGS.PATH.USERS).expect(200);
+    const getUsersResponse = await req.get(SETTINGS.PATH.USERS).set('Authorization', `Basic ${codedAuth}`).expect(200);
 
-    expect(getUsersResponse.body.length).toBe(0);
+    expect(getUsersResponse.body.totalCount).toBe(0);
   });
   it('should not delete user because unauthorized', async () => {
     await db.dropCollections();
