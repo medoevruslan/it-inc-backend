@@ -1,9 +1,18 @@
 import { Request, Response } from 'express';
 import { userService } from '../service/userService';
 import { userQueryRepository } from '../repository/userQueryRepository';
-export const getUsersController = async (req: Request, res: Response) => {
+import { GetAllUsersQueryParams } from '../input-output-types/user-types';
+export const getUsersController = async (req: Request<{}, {}, {}, GetAllUsersQueryParams>, res: Response) => {
   try {
-    const users = await userQueryRepository.findAll();
-    res.send(users);
-  } catch (err) {}
+    const usersInfo = await userQueryRepository.findAll(req.query);
+    res.send(usersInfo);
+  } catch (err) {
+    const error = err as Error;
+    const errorCode = Number(error.message);
+    if (isFinite(errorCode)) {
+      res.status(errorCode).send();
+    } else {
+      res.status(500).send(error.message);
+    }
+  }
 };
