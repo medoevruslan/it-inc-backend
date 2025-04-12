@@ -1,6 +1,6 @@
 import { req } from './test-helpers';
 import { SETTINGS } from '../src/settings';
-import { blog1, post1, video1 } from './datasets';
+import { blog1, post1, user1, video1 } from './datasets';
 import { db, DBType, setDB } from '../src/db/db';
 import { InputVideoType, Resolutions } from '../src/input-output-types/video-types';
 
@@ -11,6 +11,7 @@ describe('test for /videos', () => {
       videos: [video1],
       posts: [post1],
       blogs: [blog1],
+      users: [user1],
     };
   });
 
