@@ -8,14 +8,12 @@ import { UserDbType } from '../db/user-db-type';
 export const userQueryRepository = {
   async findAll(inputFilter: GetAllUsersQueryParams): Promise<OutputModelTypeWithInfo<OutputUserType>> {
     const { sortDirection, sortBy, pageSize, pageNumber, searchLoginTerm, searchEmailTerm } = inputFilter;
-    let filter = {};
-    if (searchLoginTerm) {
-      filter = { ...filter, login: { $regex: searchLoginTerm, $options: 'i' } };
-    }
-
-    if (searchEmailTerm) {
-      filter = { ...filter, email: { $regex: searchEmailTerm, $options: 'i' } };
-    }
+    let filter = {
+      $or: [
+        { login: { $regex: searchLoginTerm ?? '', $options: 'i' } },
+        { email: { $regex: searchEmailTerm ?? '', $options: 'i' } },
+      ],
+    };
 
     const convertedPageSize = Number(pageSize);
 
