@@ -8,6 +8,8 @@ import { blogsRouter } from './blogs';
 import { usersRouter } from './users';
 import { authRouter } from './auth';
 
+import { Request, Response, ErrorRequestHandler, NextFunction } from 'express';
+
 export const app = express();
 app.use(express.json());
 app.use(cors());
@@ -23,3 +25,8 @@ app.use(SETTINGS.PATH.POSTS, postsRouter);
 app.use(SETTINGS.PATH.USERS, usersRouter);
 app.use(SETTINGS.PATH.AUTH, authRouter);
 app.use(SETTINGS.PATH.TESTING, testingRouter);
+
+app.use((err: ErrorRequestHandler, req: Request, res: Response, next: NextFunction) => {
+  console.error('Global error:', err);
+  res.status(500).send('Something broke!');
+});
