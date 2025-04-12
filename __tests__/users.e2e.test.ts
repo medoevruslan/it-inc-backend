@@ -2,19 +2,24 @@ import { req, toBase64 } from './test-helpers';
 import { SETTINGS } from '../src/settings';
 import { InputUserType } from '../src/input-output-types/user-types';
 import { db } from '../src/db/mongoDb';
-import exp = require('node:constants');
-
-(async () => await db.run(SETTINGS.MONGO_URL))();
 
 describe('tests for /users', () => {
   const codedAuth = toBase64(SETTINGS.ADMIN_AUTH);
+
+  beforeAll(async () => {
+    await db.run(SETTINGS.MONGO_URL);
+  });
+
+  afterAll(async () => {
+    await db.close();
+  });
 
   it('should get all users', async () => {
     await db.dropCollections();
 
     const newUsers: Partial<InputUserType[]> = Array.from({ length: 12 }).map((_, idx) => ({
-      login: 'new login' + idx,
-      email: 'new email' + idx,
+      login: 'newlgn' + idx,
+      email: `newwmail${idx}@some.com`,
       password: 'new password' + idx,
     }));
 
@@ -35,8 +40,8 @@ describe('tests for /users', () => {
     await db.dropCollections();
 
     const newUsers: Partial<InputUserType[]> = Array.from({ length: 20 }).map((_, idx) => ({
-      login: 'new login' + idx,
-      email: 'new_email@gg.com' + idx,
+      login: 'newlgn' + idx,
+      email: `new_email${idx}@gg.com`,
       password: 'new password' + idx,
     }));
 
@@ -62,8 +67,8 @@ describe('tests for /users', () => {
     await db.dropCollections();
 
     const newUsers: Partial<InputUserType[]> = Array.from({ length: 5 }).map((_, idx) => ({
-      login: 'new login' + idx,
-      email: 'new email' + idx,
+      login: 'newlgn' + idx,
+      email: `newwmail${idx}@some.com`,
       password: 'new password' + idx,
     }));
 
@@ -85,8 +90,8 @@ describe('tests for /users', () => {
     await db.dropCollections();
 
     const newUsers: Partial<InputUserType[]> = Array.from({ length: 5 }).map((_, idx) => ({
-      login: 'new login' + idx,
-      email: 'new email' + idx,
+      login: 'newlogin' + idx,
+      email: `newemail${idx}@some.com`,
       password: 'new password' + idx,
     }));
 
@@ -107,8 +112,8 @@ describe('tests for /users', () => {
   it('should create new user', async () => {
     await db.dropCollections();
     const newUser: Partial<InputUserType> = {
-      login: 'new login',
-      email: 'new email',
+      login: 'newlogin',
+      email: 'newemail@some.com',
       password: 'new password',
     };
 
@@ -148,8 +153,8 @@ describe('tests for /users', () => {
   it('should not create new user because unauthorized', async () => {
     await db.dropCollections();
     const newUser: Partial<InputUserType> = {
-      login: 'new login',
-      email: 'new email',
+      login: 'newlgn',
+      email: 'newwmail@some.com',
       password: 'new password',
     };
 
@@ -158,14 +163,14 @@ describe('tests for /users', () => {
   it('should not create new user because already exists', async () => {
     await db.dropCollections();
     const newUser: Partial<InputUserType> = {
-      login: 'new login',
-      email: 'new email',
+      login: 'newlgn',
+      email: 'newwmail@some.com',
       password: 'new password',
     };
 
     const existedUser: Partial<InputUserType> = {
-      login: 'new login',
-      email: 'new email',
+      login: 'newlgn',
+      email: 'newwmail@some.com',
       password: 'new password',
     };
 
@@ -187,8 +192,8 @@ describe('tests for /users', () => {
   it('should delete user', async () => {
     await db.dropCollections();
     const newUsers: Partial<InputUserType[]> = Array.from({ length: 10 }).map((_, idx) => ({
-      login: 'new login' + idx,
-      email: 'new email' + idx,
+      login: 'newlgn' + idx,
+      email: `newwmail${idx}@some.com`,
       password: 'new password' + idx,
     }));
 
@@ -205,13 +210,13 @@ describe('tests for /users', () => {
 
     const getUsersResponse = await req.get(SETTINGS.PATH.USERS).set('Authorization', `Basic ${codedAuth}`).expect(200);
 
-    expect(getUsersResponse.body.totalCount).toBe(9);
+    expect(getUsersResponse.body.items.length).toBe(newUsers.length - 1);
   });
   it('should not delete user because unauthorized', async () => {
     await db.dropCollections();
     const user: Partial<InputUserType> = {
-      login: 'new login',
-      email: 'new email',
+      login: 'newlgn',
+      email: 'newwmail@some.com',
       password: 'new password',
     };
 
@@ -226,8 +231,8 @@ describe('tests for /users', () => {
   it('should login successfully', async () => {
     await db.dropCollections();
     const newUser: Partial<InputUserType> = {
-      login: 'new login',
-      email: 'new email',
+      login: 'newlgn',
+      email: 'newwmail@some.com',
       password: 'new password',
     };
 
@@ -245,8 +250,8 @@ describe('tests for /users', () => {
   it('should not login because user not exist', async () => {
     await db.dropCollections();
     const newUser: Partial<InputUserType> = {
-      login: 'new login',
-      email: 'new email',
+      login: 'newlgn',
+      email: 'newwmail@some.com',
       password: 'new password',
     };
 
@@ -264,8 +269,8 @@ describe('tests for /users', () => {
   it('should not login because password is incorrect', async () => {
     await db.dropCollections();
     const newUser: Partial<InputUserType> = {
-      login: 'new login',
-      email: 'new email',
+      login: 'newlgn',
+      email: 'newwmail@some.com',
       password: 'new password',
     };
 

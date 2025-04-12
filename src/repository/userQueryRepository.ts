@@ -1,5 +1,5 @@
 import { userMapper } from '../mapping/userMapper';
-import { ObjectId, WithId } from 'mongodb';
+import { Filter, ObjectId, WithId } from 'mongodb';
 import { db } from '../db/mongoDb';
 import { GetAllUsersQueryParams, OutputUserType } from '../input-output-types/user-types';
 import { OutputModelTypeWithInfo } from '../input-output-types/common-types';
@@ -8,12 +8,21 @@ import { UserDbType } from '../db/user-db-type';
 export const userQueryRepository = {
   async findAll(inputFilter: GetAllUsersQueryParams): Promise<OutputModelTypeWithInfo<OutputUserType>> {
     const { sortDirection, sortBy, pageSize, pageNumber, searchLoginTerm, searchEmailTerm } = inputFilter;
-    let filter = {
-      $or: [
-        { login: { $regex: searchLoginTerm ?? '', $options: 'i' } },
-        { email: { $regex: searchEmailTerm ?? '', $options: 'i' } },
-      ],
-    };
+    let filter = {} as Filter<UserDbType>;
+
+    if (searchLoginTerm) {
+      if (!filter?.$or) {
+        filter.$or = [];
+      }
+      filter.$or.push({ login: { $regex: searchLoginTerm, $options: 'i' } });
+    }
+
+    if (searchEmailTerm) {
+      if (!filter?.$or) {
+        filter.$or = [];
+      }
+      filter.$or?.push({ email: { $regex: searchEmailTerm, $options: 'i' } });
+    }
 
     const convertedPageSize = Number(pageSize);
 
