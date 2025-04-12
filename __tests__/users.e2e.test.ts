@@ -31,6 +31,33 @@ describe('tests for /users', () => {
     expect(usersResponse.body.pagesCount).toBe(2);
     expect(usersResponse.body.page).toBe(1);
   });
+  it('should get all users on page 2', async () => {
+    await db.dropCollections();
+
+    const newUsers: Partial<InputUserType[]> = Array.from({ length: 20 }).map((_, idx) => ({
+      login: 'new login' + idx,
+      email: 'new_email@gg.com' + idx,
+      password: 'new password' + idx,
+    }));
+
+    await Promise.all(
+      newUsers.map((user) =>
+        req.post(SETTINGS.PATH.USERS).set('Authorization', `Basic ${codedAuth}`).send(user).expect(201),
+      ),
+    );
+
+    const usersResponse = await req
+      .get(
+        `${SETTINGS.PATH.USERS}?pageSize=15&pageNumber=1&searchLoginTerm=seR&searchEmailTerm=.com&sortDirection=asc&sortBy=login`,
+      )
+      .set('Authorization', `Basic ${codedAuth}`)
+      .expect(200);
+
+    expect(usersResponse.body.totalCount).toBe(20);
+    expect(usersResponse.body.pageSize).toBe(15);
+    expect(usersResponse.body.pagesCount).toBe(2);
+    expect(usersResponse.body.page).toBe(1);
+  });
   it('should get all users by searchLoginTerm', async () => {
     await db.dropCollections();
 
