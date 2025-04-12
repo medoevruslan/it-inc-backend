@@ -1,6 +1,6 @@
 import { req, toBase64 } from './test-helpers';
 import { SETTINGS } from '../src/settings';
-import { InputUserType } from '../src/input-output-types/user-types';
+import { InputUserType, OutputUserType } from '../src/input-output-types/user-types';
 import { db } from '../src/db/mongoDb';
 
 describe('tests for /users', () => {
@@ -111,24 +111,42 @@ describe('tests for /users', () => {
   });
   it('should create new user', async () => {
     await db.dropCollections();
+
+    const newUsers: Partial<InputUserType[]> = Array.from({ length: 5 }).map((_, idx) => ({
+      login: 'newlogin' + idx,
+      email: `newemail${idx}@some.com`,
+      password: 'new password' + idx,
+    }));
+
+    await Promise.all(
+      newUsers.map((user) =>
+        req.post(SETTINGS.PATH.USERS).set('Authorization', `Basic ${codedAuth}`).send(user).expect(201),
+      ),
+    );
+
+    const usersResponse1 = await req.get(SETTINGS.PATH.USERS).set('Authorization', `Basic ${codedAuth}`).expect(200);
+
+    expect(usersResponse1.body.items.length).toBe(newUsers.length);
+
     const newUser: Partial<InputUserType> = {
       login: 'newlogin',
       email: 'newemail@some.com',
       password: 'new password',
     };
 
-    const createUserResponse = await req
+    const createUserResponse2 = await req
       .post(SETTINGS.PATH.USERS)
       .set('Authorization', `Basic ${codedAuth}`)
       .send(newUser)
       .expect(201);
 
-    expect(createUserResponse.body.login).toBe(newUser.login);
-    expect(createUserResponse.body.email).toBe(newUser.email);
+    const usersResponse2 = await req.get(SETTINGS.PATH.USERS).set('Authorization', `Basic ${codedAuth}`).expect(200);
 
-    const usersResponse = await req.get(SETTINGS.PATH.USERS).set('Authorization', `Basic ${codedAuth}`).expect(200);
+    expect(usersResponse2.body.items.length).toBe(usersResponse1.body.items.length + 1);
+    expect(usersResponse2.body.items.some((user: OutputUserType) => user.login === newUser.login)).toBeTruthy();
+    expect(usersResponse2.body.items.some((user: OutputUserType) => user.email === newUser.email)).toBeTruthy();
 
-    expect(usersResponse.body.totalCount).toBe(1);
+    expect(usersResponse2.body.totalCount).toBe(usersResponse1.body.totalCount + 1);
   });
   it('should not create new user because incorrect body', async () => {
     await db.dropCollections();
@@ -228,7 +246,7 @@ describe('tests for /users', () => {
 
     const deleteUserResponse = await req.delete(`${SETTINGS.PATH.USERS}/${createUserResponse.body.id}`).expect(401);
   });
-  it('should login successfully', async () => {
+  it('should login by login successfully', async () => {
     await db.dropCollections();
     const newUser: Partial<InputUserType> = {
       login: 'newlgn',
@@ -245,6 +263,25 @@ describe('tests for /users', () => {
     const loginResponse = await req
       .post(`${SETTINGS.PATH.AUTH}/login`)
       .send({ loginOrEmail: newUser.login, password: newUser.password })
+      .expect(204);
+  });
+  it('should login by email successfully', async () => {
+    await db.dropCollections();
+    const newUser: Partial<InputUserType> = {
+      login: 'newlgn',
+      email: 'newwmail@some.com',
+      password: 'new password',
+    };
+
+    const createUserResponse = await req
+      .post(SETTINGS.PATH.USERS)
+      .set('Authorization', `Basic ${codedAuth}`)
+      .send(newUser)
+      .expect(201);
+
+    const loginResponse = await req
+      .post(`${SETTINGS.PATH.AUTH}/login`)
+      .send({ loginOrEmail: newUser.email, password: newUser.password })
       .expect(204);
   });
   it('should not login because user not exist', async () => {
