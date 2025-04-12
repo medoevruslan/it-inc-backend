@@ -125,6 +125,26 @@ describe('tests for /users', () => {
 
     expect(usersResponse.body.totalCount).toBe(1);
   });
+  it('should not create new user because incorrect body', async () => {
+    await db.dropCollections();
+    const newUser: Partial<InputUserType> = {
+      login: 'sh',
+      password: 'length_21-weqweqweqwq',
+      email: 'someemail@gg.com',
+    };
+
+    const createUserResponse = await req
+      .post(SETTINGS.PATH.USERS)
+      .set('Authorization', `Basic ${codedAuth}`)
+      .send(newUser)
+      .expect(400);
+
+    expect(createUserResponse.body.errorsMessages.length).toBe(2);
+    expect(createUserResponse.body.errorsMessages).toEqual([
+      { field: 'login', message: '[login] should be more than 2 and less than 10 characters' },
+      { field: 'password', message: 'password should be less than 20 chars and more than 5' },
+    ]);
+  });
   it('should not create new user because unauthorized', async () => {
     await db.dropCollections();
     const newUser: Partial<InputUserType> = {
@@ -166,26 +186,26 @@ describe('tests for /users', () => {
   });
   it('should delete user', async () => {
     await db.dropCollections();
-    const user: Partial<InputUserType> = {
-      login: 'new login',
-      email: 'new email',
-      password: 'new password',
-    };
+    const newUsers: Partial<InputUserType[]> = Array.from({ length: 10 }).map((_, idx) => ({
+      login: 'new login' + idx,
+      email: 'new email' + idx,
+      password: 'new password' + idx,
+    }));
 
-    const createUserResponse = await req
-      .post(SETTINGS.PATH.USERS)
-      .send(user)
-      .set('Authorization', `Basic ${codedAuth}`)
-      .expect(201);
+    const createUsersResponse = await Promise.all(
+      newUsers.map((user) =>
+        req.post(SETTINGS.PATH.USERS).set('Authorization', `Basic ${codedAuth}`).send(user).expect(201),
+      ),
+    );
 
     const deleteUserResponse = await req
-      .delete(`${SETTINGS.PATH.USERS}/${createUserResponse.body.id}`)
+      .delete(`${SETTINGS.PATH.USERS}/${createUsersResponse[0].body.id}`)
       .set('Authorization', `Basic ${codedAuth}`)
       .expect(204);
 
     const getUsersResponse = await req.get(SETTINGS.PATH.USERS).set('Authorization', `Basic ${codedAuth}`).expect(200);
 
-    expect(getUsersResponse.body.totalCount).toBe(0);
+    expect(getUsersResponse.body.totalCount).toBe(9);
   });
   it('should not delete user because unauthorized', async () => {
     await db.dropCollections();
