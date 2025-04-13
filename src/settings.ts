@@ -13,6 +13,7 @@ export const SETTINGS = {
     POSTS: `${BASE_URL}/posts`,
     USERS: `${BASE_URL}/users`,
     AUTH: `${BASE_URL}/auth`,
+    COMMENTS: `${BASE_URL}/comments`,
     TESTING: `${BASE_URL}/testing/all-data`,
   },
   ADMIN_AUTH: 'admin:qwerty',
