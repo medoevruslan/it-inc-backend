@@ -5,6 +5,7 @@ import { PostDbType } from '../src/db/post-db.type';
 import { BlogDbType } from '../src/db/blog-db-type';
 import { ObjectId, WithId } from 'mongodb';
 import { UserDbType } from '../src/db/user-db-type';
+import { CommentDbType } from '../src/db/comment-db-type';
 
 export const video1: VideoDBType = {
   id: generateId(),
@@ -41,5 +42,12 @@ export const user1: WithId<UserDbType> = {
   login: ('n' + Date.now() + Math.random()).slice(0, 5),
   email: 'some@email.com',
   password: ('n' + Date.now() + Math.random()).slice(0, 5),
+  createdAt: new Date(),
+};
+
+export const comment1: WithId<CommentDbType> = {
+  _id: new ObjectId(),
+  commentatorInfo: { userId: ('n' + Date.now() + Math.random()).slice(0, 5), userLogin: 'some_login' },
+  content: '',
   createdAt: new Date(),
 };
