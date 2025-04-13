@@ -4,14 +4,14 @@ import { jwtService } from '../../service/jwtService';
 
 export const accessTokenGuard = async (req: Request, res: Response, next: NextFunction) => {
   if (!req.headers.authorization) {
-    res.status(HttpStatuses.Unauthorized);
+    res.sendStatus(HttpStatuses.Unauthorized);
     return;
   }
 
   const [authType, token] = req.headers.authorization.split(' ');
 
   if (authType !== 'Bearer') {
-    res.status(HttpStatuses.Unauthorized);
+    res.sendStatus(HttpStatuses.Unauthorized);
     return;
   }
 
