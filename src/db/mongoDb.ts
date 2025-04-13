@@ -40,10 +40,10 @@ export const db = {
   async dropCollections() {
     const collections = await this.getDbName().listCollections().toArray();
 
-    collections.forEach((collection) => {
+    for (let collection of collections) {
       const collectionName = collection.name;
-      this.getDbName().collection(collectionName).deleteMany();
-    });
+      await this.getDbName().collection(collectionName).deleteMany();
+    }
   },
 
   getCollections() {
