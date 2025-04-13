@@ -10,7 +10,7 @@ export type GetAllQueryParams<Model> = {
   pageSize: string;
 };
 
-type ExtensionType = {
+export type ExtensionType = {
   field: string | null;
   message: string;
 };

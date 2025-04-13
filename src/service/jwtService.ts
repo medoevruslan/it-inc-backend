@@ -7,7 +7,7 @@ export const jwtService = {
     try {
       return jwt.verify(token, SETTINGS.JWT as string) as T;
     } catch (e: unknown) {
-      console.error('Token verify some error');
+      console.error('Token verify some error: ', e);
       return null;
     }
   },

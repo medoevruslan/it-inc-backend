@@ -3,14 +3,16 @@ import { HttpStatuses } from '../../shared/enums';
 import { jwtService } from '../../service/jwtService';
 
 export const accessTokenGuard = async (req: Request, res: Response, next: NextFunction) => {
-  if (!req.headers.authorization || !req.userId) {
-    return res.status(HttpStatuses.Unauthorized);
+  if (!req.headers.authorization) {
+    res.status(HttpStatuses.Unauthorized);
+    return;
   }
 
   const [authType, token] = req.headers.authorization.split(' ');
 
   if (authType !== 'Bearer') {
-    return res.status(HttpStatuses.Unauthorized);
+    res.status(HttpStatuses.Unauthorized);
+    return;
   }
 
   const payload = await jwtService.verifyToken<{ userId: string }>(token);
@@ -19,7 +21,8 @@ export const accessTokenGuard = async (req: Request, res: Response, next: NextFu
     const { userId } = payload;
     req.userId = userId;
 
-    return next();
+    next();
+    return;
   }
 
   res.sendStatus(HttpStatuses.Unauthorized);
