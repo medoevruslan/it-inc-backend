@@ -10,7 +10,7 @@ export const authService = {
     const foundUser = await userRepository.findByLoginOrEmail(input.loginOrEmail);
 
     if (foundUser === null) {
-      throw new Error(HttpStatuses.NotFound.toString());
+      throw new Error(HttpStatuses.Unauthorized.toString());
     }
 
     const isValidPassword = await bcrypt.compare(input.password, foundUser.password);
