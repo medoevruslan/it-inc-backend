@@ -217,7 +217,7 @@ describe('tests for /users', () => {
   describe('test delete user', () => {
     it('should delete user', async () => {
       await db.dropCollections();
-      const newUsers: Partial<InputUserType[]> = Array.from({ length: 10 }).map((_, idx) => ({
+      const newUsers: Partial<InputUserType[]> = Array.from({ length: 11 }).map((_, idx) => ({
         login: 'newlgn' + idx,
         email: `newwmail${idx}@some.com`,
         password: 'new password' + idx,
@@ -229,17 +229,24 @@ describe('tests for /users', () => {
         ),
       );
 
-      const deleteUserResponse = await req
-        .delete(`${SETTINGS.PATH.USERS}/${createUsersResponse[0].body.id}`)
-        .set('Authorization', `Basic ${codedAuth}`)
-        .expect(204);
-
-      const getUsersResponse = await req
-        .get(SETTINGS.PATH.USERS)
+      const getUsersBeforeDeletingResponse = await req
+        .get(SETTINGS.PATH.USERS + '?pageSize=20')
         .set('Authorization', `Basic ${codedAuth}`)
         .expect(200);
 
-      expect(getUsersResponse.body.items.length).toBe(newUsers.length - 1);
+      expect(getUsersBeforeDeletingResponse.body.items.length).toBe(newUsers.length);
+
+      const deleteUserResponse = await req
+        .delete(`${SETTINGS.PATH.USERS}/${createUsersResponse[5].body.id}`)
+        .set('Authorization', `Basic ${codedAuth}`)
+        .expect(204);
+
+      const getUsersAfterDeletingResponse = await req
+        .get(SETTINGS.PATH.USERS + '?pageSize=20')
+        .set('Authorization', `Basic ${codedAuth}`)
+        .expect(200);
+
+      expect(getUsersAfterDeletingResponse.body.items.length).toBe(newUsers.length - 1);
     });
     it('should not delete user because unauthorized', async () => {
       await db.dropCollections();

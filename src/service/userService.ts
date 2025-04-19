@@ -3,6 +3,7 @@ import { userRepository } from '../repository/userRepository';
 import { UserDbType } from '../db/user-db-type';
 import bcrypt from 'bcrypt';
 import { ObjectId } from 'mongodb';
+import { HttpStatuses } from '../shared/enums';
 
 export const userService = {
   async create(user: InputUserType) {
@@ -30,13 +31,13 @@ export const userService = {
   },
   async deleteById(userId: string) {
     if (!ObjectId.isValid(userId)) {
-      throw new Error('400');
+      throw new Error(HttpStatuses.BadRequest.toString());
     }
 
     const success = await userRepository.deleteById(userId);
 
     if (!success) {
-      throw new Error('404');
+      throw new Error(HttpStatuses.NotFound.toString());
     }
     return success;
   },
