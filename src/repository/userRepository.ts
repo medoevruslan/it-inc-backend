@@ -18,6 +18,7 @@ export const userRepository = {
 
   async deleteById(userId: string) {
     const result = await db.getCollections().usersCollection.deleteOne({ _id: new ObjectId(userId) });
+    console.log('delete result:: ', result);
     return result.deletedCount === 1;
   },
 };

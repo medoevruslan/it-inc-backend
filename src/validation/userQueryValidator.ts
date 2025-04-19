@@ -11,7 +11,8 @@ export const userQueryValidator = [
   query('pageSize').customSanitizer((value) =>
     isFinite(value) && Number(value) > 0 && Number(value) < 50 ? value : 10,
   ),
-  query('pageNumber').customSanitizer((value) =>
-    isFinite(value) && Number(value) > 0 && Number(value) < 999 ? value : 1,
-  ),
+  query('pageNumber').customSanitizer((value) => {
+    console.log('userQueryValidator middleware:: ', value);
+    return isFinite(value) && Number(value) > 0 && Number(value) < 999 ? value : 1;
+  }),
 ];

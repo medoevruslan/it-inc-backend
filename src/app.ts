@@ -17,7 +17,7 @@ app.use(cors());
 
 app.get('/', (req, res) => {
   // shows project version
-  res.status(200).json({ version: '1.0' });
+  res.status(200).json({ version: '6.0' });
 });
 
 app.use(SETTINGS.PATH.VIDEOS, videosRouter);

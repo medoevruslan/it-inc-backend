@@ -39,6 +39,7 @@ export const userService = {
     const success = await userRepository.deleteById(userId);
 
     if (!success) {
+      console.log('user is not found');
       throw new Error(HttpStatuses.NotFound.toString());
     }
     return success;
