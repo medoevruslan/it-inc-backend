@@ -38,7 +38,6 @@ export const db = {
   },
 
   async dropCollections() {
-    console.log('drop Collections');
     const collections = await this.getDbName().listCollections().toArray();
 
     for (let collection of collections) {

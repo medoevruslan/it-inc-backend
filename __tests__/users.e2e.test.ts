@@ -2,7 +2,6 @@ import { req, toBase64 } from './test-helpers';
 import { SETTINGS } from '../src/settings';
 import { InputUserType, OutputUserType } from '../src/input-output-types/user-types';
 import { db } from '../src/db/mongoDb';
-import { accessTokenGuard } from '../src/middlewares/guard';
 
 describe('tests for /users', () => {
   const codedAuth = toBase64(SETTINGS.ADMIN_AUTH);
@@ -235,8 +234,6 @@ describe('tests for /users', () => {
         .set('Authorization', `Basic ${codedAuth}`)
         .expect(200);
 
-      console.log('getUsersBeforeDeletingResponse.body::: ', getUsersBeforeDeletingResponse.body);
-
       expect(getUsersBeforeDeletingResponse.body.items.length).toBe(newUsers.length);
 
       const deleteUserResponse = await req
@@ -248,8 +245,6 @@ describe('tests for /users', () => {
         .get(SETTINGS.PATH.USERS + '?pageSize=20')
         .set('Authorization', `Basic ${codedAuth}`)
         .expect(200);
-
-      console.log('getUsersAfterDeletingResponse.body::: ', getUsersAfterDeletingResponse.body);
 
       expect(getUsersAfterDeletingResponse.body.items.length).toBe(newUsers.length - 1);
     });

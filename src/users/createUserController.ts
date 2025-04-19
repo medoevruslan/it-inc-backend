@@ -5,7 +5,6 @@ import { InputUserType } from '../input-output-types/user-types';
 import { userQueryRepository } from '../repository/userQueryRepository';
 export const createUserController = async (req: Request<{}, {}, InputUserType>, res: Response) => {
   try {
-    console.log('trigger createUserController');
     const created = await userService.create(req.body);
     if (!created.success && created.errors?.errorsMessages.length) {
       res.status(HttpStatuses.BadRequest).send(created.errors);
