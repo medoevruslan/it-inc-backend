@@ -13,8 +13,7 @@ const login = async (req: Request<{}, {}, InputLoginType>, res: Response) => {
       return;
     }
 
-    // res.status(HttpStatuses.Success).send(response.data);
-    res.sendStatus(HttpStatuses.NoContent);
+    res.status(HttpStatuses.Success).send(response.data);
   } catch (err) {
     const error = err as Error;
     const errorCode = Number(error.message);
