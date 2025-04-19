@@ -1,9 +1,12 @@
 import { db } from '../db/mongoDb';
 import { ObjectId } from 'mongodb';
+import { CommentUpdateType } from '../input-output-types/comment-types';
 
 export const commentRepository = {
-  async update(commentId: string) {
-    const result = await db.getCollections().commentsCollection.updateOne({ _id: new ObjectId(commentId) }, {});
+  async update({ commentId, update }: CommentUpdateType) {
+    const result = await db
+      .getCollections()
+      .commentsCollection.updateOne({ _id: new ObjectId(commentId) }, { $set: { ...update } });
     return result.matchedCount === 1;
   },
   async delete(commentId: string) {
