@@ -27,7 +27,9 @@ export const userService = {
       createdAt: new Date(),
     };
 
-    return { success: true, errors: null, value: await userRepository.create(newUser) };
+    const createdUser = await userRepository.create(newUser);
+
+    return { success: true, errors: null, value: createdUser };
   },
   async deleteById(userId: string) {
     if (!ObjectId.isValid(userId)) {

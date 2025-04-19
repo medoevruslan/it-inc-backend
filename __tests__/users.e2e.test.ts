@@ -217,7 +217,8 @@ describe('tests for /users', () => {
   describe('test delete user', () => {
     it('should delete user', async () => {
       await db.dropCollections();
-      const newUsers: Partial<InputUserType[]> = Array.from({ length: 11 }).map((_, idx) => ({
+
+      const newUsers: Partial<InputUserType[]> = Array.from({ length: 10 }).map((_, idx) => ({
         login: 'newlgn' + idx,
         email: `newwmail${idx}@some.com`,
         password: 'new password' + idx,
@@ -234,6 +235,8 @@ describe('tests for /users', () => {
         .set('Authorization', `Basic ${codedAuth}`)
         .expect(200);
 
+      console.log('getUsersBeforeDeletingResponse.body::: ', getUsersBeforeDeletingResponse.body);
+
       expect(getUsersBeforeDeletingResponse.body.items.length).toBe(newUsers.length);
 
       const deleteUserResponse = await req
@@ -245,6 +248,8 @@ describe('tests for /users', () => {
         .get(SETTINGS.PATH.USERS + '?pageSize=20')
         .set('Authorization', `Basic ${codedAuth}`)
         .expect(200);
+
+      console.log('getUsersAfterDeletingResponse.body::: ', getUsersAfterDeletingResponse.body);
 
       expect(getUsersAfterDeletingResponse.body.items.length).toBe(newUsers.length - 1);
     });
