@@ -1,7 +1,7 @@
 import { req, toBase64 } from './test-helpers';
 import { SETTINGS } from '../src/settings';
 import { DBType } from '../src/db/db';
-import { blog1, post1, user1, video1 } from './datasets';
+import { blog1, comment1, post1, user1, video1 } from './datasets';
 import { BlogDbType } from '../src/db/blog-db-type';
 import { InputBlogType, UpdateBlogType } from '../src/input-output-types/blog-types';
 import { ObjectId } from 'mongodb';
@@ -21,6 +21,7 @@ describe('tests for /blogs', () => {
       posts: [post1],
       blogs: [blog1],
       users: [user1],
+      comments: [comment1],
     };
   });
 
