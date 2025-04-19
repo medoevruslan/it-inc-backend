@@ -5,6 +5,7 @@ import { SETTINGS } from '../settings';
 import { DBType } from './db';
 import { UserDbType } from './user-db-type';
 import { Nullable } from '../shared/types';
+import { CommentDbType } from './comment-db-type';
 
 export const db = {
   client: {} as MongoClient,
@@ -32,17 +33,17 @@ export const db = {
   },
 
   async close() {
-    this.client.close();
+    await this.client.close();
     console.log('Connection successful closed');
   },
 
   async dropCollections() {
     const collections = await this.getDbName().listCollections().toArray();
 
-    collections.forEach((collection) => {
+    for (let collection of collections) {
       const collectionName = collection.name;
-      this.getDbName().collection(collectionName).deleteMany();
-    });
+      await this.getDbName().collection(collectionName).deleteMany();
+    }
   },
 
   getCollections() {
@@ -50,6 +51,7 @@ export const db = {
       postCollection: this.getDbName().collection<PostDbType>(SETTINGS.PATH.POSTS),
       blogsCollection: this.getDbName().collection<BlogDbType>(SETTINGS.PATH.BLOGS),
       usersCollection: this.getDbName().collection<UserDbType>(SETTINGS.PATH.USERS),
+      commentsCollection: this.getDbName().collection<CommentDbType>(SETTINGS.PATH.COMMENTS),
     };
   },
 
@@ -59,5 +61,6 @@ export const db = {
     if (dataset.blogs) await collections.blogsCollection.insertMany(dataset.blogs);
     if (dataset.posts) await collections.postCollection.insertMany(dataset.posts);
     if (dataset.users) await collections.usersCollection.insertMany(dataset.users);
+    if (dataset.comments) await collections.commentsCollection.insertMany(dataset.comments);
   },
 };

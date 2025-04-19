@@ -8,3 +8,8 @@ export enum HttpStatuses {
   NotFound = 404,
   ServerError = 500,
 }
+
+export enum ResultStatus {
+  Success = HttpStatuses.Success,
+  BadRequest = HttpStatuses.BadRequest,
+}
