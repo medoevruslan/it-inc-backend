@@ -32,7 +32,7 @@ describe('tests for /users', () => {
 
       const usersResponse = await req.get(SETTINGS.PATH.USERS).set('Authorization', `Basic ${codedAuth}`).expect(200);
 
-      expect(usersResponse.body.totalCount).toBe(12);
+      expect(usersResponse.body.totalCount).toBe(newUsers.length);
       expect(usersResponse.body.pageSize).toBe(10);
       expect(usersResponse.body.pagesCount).toBe(2);
       expect(usersResponse.body.page).toBe(1);
@@ -286,7 +286,7 @@ describe('tests for /users', () => {
         .send({ loginOrEmail: newUser.login, password: newUser.password })
         .expect(200);
 
-      expect(loginResponse.body.accessToken).toReturn();
+      expect(loginResponse.body.accessToken).toBeDefined();
     });
     it('should login by email successfully', async () => {
       await db.dropCollections();
@@ -305,7 +305,7 @@ describe('tests for /users', () => {
       const loginResponse = await req
         .post(`${SETTINGS.PATH.AUTH}/login`)
         .send({ loginOrEmail: newUser.email, password: newUser.password })
-        .expect(204);
+        .expect(200);
     });
     it('should not login because user not exist', async () => {
       await db.dropCollections();
@@ -324,7 +324,7 @@ describe('tests for /users', () => {
       const loginResponse = await req
         .post(`${SETTINGS.PATH.AUTH}/login`)
         .send({ loginOrEmail: 'incorrect login', password: newUser.password })
-        .expect(404);
+        .expect(401);
     });
     it('should not login because password is incorrect', async () => {
       await db.dropCollections();
