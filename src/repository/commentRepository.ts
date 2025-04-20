@@ -1,8 +1,12 @@
 import { db } from '../db/mongoDb';
 import { ObjectId } from 'mongodb';
-import { CommentUpdateType } from '../input-output-types/comment-types';
+import { CommentInputType, CommentUpdateType } from '../input-output-types/comment-types';
+import { CommentDbType } from '../db/comment-db-type';
 
 export const commentRepository = {
+  async create(comment: CommentDbType) {
+    await db.getCollections().commentsCollection.insertOne({ ...comment });
+  },
   async update({ commentId, update }: CommentUpdateType) {
     const result = await db
       .getCollections()
