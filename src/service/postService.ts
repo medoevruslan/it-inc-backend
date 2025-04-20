@@ -3,13 +3,15 @@ import { blogRepository, postRepository } from '../repository';
 import { ObjectId } from 'mongodb';
 import { GetAllQueryParams } from '../shared/types';
 import { OutputModelTypeWithInfo } from '../input-output-types/common-types';
+import { HttpStatuses } from '../shared/enums';
+import { CommentInputType } from '../input-output-types/comment-types';
 
 export const postService = {
   async create(input: InputPostType): Promise<OutputPostType> {
     const foundBlog = await blogRepository.findById(input.blogId);
 
     if (!foundBlog) {
-      throw new Error('404');
+      throw new Error(HttpStatuses.NotFound.toString());
     }
 
     const createdId = await postRepository.create({
@@ -21,7 +23,7 @@ export const postService = {
     const createdPost = await postRepository.findById(createdId);
 
     if (!createdPost) {
-      throw new Error('500');
+      throw new Error(HttpStatuses.ServerError.toString());
     }
 
     return createdPost;
