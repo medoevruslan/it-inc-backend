@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { getCommentsController } from './getCommentsController';
-import { putCommentsController } from './putCommentsController';
+import { updateCommentsController } from './updateCommentsController';
 import { deleteCommentsController } from './deleteCommentsController';
 import { accessTokenGuard } from '../middlewares/guard';
 import { validationErrorMiddleware } from '../middlewares';
@@ -10,10 +10,10 @@ export const commentsRouter = Router();
 
 commentsRouter.get('/:id', getCommentsController);
 commentsRouter.put(
-  '/:commentId',
+  '/:id',
   commentBodyValidator,
   accessTokenGuard,
   validationErrorMiddleware,
-  putCommentsController,
+  updateCommentsController,
 );
-commentsRouter.delete('/:commentId', accessTokenGuard, deleteCommentsController);
+commentsRouter.delete('/:id', accessTokenGuard, deleteCommentsController);

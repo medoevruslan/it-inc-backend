@@ -30,13 +30,13 @@ export const postService = {
   },
   async update({ postId, update }: UpdatePostType): Promise<boolean> {
     if (!ObjectId.isValid(postId)) {
-      throw new Error('400');
+      throw new Error(HttpStatuses.BadRequest.toString());
     }
 
     const success = await postRepository.update({ postId, update });
 
     if (!success) {
-      throw new Error('404');
+      throw new Error(HttpStatuses.NotFound.toString());
     }
     return success;
   },
@@ -45,26 +45,27 @@ export const postService = {
   },
   async findById(id: string): Promise<OutputPostType> {
     if (!ObjectId.isValid(id)) {
-      throw new Error('400');
+      throw new Error(HttpStatuses.BadRequest.toString());
     }
 
     const found = await postRepository.findById(id);
 
     if (!found) {
-      throw new Error('404');
+      console.log(`post ${id} not found`);
+      throw new Error(HttpStatuses.NotFound.toString());
     }
 
     return found;
   },
   async deleteById(id: string): Promise<boolean> {
     if (!ObjectId.isValid(id)) {
-      throw new Error('400');
+      throw new Error(HttpStatuses.BadRequest.toString());
     }
 
     const success = await postRepository.deleteById(id);
 
     if (!success) {
-      throw new Error('404');
+      throw new Error(HttpStatuses.NotFound.toString());
     }
 
     return success;

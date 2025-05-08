@@ -12,7 +12,7 @@ export const createPostCommentsController = async (
     const createdId =  await commentService.create({ userId: req.userId!, postId: req.params.postId, content: req.body.content });
 
     const foundComment = await commentQueryRepository.findById(createdId);
-
+    console.log(`create new comment: ${createdId} for post: ${req.params.postId}`);
     res.status(HttpStatuses.Created).send(foundComment);
   } catch (err: unknown) {
     handleApiError(err, res);
