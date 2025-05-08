@@ -9,6 +9,8 @@ import { getPostByIdController } from './getPostByIdController';
 import { postQueryValidator } from '../validation/postQueryValidator';
 import { accessTokenGuard, baseAuthGuard } from '../middlewares/guard';
 import { createPostCommentsController } from './createPostCommentsController';
+import { getPostCommentsController } from './getPostCommentsController';
+import { commentsQueryValidator } from '../validation/commentQueryValidator';
 
 export const postsRouter = Router();
 
@@ -18,3 +20,4 @@ postsRouter.post('/', postBodyValidator, baseAuthGuard, validationErrorMiddlewar
 postsRouter.put('/:id', postBodyValidator, baseAuthGuard, validationErrorMiddleware, updatePostController);
 postsRouter.delete('/:id', baseAuthGuard, deletePostController);
 postsRouter.post('/:postId/comments', accessTokenGuard, createPostCommentsController);
+postsRouter.get('/:postId/comments', commentsQueryValidator,  accessTokenGuard, getPostCommentsController);
