@@ -8,7 +8,7 @@ import { commentBodyValidator } from '../validation/commentBodyValidator';
 
 export const commentsRouter = Router();
 
-commentsRouter.get('/:id', accessTokenGuard, getCommentsController);
+commentsRouter.get('/:id', getCommentsController);
 commentsRouter.put(
   '/:commentId',
   commentBodyValidator,

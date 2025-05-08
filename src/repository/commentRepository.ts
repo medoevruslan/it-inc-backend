@@ -5,7 +5,8 @@ import { CommentDbType } from '../db/comment-db-type';
 
 export const commentRepository = {
   async create(comment: CommentDbType) {
-    await db.getCollections().commentsCollection.insertOne({ ...comment });
+    const result = await db.getCollections().commentsCollection.insertOne({ ...comment });
+    return result.insertedId.toString();
   },
   async update({ commentId, update }: CommentUpdateType) {
     const result = await db

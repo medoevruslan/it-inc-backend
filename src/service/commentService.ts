@@ -32,7 +32,7 @@ export const commentService = {
       },
     };
 
-    return  await commentRepository.create(newComment);
+    return await commentRepository.create(newComment);
   },
   async update({ commentId, update }: CommentUpdateType) {
     if (!ObjectId.isValid(commentId)) {

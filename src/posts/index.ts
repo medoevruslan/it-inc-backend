@@ -20,4 +20,4 @@ postsRouter.post('/', postBodyValidator, baseAuthGuard, validationErrorMiddlewar
 postsRouter.put('/:id', postBodyValidator, baseAuthGuard, validationErrorMiddleware, updatePostController);
 postsRouter.delete('/:id', baseAuthGuard, deletePostController);
 postsRouter.post('/:postId/comments', accessTokenGuard, createPostCommentsController);
-postsRouter.get('/:postId/comments', commentsQueryValidator,  accessTokenGuard, getPostCommentsController);
+postsRouter.get('/:postId/comments', commentsQueryValidator,  getPostCommentsController);
