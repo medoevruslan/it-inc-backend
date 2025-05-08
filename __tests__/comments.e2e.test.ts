@@ -1,9 +1,10 @@
 import { db } from '../src/db/mongoDb';
 import { SETTINGS } from '../src/settings';
 import { req, toBase64 } from './test-helpers';
-import { comment1 } from './datasets';
-import { InputUserType } from '../src/input-output-types/user-types';
+import { comment1, post1 } from './datasets';
+import { InputUserType, OutputUserType } from '../src/input-output-types/user-types';
 import { HttpStatuses } from '../src/shared/enums';
+import { CommentInputType } from '../src/input-output-types/comment-types';
 
 describe('test /comments', () => {
   const codedAuth = toBase64(SETTINGS.ADMIN_AUTH);
@@ -45,6 +46,27 @@ describe('test /comments', () => {
       const commentsResponse = await req.get(`${SETTINGS.PATH.COMMENTS}/1`).expect(401);
     });
   });
+  describe('create comments', () => {
+    it('should create new comment', async () => {
+      await db.dropCollections();
+      await db.seed({ posts: [post1] });
+
+      const newUser = await addUser(codedAuth);
+
+      const loginResponse = await req
+        .post(`${SETTINGS.PATH.AUTH}/login`)
+        .send({ loginOrEmail: newUser.login, password: newUser.password })
+        .expect(200);
+
+      const newComment: CommentInputType = {
+        postId: post1._id.toString(),
+        content: 'a'.repeat(20),
+        userId: newUser.id,
+      };
+
+      const createCommentResponse = await req.post(`${SETTINGS.PATH.POSTS}/${post1._id}/comments`).set('Authorization', `Bearer ${loginResponse.body.accessToken}`).send(newComment).expect(201);
+    });
+  });
   describe('delete comments', () => {
     it('should delete comment by id', async () => {
       await db.dropCollections();
@@ -57,10 +79,22 @@ describe('test /comments', () => {
         .send({ loginOrEmail: newUser.login, password: newUser.password })
         .expect(200);
 
+      const commentsResponse1 = await req
+        .get(`${SETTINGS.PATH.COMMENTS}/${comment1._id.toString()}`)
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
+        .expect(200);
+
       const deleteCommentsResponse = await req
         .delete(`${SETTINGS.PATH.COMMENTS}/${comment1._id.toString()}`)
         .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
         .expect(HttpStatuses.NoContent);
+
+      const commentsResponse2 = await req
+        .get(`${SETTINGS.PATH.COMMENTS}/${comment1._id.toString()}`)
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
+        .expect(200);
+
+      expect(commentsResponse2.body).toEqual({});
     });
     it('should not delete because unauthorized', async () => {
       await db.dropCollections();
@@ -155,7 +189,7 @@ describe('test /comments', () => {
   });
 });
 
-const addUser = async (auth: string) => {
+const addUser = async (auth: string): Promise<OutputUserType & { password: string }> => {
   const newUser: Partial<InputUserType> = {
     login: 'newlgn',
     email: 'newwmail@some.com',
@@ -168,5 +202,5 @@ const addUser = async (auth: string) => {
     .send(newUser)
     .expect(201);
 
-  return newUser;
+  return { ...createUserResponse.body, password: newUser.password };
 };
