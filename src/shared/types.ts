@@ -10,6 +10,8 @@ export type GetAllQueryParams<Model> = {
   pageSize: string;
 };
 
+export type GetAllQueryParamNoSearchTerm<Model> = Omit<GetAllQueryParams<Model>, 'searchNameTerm'>
+
 export type ExtensionType = {
   field: string | null;
   message: string;

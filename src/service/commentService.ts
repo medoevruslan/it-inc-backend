@@ -24,6 +24,7 @@ export const commentService = {
 
     const newComment: CommentDbType = {
       content,
+      postId,
       createdAt: new Date(),
       commentatorInfo: {
         userId: foundUser?.id!,
@@ -31,7 +32,7 @@ export const commentService = {
       },
     };
 
-    await commentRepository.create(newComment);
+    return  await commentRepository.create(newComment);
   },
   async update({ commentId, update }: CommentUpdateType) {
     if (!ObjectId.isValid(commentId)) {
@@ -47,4 +48,5 @@ export const commentService = {
 
     return commentRepository.delete(commentId);
   },
+
 };
