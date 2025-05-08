@@ -47,7 +47,8 @@ export const user1: WithId<UserDbType> = {
 
 export const comment1: WithId<CommentDbType> = {
   _id: new ObjectId(),
-  commentatorInfo: { userId: ('n' + Date.now() + Math.random()).slice(0, 5), userLogin: 'some_login' },
-  content: '',
+  commentatorInfo: { userId: new ObjectId().toString(), userLogin: 'some_login' },
+  content: 'some'.repeat(10),
   createdAt: new Date(),
+  postId: new ObjectId().toString(),
 };
