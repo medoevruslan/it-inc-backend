@@ -65,6 +65,15 @@ describe('test /comments', () => {
       };
 
       const createCommentResponse = await req.post(`${SETTINGS.PATH.POSTS}/${post1._id}/comments`).set('Authorization', `Bearer ${loginResponse.body.accessToken}`).send(newComment).expect(201);
+
+      const getCommentsResponse = await req
+        .get(`${SETTINGS.PATH.POSTS}/${post1._id.toString()}/comments/`)
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
+        .expect(200);
+
+      expect(getCommentsResponse.body.items.length).toBe(1);
+      expect(getCommentsResponse.body.items[0].content).toBe(newComment.content)
+
     });
   });
   describe('delete comments', () => {
@@ -79,22 +88,24 @@ describe('test /comments', () => {
         .send({ loginOrEmail: newUser.login, password: newUser.password })
         .expect(200);
 
-      const commentsResponse1 = await req
-        .get(`${SETTINGS.PATH.COMMENTS}/${comment1._id.toString()}`)
+      const getCommentsResponse1 = await req
+        .get(`${SETTINGS.PATH.POSTS}/${comment1.postId}/comments/`)
         .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
         .expect(200);
+
+      expect(getCommentsResponse1.body.items.length).toBe(1);
 
       const deleteCommentsResponse = await req
         .delete(`${SETTINGS.PATH.COMMENTS}/${comment1._id.toString()}`)
         .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
         .expect(HttpStatuses.NoContent);
 
-      const commentsResponse2 = await req
-        .get(`${SETTINGS.PATH.COMMENTS}/${comment1._id.toString()}`)
+      const getCommentsResponse2 = await req
+        .get(`${SETTINGS.PATH.POSTS}/${comment1.postId}/comments/`)
         .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
         .expect(200);
 
-      expect(commentsResponse2.body).toEqual({});
+      expect(getCommentsResponse2.body.items.length).toBe(0);
     });
     it('should not delete because unauthorized', async () => {
       await db.dropCollections();
