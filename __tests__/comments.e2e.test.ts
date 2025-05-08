@@ -5,6 +5,7 @@ import { comment1, post1 } from './datasets';
 import { InputUserType, OutputUserType } from '../src/input-output-types/user-types';
 import { HttpStatuses } from '../src/shared/enums';
 import { CommentInputType } from '../src/input-output-types/comment-types';
+import { ObjectId } from 'mongodb';
 
 describe('test /comments', () => {
   const codedAuth = toBase64(SETTINGS.ADMIN_AUTH);
@@ -30,7 +31,6 @@ describe('test /comments', () => {
 
       const commentsResponse = await req
         .get(`${SETTINGS.PATH.COMMENTS}/${comment1._id.toString()}`)
-        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
         .expect(200);
 
       expect(commentsResponse.body.id).toBe(comment1._id.toString());
@@ -38,12 +38,6 @@ describe('test /comments', () => {
       expect(commentsResponse.body.createdAt).toBe(comment1.createdAt.toISOString());
       expect(commentsResponse.body.commentatorInfo.userLogin).toBe(comment1.commentatorInfo.userLogin);
       expect(commentsResponse.body.commentatorInfo.userId).toBe(comment1.commentatorInfo.userId);
-    });
-    it('should not get comments because unauthorized ', async () => {
-      await db.dropCollections();
-      await db.seed({ comments: [comment1] });
-
-      const commentsResponse = await req.get(`${SETTINGS.PATH.COMMENTS}/1`).expect(401);
     });
   });
   describe('create comments', () => {
@@ -66,9 +60,11 @@ describe('test /comments', () => {
 
       const createCommentResponse = await req.post(`${SETTINGS.PATH.POSTS}/${post1._id}/comments`).set('Authorization', `Bearer ${loginResponse.body.accessToken}`).send(newComment).expect(201);
 
+      expect(createCommentResponse.body.content).toBe(newComment.content);
+      expect(createCommentResponse.body.commentatorInfo).toEqual({ userLogin: newUser.login, userId: newUser.id });
+
       const getCommentsResponse = await req
         .get(`${SETTINGS.PATH.POSTS}/${post1._id.toString()}/comments/`)
-        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
         .expect(200);
 
       expect(getCommentsResponse.body.items.length).toBe(1);
@@ -90,7 +86,6 @@ describe('test /comments', () => {
 
       const getCommentsResponse1 = await req
         .get(`${SETTINGS.PATH.POSTS}/${comment1.postId}/comments/`)
-        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
         .expect(200);
 
       expect(getCommentsResponse1.body.items.length).toBe(1);
@@ -102,7 +97,6 @@ describe('test /comments', () => {
 
       const getCommentsResponse2 = await req
         .get(`${SETTINGS.PATH.POSTS}/${comment1.postId}/comments/`)
-        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
         .expect(200);
 
       expect(getCommentsResponse2.body.items.length).toBe(0);
@@ -114,6 +108,22 @@ describe('test /comments', () => {
       const deleteCommentsResponse = await req
         .delete(`${SETTINGS.PATH.COMMENTS}/${comment1._id.toString()}`)
         .expect(HttpStatuses.Unauthorized);
+    });
+    it('should not delete because not found', async () => {
+      await db.dropCollections();
+      await db.seed({ comments: [comment1] });
+
+      const newUser = await addUser(codedAuth);
+
+      const loginResponse = await req
+        .post(`${SETTINGS.PATH.AUTH}/login`)
+        .send({ loginOrEmail: newUser.login, password: newUser.password })
+        .expect(200);
+
+      const deleteCommentsResponse = await req
+        .delete(`${SETTINGS.PATH.COMMENTS}/${new ObjectId().toString()}`)
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
+        .expect(HttpStatuses.NotFound);
     });
   });
   describe('update comments', () => {
@@ -137,7 +147,6 @@ describe('test /comments', () => {
 
       const commentsResponse = await req
         .get(`${SETTINGS.PATH.COMMENTS}/${comment1._id.toString()}`)
-        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
         .expect(200);
 
       expect(commentsResponse.body.content).not.toBe(comment1.content);
