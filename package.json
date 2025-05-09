@@ -6,6 +6,7 @@
   "dependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.9",
+    "@types/nodemailer": "^6.4.17",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
@@ -13,7 +14,8 @@
     "express-validator": "^7.2.1",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.12.0",
-    "mongodb-memory-server": "^10.1.4"
+    "mongodb-memory-server": "^10.1.4",
+    "nodemailer": "^7.0.3"
   },
   "scripts": {
     "watch": "tsc -w",
