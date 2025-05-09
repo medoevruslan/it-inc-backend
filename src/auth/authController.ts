@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { authService } from '../service/authService';
-import { InputLoginType } from '../input-output-types/auth-types';
+import { InputLoginType, InputRegistrationType } from '../input-output-types/auth-types';
 import { HttpStatuses, ResultStatus } from '../shared/enums';
 import { userQueryRepository } from '../repository/userQueryRepository';
 import { handleApiError } from '../shared/utils';
@@ -42,7 +42,33 @@ const me = async (req: Request<{}, {}, InputLoginType>, res: Response) => {
   }
 };
 
+const registration = async (req: Request<{}, {}, InputRegistrationType>, res: Response) => {
+  try {
+    const result =  await authService.register(req.body);
+    res.status(HttpStatuses.Success).send(result);
+  } catch (err: unknown) {
+    handleApiError(err, res);
+  }
+};
+
+const registrationConfirmation = async (req: Request<{}, {}, InputLoginType>, res: Response) => {
+  try {
+
+  } catch (err: unknown) {
+    handleApiError(err, res);
+  }
+};
+
+const registrationEmailResend = async (req: Request<{}, {}, InputLoginType>, res: Response) => {
+  try {
+
+  } catch (err: unknown) {
+    handleApiError(err, res);
+  }
+};
+
 export const authController = {
   me,
   login,
+  registration
 };

@@ -3,7 +3,7 @@ import * as Process from 'process';
 import { SignOptions } from 'jsonwebtoken';
 config();
 
-const BASE_URL = '/ht_06/api';
+const BASE_URL = '/ht_07/api';
 
 export const SETTINGS = {
   PORT: process.env.PORT || 3003,

@@ -1,4 +1,4 @@
-import { InputLoginType } from '../input-output-types/auth-types';
+import { InputLoginType, InputRegistrationType } from '../input-output-types/auth-types';
 import { userRepository } from '../repository/userRepository';
 import bcrypt from 'bcrypt';
 import { HttpStatuses, ResultStatus } from '../shared/enums';
@@ -35,4 +35,8 @@ export const authService = {
       data: { accessToken },
     };
   },
+
+  async register(data: InputRegistrationType) {
+    return JSON.stringify(data);
+  }
 };
