@@ -1,6 +1,6 @@
 import { req, toBase64 } from './test-helpers';
 import { SETTINGS } from '../src/settings';
-import { InputUserType, OutputUserType } from '../src/input-output-types/user-types';
+import { InputUserType, OutputUserAccountType } from '../src/input-output-types/user-types';
 import { db } from '../src/db/mongoDb';
 
 describe('tests for /users', () => {
@@ -147,8 +147,8 @@ describe('tests for /users', () => {
       const usersResponse2 = await req.get(SETTINGS.PATH.USERS).set('Authorization', `Basic ${codedAuth}`).expect(200);
 
       expect(usersResponse2.body.items.length).toBe(usersResponse1.body.items.length + 1);
-      expect(usersResponse2.body.items.some((user: OutputUserType) => user.login === newUser.login)).toBeTruthy();
-      expect(usersResponse2.body.items.some((user: OutputUserType) => user.email === newUser.email)).toBeTruthy();
+      expect(usersResponse2.body.items.some((user: OutputUserAccountType) => user.login === newUser.login)).toBeTruthy();
+      expect(usersResponse2.body.items.some((user: OutputUserAccountType) => user.email === newUser.email)).toBeTruthy();
 
       expect(usersResponse2.body.totalCount).toBe(usersResponse1.body.totalCount + 1);
     });

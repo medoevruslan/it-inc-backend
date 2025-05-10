@@ -4,6 +4,8 @@ import { InputLoginType, InputRegistrationType } from '../input-output-types/aut
 import { HttpStatuses, ResultStatus } from '../shared/enums';
 import { userQueryRepository } from '../repository/userQueryRepository';
 import { handleApiError } from '../shared/utils';
+import { userService } from '../service/userService';
+import { InputUserType } from '../input-output-types/user-types';
 
 const login = async (req: Request<{}, {}, InputLoginType>, res: Response) => {
   try {
@@ -42,7 +44,7 @@ const me = async (req: Request<{}, {}, InputLoginType>, res: Response) => {
   }
 };
 
-const registration = async (req: Request<{}, {}, InputRegistrationType>, res: Response) => {
+const registration = async (req: Request<{}, {}, InputUserType>, res: Response) => {
   try {
     const result =  await authService.register(req.body);
     res.status(HttpStatuses.Success).send(result);

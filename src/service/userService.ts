@@ -1,9 +1,10 @@
 import { InputUserType } from '../input-output-types/user-types';
 import { userRepository } from '../repository/userRepository';
-import { UserDbType } from '../db/user-db-type';
+import { UserDbType, UserType } from '../db/user-db-type';
 import bcrypt from 'bcrypt';
 import { ObjectId } from 'mongodb';
 import { HttpStatuses } from '../shared/enums';
+import { add } from 'date-fns';
 
 export const userService = {
   async create(user: InputUserType) {
@@ -21,10 +22,17 @@ export const userService = {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser: UserDbType = {
-      login,
-      email,
-      password: hashedPassword,
-      createdAt: new Date(),
+      accountData: {
+        login,
+        email,
+        password: hashedPassword,
+        createdAt: new Date(),
+      },
+      emailConfirmation: {
+        isConfirmed: false,
+        confirmationCode: '',
+        expirationDate: add(new Date(), { hours: 1 }),
+      },
     };
 
     const createdUser = await userRepository.create(newUser);
@@ -43,5 +51,6 @@ export const userService = {
     }
     return success;
   },
-  update() {},
+  update() {
+  },
 };

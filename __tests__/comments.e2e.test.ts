@@ -2,7 +2,7 @@ import { db } from '../src/db/mongoDb';
 import { SETTINGS } from '../src/settings';
 import { req, toBase64 } from './test-helpers';
 import { comment1, post1 } from './datasets';
-import { InputUserType, OutputUserType } from '../src/input-output-types/user-types';
+import { InputUserType, OutputUserAccountType } from '../src/input-output-types/user-types';
 import { HttpStatuses } from '../src/shared/enums';
 import { CommentInputType } from '../src/input-output-types/comment-types';
 import { ObjectId } from 'mongodb';
@@ -285,7 +285,7 @@ describe('test /comments', () => {
   });
 });
 
-const addUser = async (auth: string): Promise<OutputUserType & { password: string }> => {
+const addUser = async (auth: string): Promise<OutputUserAccountType & { password: string }> => {
   const newUser: Partial<InputUserType> = {
     login: 'newlgn',
     email: 'newwmail@some.com',

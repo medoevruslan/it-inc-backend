@@ -1,12 +1,12 @@
 import { userMapper } from '../mapping/userMapper';
 import { Filter, ObjectId, WithId } from 'mongodb';
 import { db } from '../db/mongoDb';
-import { GetAllUsersQueryParams, OutputUserType } from '../input-output-types/user-types';
+import { GetAllUsersQueryParams, OutputUserAccountType } from '../input-output-types/user-types';
 import { OutputModelTypeWithInfo } from '../input-output-types/common-types';
 import { UserDbType } from '../db/user-db-type';
 
 export const userQueryRepository = {
-  async findAll(inputFilter: GetAllUsersQueryParams): Promise<OutputModelTypeWithInfo<OutputUserType>> {
+  async findAll(inputFilter: GetAllUsersQueryParams): Promise<OutputModelTypeWithInfo<OutputUserAccountType>> {
     const { sortDirection, sortBy, pageSize, pageNumber, searchLoginTerm, searchEmailTerm } = inputFilter;
     let filter = {} as Filter<UserDbType>;
 
@@ -14,14 +14,14 @@ export const userQueryRepository = {
       if (!filter?.$or) {
         filter.$or = [];
       }
-      filter.$or.push({ login: { $regex: searchLoginTerm, $options: 'i' } });
+      filter.$or.push({ 'accountData.login': { $regex: searchLoginTerm, $options: 'i' } });
     }
 
     if (searchEmailTerm) {
       if (!filter?.$or) {
         filter.$or = [];
       }
-      filter.$or?.push({ email: { $regex: searchEmailTerm, $options: 'i' } });
+      filter.$or?.push({ 'accountData.email': { $regex: searchEmailTerm, $options: 'i' } });
     }
 
     const convertedPageSize = Number(pageSize);

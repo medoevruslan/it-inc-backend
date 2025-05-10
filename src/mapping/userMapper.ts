@@ -1,14 +1,14 @@
 import { UserDbType } from '../db/user-db-type';
-import { OutputUserType } from '../input-output-types/user-types';
+import { OutputUserAccountType } from '../input-output-types/user-types';
 import { WithId } from 'mongodb';
 
 export const userMapper = {
-  mapUserToOutputType(user: WithId<UserDbType>): OutputUserType {
+  mapUserToOutputType(user: WithId<UserDbType>): OutputUserAccountType {
     return {
       id: user._id.toString(),
-      login: user.login,
-      email: user.email,
-      createdAt: user.createdAt,
+      login: user.accountData.login,
+      email: user.accountData.email,
+      createdAt: user.accountData.createdAt,
     };
   },
 };

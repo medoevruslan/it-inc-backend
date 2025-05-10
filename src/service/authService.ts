@@ -4,6 +4,9 @@ import bcrypt from 'bcrypt';
 import { HttpStatuses, ResultStatus } from '../shared/enums';
 import { Nullable, Result } from '../shared/types';
 import { jwtService } from './jwtService';
+import { emailAdapter } from '../adapters/emailAdapter';
+import { InputUserType } from '../input-output-types/user-types';
+import { userService } from './userService';
 
 export const authService = {
   async login(input: InputLoginType): Promise<Result<Nullable<{ accessToken: string }>>> {
@@ -13,7 +16,7 @@ export const authService = {
       throw new Error(HttpStatuses.Unauthorized.toString());
     }
 
-    const isValidPassword = await bcrypt.compare(input.password, foundUser.password);
+    const isValidPassword = await bcrypt.compare(input.password, foundUser.accountData.password);
 
     if (!isValidPassword) {
       return {
@@ -36,7 +39,9 @@ export const authService = {
     };
   },
 
-  async register(data: InputRegistrationType) {
-    return JSON.stringify(data);
+  async register(data: InputUserType) {
+    const created = await userService.create(data);
+    const result =  await emailAdapter.sendEmail('')
+    return result;
   }
 };

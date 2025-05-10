@@ -22,6 +22,8 @@ export const emailAdapter = {
       html: '<b>Hello world?</b>', // HTML body})
     });
 
-    console.log('sendMailInfo::: ', sendMailInfo)
+    // console.log('sendMailInfo::: ', sendMailInfo)
+
+    return sendMailInfo;
   },
 };
