@@ -1,6 +1,7 @@
 import { config } from 'dotenv';
 import * as Process from 'process';
 import { SignOptions } from 'jsonwebtoken';
+
 config();
 
 const BASE_URL = '/ht_07/api';
@@ -21,4 +22,9 @@ export const SETTINGS = {
   DATABASE: Process.env.DATABASE || 'test',
   JWT: Process.env.JWT_SECRET as string,
   TOKEN_EXP_TIME: Process.env.EXP_TIME as SignOptions['expiresIn'],
+  GOOGLE: {
+    CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+    REFRESH_TOKEN: process.env.GOOGLE_REFRESH_TOKEN,
+  },
 };
