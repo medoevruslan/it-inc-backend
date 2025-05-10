@@ -1,7 +1,6 @@
-export type UserAccountDbType = {
-  accountData: UserAccount
-  emailConfirmation: EmailConfirmation
-};
+import { WithId } from 'mongodb';
+
+export type UserDbType = UserType;
 
 type UserAccount = {
   login: string;
@@ -14,11 +13,16 @@ type EmailConfirmation = {
   isConfirmed: boolean;
   confirmationCode: string;
   expirationDate: Date;
-  sentMail: SentEmail
+  // sentMail: SentEmail[]
 }
 
 type SentEmail = {
   sentDate: Date;
+}
+
+export type UserType = {
+  accountData: UserAccount
+  emailConfirmation: EmailConfirmation
 }
 
 type RegistrationData = {
