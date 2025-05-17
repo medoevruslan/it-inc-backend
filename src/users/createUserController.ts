@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
 import { HttpStatuses } from '../shared/enums';
-import { userService } from '../service/userService';
 import { InputUserType } from '../input-output-types/user-types';
 import { userQueryRepository } from '../repository/userQueryRepository';
+import { userService } from '../composition-root';
+
 export const createUserController = async (req: Request<{}, {}, InputUserType>, res: Response) => {
   try {
     const created = await userService.create(req.body);

@@ -1,16 +1,21 @@
 import { InputUserType } from '../input-output-types/user-types';
-import { userRepository } from '../repository/userRepository';
-import { UserDbType, UserType } from '../db/user-db-type';
+
+import { UserDbType } from '../db/user-db-type';
 import bcrypt from 'bcrypt';
 import { ObjectId } from 'mongodb';
 import { HttpStatuses } from '../shared/enums';
 import { add } from 'date-fns';
 import { v4 as uuidV4 } from 'uuid';
+import { UserRepository } from '../repository/userRepository';
 
-export const userService = {
-  async create(user: InputUserType) {
+export class UserService {
+
+  constructor(protected userRepository: UserRepository) {
+  }
+
+  public async create(user: InputUserType) {
     const { login, password, email } = user;
-    const isAlreadyExists = await userRepository.findByLoginOrEmail(email);
+    const isAlreadyExists = await this.userRepository.findByLoginOrEmail(email);
 
     if (isAlreadyExists) {
       return {
@@ -36,22 +41,27 @@ export const userService = {
       createdAt: new Date(),
     };
 
-    const createdUserId = await userRepository.create(newUser);
+    const createdUserId = await this.userRepository.create(newUser);
 
     return { success: true, errors: null, value: { id: createdUserId, ...newUser } };
-  },
-  async deleteById(userId: string) {
+  }
+
+  public async deleteById(userId: string) {
     if (!ObjectId.isValid(userId)) {
       throw new Error(HttpStatuses.BadRequest.toString());
     }
 
-    const success = await userRepository.deleteById(userId);
+    const success = await this.userRepository.deleteById(userId);
 
     if (!success) {
       throw new Error(HttpStatuses.NotFound.toString());
     }
     return success;
-  },
-  update() {
-  },
-};
+  }
+
+
+  public update() {
+  }
+
+
+}

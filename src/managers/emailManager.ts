@@ -1,20 +1,14 @@
-import nodemailer from 'nodemailer';
-import { BASE_URL, SETTINGS } from '../settings';
+import { BASE_URL } from '../settings';
+import { EmailAdapter } from '../adapters/emailAdapter';
 
 
-export const emailManager = {
+export class EmailManager {
+
+  constructor(protected emailAdapter: EmailAdapter) {
+  }
+
   async sendEmailConfirmation(userData: { email: string, verificationCode: string }) {
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        type: 'OAuth2',
-        user: 'rus.terra.86@gmail.com',
-        clientId: SETTINGS.GOOGLE.CLIENT_ID,
-        clientSecret: SETTINGS.GOOGLE.CLIENT_SECRET,
-        refreshToken: SETTINGS.GOOGLE.REFRESH_TOKEN,
-      },
-    });
-
+    const transporter = this.emailAdapter.getTransporter()
 
     const sendMailInfo = await transporter.sendMail({
       from: 'Blog service <rus.terra.86@gmail.com>',

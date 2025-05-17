@@ -1,9 +1,12 @@
 import nodemailer from 'nodemailer';
 import { SETTINGS } from '../settings';
+import SMTPTransport from 'nodemailer/lib/smtp-transport';
 
-export const emailAdapter = {
-  sendEmail: async (data: any) => {
-    const transporter = nodemailer.createTransport({
+export class EmailAdapter {
+  private readonly transporter: nodemailer.Transporter<SMTPTransport.SentMessageInfo, SMTPTransport.Options>;
+
+  constructor() {
+    this.transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         type: 'OAuth2',
@@ -13,17 +16,10 @@ export const emailAdapter = {
         refreshToken: SETTINGS.GOOGLE.REFRESH_TOKEN,
       },
     });
+  }
 
+  public getTransporter() {
+    return this.transporter;
+  }
 
-    const sendMailInfo = await transporter.sendMail({
-      from: 'Rus terra <rus.terra.86@gmail.com>',
-      to: 'medoev1986@gmail.com',
-      subject: 'Hello ✔',
-      html: '<b>Hello world?</b>', // HTML body})
-    });
-
-    // console.log('sendMailInfo::: ', sendMailInfo)
-
-    return sendMailInfo;
-  },
-};
+}

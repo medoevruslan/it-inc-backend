@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { userService } from '../service/userService';
 import { userQueryRepository } from '../repository/userQueryRepository';
 import { GetAllUsersQueryParams } from '../input-output-types/user-types';
+
 export const getUsersController = async (req: Request<{}, {}, {}, GetAllUsersQueryParams>, res: Response) => {
   try {
     const usersInfo = await userQueryRepository.findAll(req.query);
