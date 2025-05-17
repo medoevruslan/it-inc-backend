@@ -1,22 +1,21 @@
 import { Request, Response } from 'express';
 import { authService } from '../service/authService';
-import { InputLoginType, InputRegistrationType } from '../input-output-types/auth-types';
+import { InputLoginType } from '../input-output-types/auth-types';
 import { HttpStatuses, ResultStatus } from '../shared/enums';
 import { userQueryRepository } from '../repository/userQueryRepository';
 import { handleApiError } from '../shared/utils';
-import { userService } from '../service/userService';
 import { InputUserType } from '../input-output-types/user-types';
 
 const login = async (req: Request<{}, {}, InputLoginType>, res: Response) => {
   try {
-    const response = await authService.login(req.body);
+    const result = await authService.login(req.body);
 
-    if (response.status !== ResultStatus.Success) {
-      res.status(HttpStatuses.Unauthorized).send(response.extensions);
+    if (result.status !== ResultStatus.Success) {
+      res.status(HttpStatuses.Unauthorized).send({ errorMessages: result.extensions });
       return;
     }
 
-    res.status(HttpStatuses.Success).send(response.data);
+    res.status(HttpStatuses.Success).send(result.data);
   } catch (err) {
     handleApiError(err, res);
   }
@@ -53,9 +52,13 @@ const registration = async (req: Request<{}, {}, InputUserType>, res: Response) 
   }
 };
 
-const registrationConfirmation = async (req: Request<{}, {}, InputLoginType>, res: Response) => {
+const registrationConfirmation = async (req: Request<{}, {}, {code: string}>, res: Response) => {
   try {
-
+    const result = await authService.registrationConfirm(req.body.code)
+    if (result.status !== ResultStatus.Success) {
+      res.status(result.status).send({ errorMessages: result.extensions })
+    }
+    res.sendStatus(204)
   } catch (err: unknown) {
     handleApiError(err, res);
   }
@@ -63,7 +66,6 @@ const registrationConfirmation = async (req: Request<{}, {}, InputLoginType>, re
 
 const registrationEmailResend = async (req: Request<{}, {}, InputLoginType>, res: Response) => {
   try {
-
   } catch (err: unknown) {
     handleApiError(err, res);
   }

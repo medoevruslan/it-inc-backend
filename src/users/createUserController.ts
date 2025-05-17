@@ -10,7 +10,7 @@ export const createUserController = async (req: Request<{}, {}, InputUserType>, 
       res.status(HttpStatuses.BadRequest).send(created.errors);
       return;
     }
-    const createdUser = await userQueryRepository.findById(created.value!);
+    const createdUser = await userQueryRepository.findById(created.value!.id);
     res.status(HttpStatuses.Created).send(createdUser);
   } catch (err) {
     const error = err as Error;

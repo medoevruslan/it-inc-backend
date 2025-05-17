@@ -5,6 +5,7 @@ import bcrypt from 'bcrypt';
 import { ObjectId } from 'mongodb';
 import { HttpStatuses } from '../shared/enums';
 import { add } from 'date-fns';
+import { v4 as uuidV4 } from 'uuid';
 
 export const userService = {
   async create(user: InputUserType) {
@@ -30,14 +31,14 @@ export const userService = {
       },
       emailConfirmation: {
         isConfirmed: false,
-        confirmationCode: '',
+        confirmationCode: uuidV4(),
         expirationDate: add(new Date(), { hours: 1 }),
       },
     };
 
-    const createdUser = await userRepository.create(newUser);
+    const createdUserId = await userRepository.create(newUser);
 
-    return { success: true, errors: null, value: createdUser };
+    return { success: true, errors: null, value: { id: createdUserId, ...newUser } };
   },
   async deleteById(userId: string) {
     if (!ObjectId.isValid(userId)) {
