@@ -387,7 +387,7 @@ describe('tests for /posts', () => {
       // TODO: login not pass because seeded user password is incorrect... need to create it from scratch
       const loginResponse = await req
         .post(`${SETTINGS.PATH.AUTH}/login`)
-        .send({ loginOrEmail: user1.email, password: user1.password })
+        .send({ loginOrEmail: user1.accountData.email, password: user1.accountData.password })
         .expect(200);
 
       const newBlog: Partial<BlogDbType> = {

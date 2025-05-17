@@ -6,7 +6,6 @@ type UserAccount = {
   login: string;
   password: string;
   email: string;
-  createdAt: Date;
 }
 
 type EmailConfirmation = {
@@ -23,6 +22,7 @@ type SentEmail = {
 export type UserType = {
   accountData: UserAccount
   emailConfirmation: EmailConfirmation
+  createdAt: Date;
 }
 
 type RegistrationData = {

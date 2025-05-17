@@ -146,7 +146,7 @@ describe('test /comments', () => {
       const createCommentResponse = await req.post(`${SETTINGS.PATH.POSTS}/${post1._id}/comments`).set('Authorization', `Bearer ${loginResponse.body.accessToken}`).send(newComment).expect(201);
 
       const getCommentsResponse1 = await req
-        .get(`${SETTINGS.PATH.POSTS}/${comment1.postId}/comments/`)
+        .get(`${SETTINGS.PATH.POSTS}/${newComment.postId}/comments/`)
         .expect(HttpStatuses.Success);
 
       expect(getCommentsResponse1.body.items.length).toBe(1);

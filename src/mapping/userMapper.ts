@@ -8,7 +8,7 @@ export const userMapper = {
       id: user._id.toString(),
       login: user.accountData.login,
       email: user.accountData.email,
-      createdAt: user.accountData.createdAt,
+      createdAt: user.createdAt,
     };
   },
 };

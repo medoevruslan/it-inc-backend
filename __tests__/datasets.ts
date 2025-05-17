@@ -6,6 +6,7 @@ import { BlogDbType } from '../src/db/blog-db-type';
 import { ObjectId, WithId } from 'mongodb';
 import { UserDbType } from '../src/db/user-db-type';
 import { CommentDbType } from '../src/db/comment-db-type';
+import { v4 as uuidV4 } from 'uuid'
 
 export const video1: VideoDBType = {
   id: generateId(),
@@ -39,9 +40,16 @@ export const blog1: BlogDbType = {
 
 export const user1: WithId<UserDbType> = {
   _id: new ObjectId(),
-  login: ('n' + Date.now() + Math.random()).slice(0, 5),
-  email: 'some@email.com',
-  password: ('n' + Date.now() + Math.random()).slice(0, 5),
+  accountData: {
+    login: ('n' + Date.now() + Math.random()).slice(0, 5),
+    email: 'some@email.com',
+    password: ('n' + Date.now() + Math.random()).slice(0, 5),
+  },
+  emailConfirmation: {
+    isConfirmed: false,
+    expirationDate: new Date(),
+    confirmationCode: uuidV4()
+  },
   createdAt: new Date(),
 };
 
