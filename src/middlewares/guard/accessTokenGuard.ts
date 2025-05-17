@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { HttpStatuses } from '../../shared/enums';
-import { jwtService } from '../../service/jwtService';
+import { jwtService } from '../../composition-root';
 
 export const accessTokenGuard = async (req: Request, res: Response, next: NextFunction) => {
   if (!req.headers.authorization) {

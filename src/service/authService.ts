@@ -3,11 +3,11 @@ import { userRepository } from '../repository/userRepository';
 import bcrypt from 'bcrypt';
 import { HttpStatuses, ResultStatus } from '../shared/enums';
 import { Result } from '../shared/types';
-import { jwtService } from './jwtService';
 import { InputUserType } from '../input-output-types/user-types';
 import { userService } from './userService';
 import { emailManager } from '../managers/emailManager';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import { jwtService } from '../composition-root';
 
 export const authService = {
   async login(input: InputLoginType): Promise<Result<{ accessToken: string }>> {
