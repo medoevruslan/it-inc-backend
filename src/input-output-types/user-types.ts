@@ -8,7 +8,7 @@ export type UserAccountType = UserDbType;
 export type GetAllUsersQueryParams = {
   searchLoginTerm: string;
   searchEmailTerm: string;
-  sortBy: keyof UserAccountType;
+  sortBy: keyof UserAccountType['accountData'];
   sortDirection: 'asc' | 'desc';
   pageNumber: string;
   pageSize: string;

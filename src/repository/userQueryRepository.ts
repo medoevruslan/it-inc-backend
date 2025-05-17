@@ -14,7 +14,7 @@ export const userQueryRepository = {
       if (!filter?.$or) {
         filter.$or = [];
       }
-      filter.$or.push({ 'accountData.login': { $regex: searchLoginTerm, $options: 'i' } });
+      filter.$or?.push({ 'accountData.login': { $regex: searchLoginTerm, $options: 'i' } });
     }
 
     if (searchEmailTerm) {
@@ -34,7 +34,7 @@ export const userQueryRepository = {
       db
         .getCollections()
         .usersCollection.find(filter)
-        .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+        .sort({ [`accountData.${sortBy}`]: sortDirection === 'asc' ? 1 : -1 })
         .skip(skip)
         .limit(convertedPageSize)
         .toArray(),

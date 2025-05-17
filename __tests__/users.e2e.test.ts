@@ -41,7 +41,7 @@ describe('tests for /users', () => {
       await db.dropCollections();
 
       const newUsers: Partial<InputUserType[]> = Array.from({ length: 20 }).map((_, idx) => ({
-        login: 'newlgn' + idx,
+        login: getRandomLogin(),
         email: `new_email${idx}@gg.com`,
         password: 'new password' + idx,
       }));
@@ -52,6 +52,8 @@ describe('tests for /users', () => {
         ),
       );
 
+      const sortedUsersByLogin = [...newUsers].sort((user1, user2) => user1!.login.localeCompare(user2!.login) ).map(user => ({ login: user!.login })).slice(0, 15)
+
       const usersResponse = await req
         .get(
           `${SETTINGS.PATH.USERS}?pageSize=15&pageNumber=1&searchLoginTerm=seR&searchEmailTerm=.com&sortDirection=asc&sortBy=login`,
@@ -59,6 +61,9 @@ describe('tests for /users', () => {
         .set('Authorization', `Basic ${codedAuth}`)
         .expect(200);
 
+      const userResponseLogins =  usersResponse.body.items.map((user: OutputUserAccountType) => ({ login: user.login }))
+
+      expect(userResponseLogins).toEqual(sortedUsersByLogin)
       expect(usersResponse.body.totalCount).toBe(20);
       expect(usersResponse.body.pageSize).toBe(15);
       expect(usersResponse.body.pagesCount).toBe(2);
@@ -382,3 +387,11 @@ describe('tests for /users', () => {
     });
   });
 });
+
+
+function getRandomLogin(length = 8): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  return Array.from({ length })
+    .map(() => chars[Math.floor(Math.random() * chars.length)])
+    .join('');
+}
