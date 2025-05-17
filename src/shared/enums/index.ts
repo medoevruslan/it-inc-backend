@@ -12,4 +12,5 @@ export enum HttpStatuses {
 export enum ResultStatus {
   Success = HttpStatuses.Success,
   BadRequest = HttpStatuses.BadRequest,
+  ServerError = HttpStatuses.ServerError,
 }
