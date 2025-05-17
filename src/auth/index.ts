@@ -9,3 +9,4 @@ export const authRouter = Router();
 authRouter.post('/login', authController.login);
 authRouter.get('/me', accessTokenGuard, authController.me);
 authRouter.post('/registration', userBodyValidator, validationErrorMiddleware, authController.registration);
+authRouter.post('/registration-confirmation', authController.registration);
