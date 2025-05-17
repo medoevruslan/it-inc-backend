@@ -345,7 +345,7 @@ describe('tests for /users', () => {
         .send({ loginOrEmail: newUser.login, password: 'incorrect' })
         .expect(401);
 
-      expect(loginResponse.body).toEqual([
+      expect(loginResponse.body.errorMessages).toEqual([
         { field: 'email', message: 'login or password is incorrect' },
         { field: 'password', message: 'login or password is incorrect' },
       ]);
