@@ -57,6 +57,7 @@ const registrationConfirmation = async (req: Request<{}, {}, { code: string }>, 
     const result = await authService.registrationConfirm(req.body.code);
     if (result.status !== ResultStatus.Success) {
       res.status(result.status).send({ errorMessages: result.extensions });
+      return
     }
     res.sendStatus(204);
   } catch (err: unknown) {
@@ -64,8 +65,14 @@ const registrationConfirmation = async (req: Request<{}, {}, { code: string }>, 
   }
 };
 
-const registrationEmailResend = async (req: Request<{}, {}, InputLoginType>, res: Response) => {
+const registrationEmailResend = async (req: Request<{}, {}, { email: string }>, res: Response) => {
   try {
+    const result = await authService.resendRegistrationCode(req.body.email)
+    if (result.status != ResultStatus.Success) {
+      res.status(result.status).send({ errorMessages: result.extensions });
+      return
+    }
+    res.sendStatus(HttpStatuses.NoContent)
   } catch (err: unknown) {
     handleApiError(err, res);
   }
@@ -75,4 +82,6 @@ export const authController = {
   me,
   login,
   registration,
+  registrationConfirmation,
+  registrationEmailResend
 };
