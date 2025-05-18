@@ -121,4 +121,32 @@ describe('integration tests for auth', () => {
       expect(user?.emailConfirmation.isConfirmed).toBeTruthy();
     })
   })
+  describe('resend email confirmation', () => {
+    it('should reject user because email already is confirmed', async () => {
+      const userWithConfirmedEmail = user1;
+      userWithConfirmedEmail.emailConfirmation.isConfirmed = true
+      await db.seed({ users: [userWithConfirmedEmail] })
+
+      const result = await authService.resendRegistrationCode(userWithConfirmedEmail.accountData.email)
+
+      expect(result.data).toBeNull();
+      expect(result.errorMessage).toBe('Email is already confirmed')
+    })
+    it('should reject user because email is not correct format', async () => {
+      const result = await authService.resendRegistrationCode('corrupted.email.com')
+
+      expect(result.data).toBeNull();
+      expect(result.errorMessage).toBe('Bad email format')
+    })
+    it('should resend email', async () => {
+      await db.dropCollections();
+      await db.seed({ users: [user1] })
+
+      const result = await authService.resendRegistrationCode(user1.accountData.email)
+
+      expect(emailManager.sendEmailConfirmation).toHaveBeenCalledTimes(1)
+      expect(result.data).toBeTruthy();
+    })
+
+  })
 });
