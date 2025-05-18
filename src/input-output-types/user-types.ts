@@ -7,8 +7,8 @@ export type OutputUserAccountType = Omit<UserAccountType['accountData'], 'passwo
 export type UserAccountType = UserDbType;
 
 export type GetAllUsersQueryParams = {
-  searchLoginTerm: Nullable<string>;
-  searchEmailTerm: Nullable<string>;
+  searchLoginTerm: string;
+  searchEmailTerm: string;
   sortBy: keyof UserAccountType['accountData'];
   sortDirection: 'asc' | 'desc';
   pageNumber: string;

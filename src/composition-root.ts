@@ -10,7 +10,7 @@ const emailAdapter = new EmailAdapter();
 const emailManager = new EmailManager(emailAdapter)
 
 export const userService = new UserService(userRepository)
-const jwtService = new JwtService();
+export const jwtService = new JwtService();
 
 
 export const authService = new AuthService(emailManager, userService, userRepository, jwtService)

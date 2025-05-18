@@ -82,10 +82,15 @@ export class AuthService {
 
     const createdUserId = await this.userRepository.create(newUser);
 
-    this.emailManager.sendEmailConfirmation({
-      email: newUser.accountData.email,
-      verificationCode: newUser.emailConfirmation.confirmationCode,
-    });
+    try {
+      this.emailManager.sendEmailConfirmation({
+        email: newUser.accountData.email,
+        verificationCode: newUser.emailConfirmation.confirmationCode,
+      });
+    } catch (err) {
+      console.error(`error on send email: ${err}`)
+    }
+
 
     return {
       status: ResultStatus.Success,
@@ -150,6 +155,64 @@ export class AuthService {
       status: ResultStatus.Success,
       extensions: [],
       data: isUpdated,
+    };
+  }
+
+  async resendRegistrationCode(email: string): Promise<Result<boolean>> {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    debugger;
+    if (!emailRegex.test(email)) {
+      return {
+        status: ResultStatus.BadRequest,
+        errorMessage: 'Bad email format',
+        extensions: [{ field: 'email', message: 'Bad email format' }],
+        data: null,
+      };
+    }
+
+    const userByEmail = await this.userRepository.findByLoginOrEmail(email);
+
+    if (!userByEmail) {
+      return {
+        status: ResultStatus.BadRequest,
+        errorMessage: 'User not exists',
+        extensions: [],
+        data: null,
+      };
+    }
+
+    if (userByEmail.emailConfirmation.isConfirmed) {
+      return {
+        status: ResultStatus.BadRequest,
+        errorMessage: 'Email is already confirmed',
+        extensions: [{ field: 'email', message: 'Email is already confirmed' }],
+        data: null,
+      };
+    }
+
+    const verificationCode = uuidV4();
+
+    await this.userRepository.update(userByEmail?._id.toString(), {
+      emailConfirmation: {
+        confirmationCode: verificationCode,
+        isConfirmed: false,
+        expirationDate: add(new Date(), { hours: 1 }),
+      },
+    });
+
+    try {
+      this.emailManager.sendEmailConfirmation({
+        email,
+        verificationCode,
+      });
+    } catch (err) {
+      console.error(`error on send email: ${err}`)
+    }
+
+    return {
+      status: ResultStatus.Success,
+      extensions: [],
+      data: true,
     };
   }
 }
