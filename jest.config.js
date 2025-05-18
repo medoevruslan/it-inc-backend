@@ -5,5 +5,5 @@ module.exports = {
   testMatch: [
     "**/__tests__/**/*.test.ts",
     "**/__tests__/**/*.e2e.test.ts",
-  ]
+  ],
 }

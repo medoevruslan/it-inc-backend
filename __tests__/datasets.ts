@@ -44,13 +44,13 @@ export const user1: WithId<UserDbType> = {
     login: ('n' + Date.now() + Math.random()).slice(0, 5),
     email: 'some@email.com',
     password: ('n' + Date.now() + Math.random()).slice(0, 5),
+    createdAt: new Date(),
   },
   emailConfirmation: {
     isConfirmed: false,
     expirationDate: new Date(),
     confirmationCode: uuidV4()
   },
-  createdAt: new Date(),
 };
 
 export const comment1: WithId<CommentDbType> = {
@@ -60,3 +60,10 @@ export const comment1: WithId<CommentDbType> = {
   createdAt: new Date(),
   postId: new ObjectId().toString(),
 };
+
+export function getRandomLogin(length = 8): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  return Array.from({ length })
+    .map(() => chars[Math.floor(Math.random() * chars.length)])
+    .join('');
+}

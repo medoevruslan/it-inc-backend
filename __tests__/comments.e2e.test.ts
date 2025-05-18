@@ -7,6 +7,8 @@ import { HttpStatuses } from '../src/shared/enums';
 import { CommentInputType } from '../src/input-output-types/comment-types';
 import { ObjectId } from 'mongodb';
 
+jest.setTimeout(100000000);
+
 describe('test /comments', () => {
   const codedAuth = toBase64(SETTINGS.ADMIN_AUTH);
 

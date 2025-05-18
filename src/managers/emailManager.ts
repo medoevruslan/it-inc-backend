@@ -4,8 +4,7 @@ import { EmailAdapter } from '../adapters/emailAdapter';
 
 export class EmailManager {
 
-  constructor(protected emailAdapter: EmailAdapter) {
-  }
+  constructor(protected emailAdapter: EmailAdapter) {}
 
   async sendEmailConfirmation(userData: { email: string, verificationCode: string }) {
     const transporter = this.emailAdapter.getTransporter()

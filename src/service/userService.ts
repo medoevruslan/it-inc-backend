@@ -32,13 +32,13 @@ export class UserService {
         login,
         email,
         password: hashedPassword,
+        createdAt: new Date(),
       },
       emailConfirmation: {
         isConfirmed: false,
         confirmationCode: uuidV4(),
         expirationDate: add(new Date(), { hours: 1 }),
       },
-      createdAt: new Date(),
     };
 
     const createdUserId = await this.userRepository.create(newUser);

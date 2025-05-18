@@ -18,7 +18,7 @@ export class UserRepository {
   }
 
   public async findByConfirmationCode(code: string) {
-    return await db.getCollections().usersCollection.findOne({ 'accountData.confirmationCode': code });
+    return await db.getCollections().usersCollection.findOne({ 'emailConfirmation.confirmationCode': code });
   }
 
   public async findById(id: string) {

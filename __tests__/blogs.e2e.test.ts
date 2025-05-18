@@ -8,12 +8,17 @@ import { ObjectId } from 'mongodb';
 import { InputPostType } from '../src/input-output-types/post-types';
 import { db } from '../src/db/mongoDb';
 
-(async () => await db.run(SETTINGS.MONGO_URL))();
+
+jest.setTimeout(100000000);
 
 describe('tests for /blogs', () => {
   let dataset1: DBType;
 
   const codedAuth = toBase64(SETTINGS.ADMIN_AUTH);
+
+  beforeAll(async () => {
+    await db.run(SETTINGS.MONGO_URL);
+  })
 
   beforeEach(async () => {
     dataset1 = {

@@ -3,16 +3,18 @@ import bcrypt from 'bcrypt';
 import { HttpStatuses, ResultStatus } from '../shared/enums';
 import { Result } from '../shared/types';
 import { InputUserType } from '../input-output-types/user-types';
-import SMTPTransport from 'nodemailer/lib/smtp-transport';
-import { jwtService } from '../composition-root';
 import { EmailManager } from '../managers/emailManager';
 import { UserService } from './userService';
 import { UserRepository } from '../repository/userRepository';
+import { UserDbType } from '../db/user-db-type';
+import { JwtService } from './jwtService';
+import { v4 as uuidV4 } from 'uuid';
+import { add } from 'date-fns';
 
 export class AuthService {
 
-  constructor(protected emailManager: EmailManager, protected userService: UserService, protected userRepository: UserRepository) {}
-
+  constructor(protected emailManager: EmailManager, protected userService: UserService, protected userRepository: UserRepository, protected jwtService: JwtService) {
+  }
 
   public async login(input: InputLoginType): Promise<Result<{ accessToken: string }>> {
     const foundUser = await this.userRepository.findByLoginOrEmail(input.loginOrEmail);
@@ -35,7 +37,7 @@ export class AuthService {
       };
     }
 
-    const accessToken = await jwtService.createToken(foundUser._id.toString());
+    const accessToken = await this.jwtService.createToken(foundUser._id.toString());
 
     return {
       status: ResultStatus.Success,
@@ -44,25 +46,51 @@ export class AuthService {
     };
   }
 
-  public async register(data: InputUserType): Promise<Result<SMTPTransport.SentMessageInfo>> {
-    const created = await this.userService.create(data);
-    if (created.success && created.value) {
-      const user = created.value;
-      const result = await this.emailManager.sendEmailConfirmation({
-        email: user.accountData.email,
-        verificationCode: user.emailConfirmation.confirmationCode,
-      });
+  public async register(data: InputUserType): Promise<Result<UserDbType>> {
+    const { login, password, email } = data;
+
+    const userByEmail = await this.userRepository.findByLoginOrEmail(email);
+    const userByLogin = await this.userRepository.findByLoginOrEmail(login);
+
+    if (userByEmail || userByLogin) {
       return {
-        status: ResultStatus.Success,
-        extensions: [],
-        data: result,
+        status: ResultStatus.BadRequest,
+        errorMessage: 'User already exists',
+        extensions: [
+          ...(userByEmail ? [{ field: 'email', message: 'Email should be unique' }] : []),
+          ...(userByLogin ? [{ field: 'login', message: 'Login should be unique' }] : []),
+        ],
+        data: null,
       };
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser: UserDbType = {
+      accountData: {
+        login,
+        email,
+        password: hashedPassword,
+        createdAt: new Date(),
+      },
+      emailConfirmation: {
+        isConfirmed: false,
+        confirmationCode: uuidV4(),
+        expirationDate: add(new Date(), { hours: 1 }),
+      },
+    };
+
+    const createdUserId = await this.userRepository.create(newUser);
+
+    this.emailManager.sendEmailConfirmation({
+      email: newUser.accountData.email,
+      verificationCode: newUser.emailConfirmation.confirmationCode,
+    });
+
     return {
-      status: ResultStatus.BadRequest,
+      status: ResultStatus.Success,
       extensions: [],
-      data: null,
+      data: newUser,
     };
   }
 
@@ -72,33 +100,33 @@ export class AuthService {
     if (!user) {
       return {
         status: ResultStatus.BadRequest,
-        errorMessage: 'Bad Request',
+        errorMessage: 'User is not found',
         extensions: [
           { field: 'code', message: 'code is incorrect' },
         ],
-        data: null,
+        data: false,
       };
     }
 
     if (user.emailConfirmation.isConfirmed) {
       return {
         status: ResultStatus.BadRequest,
-        errorMessage: 'Bad Request',
+        errorMessage: 'User is already confirmed',
         extensions: [
           { field: 'code', message: 'user is already confirmed' },
         ],
-        data: null,
+        data: false,
       };
     }
 
     if (user.emailConfirmation.expirationDate < new Date()) {
       return {
         status: ResultStatus.BadRequest,
-        errorMessage: 'Bad Request',
+        errorMessage: 'Confirmation code has been expired',
         extensions: [
           { field: 'code', message: 'confirmation code has been expired' },
         ],
-        data: null,
+        data: false,
       };
     }
 
@@ -123,6 +151,5 @@ export class AuthService {
       extensions: [],
       data: isUpdated,
     };
-
   }
 }

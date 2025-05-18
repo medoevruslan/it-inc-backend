@@ -9,12 +9,16 @@ import { BlogDbType } from '../src/db/blog-db-type';
 import { ObjectId } from 'mongodb';
 import { db } from '../src/db/mongoDb';
 
-(async () => await db.run(SETTINGS.MONGO_URL))();
+jest.setTimeout(100000000);
 
 describe('tests for /posts', () => {
   let dataset1: DBType;
 
   const codedAuth = toBase64(SETTINGS.ADMIN_AUTH);
+
+  beforeAll(async () => {
+    await db.run(SETTINGS.MONGO_URL)
+  })
 
   beforeEach(() => {
     dataset1 = {

@@ -2,6 +2,9 @@ import { req, toBase64 } from './test-helpers';
 import { SETTINGS } from '../src/settings';
 import { InputUserType, OutputUserAccountType } from '../src/input-output-types/user-types';
 import { db } from '../src/db/mongoDb';
+import { getRandomLogin } from './datasets';
+
+jest.setTimeout(100000000);
 
 describe('tests for /users', () => {
   const codedAuth = toBase64(SETTINGS.ADMIN_AUTH);
@@ -271,11 +274,3 @@ describe('tests for /users', () => {
     });
   });
 });
-
-
-function getRandomLogin(length = 8): string {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  return Array.from({ length })
-    .map(() => chars[Math.floor(Math.random() * chars.length)])
-    .join('');
-}

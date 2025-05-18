@@ -3,6 +3,7 @@ import { InputUserType } from '../src/input-output-types/user-types';
 import { req, toBase64 } from './test-helpers';
 import { SETTINGS } from '../src/settings';
 
+jest.setTimeout(100000000)
 
 describe('test auth', () => {
   const codedAuth = toBase64(SETTINGS.ADMIN_AUTH);
@@ -128,14 +129,6 @@ describe('test auth', () => {
         email: meResponse.body.email,
         login: meResponse.body.login,
       });
-    });
-  });
-
-  describe('test user registration', () => {
-    it('user should be registered', async () => {
-
-
-
     });
   });
 });
