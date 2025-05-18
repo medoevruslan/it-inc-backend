@@ -6,12 +6,11 @@ import { AuthService } from './service/authService';
 import { EmailManager } from './managers/emailManager';
 
 const userRepository = new UserRepository();
-export const userService = new UserService(userRepository)
-
-
-export const jwtService = new JwtService();
 const emailAdapter = new EmailAdapter();
 const emailManager = new EmailManager(emailAdapter)
 
+export const userService = new UserService(userRepository)
+const jwtService = new JwtService();
 
-export const authService = new AuthService(emailManager, userService, userRepository)
+
+export const authService = new AuthService(emailManager, userService, userRepository, jwtService)
