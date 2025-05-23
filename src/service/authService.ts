@@ -176,7 +176,7 @@ export class AuthService {
       return {
         status: ResultStatus.BadRequest,
         errorMessage: 'User not exists',
-        extensions: [],
+        extensions: [{ field: 'email', message: 'Email is not existing' }],
         data: null,
       };
     }
