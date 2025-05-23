@@ -160,7 +160,7 @@ export class AuthService {
 
   async resendRegistrationCode(email: string): Promise<Result<boolean>> {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    debugger;
+
     if (!emailRegex.test(email)) {
       return {
         status: ResultStatus.BadRequest,

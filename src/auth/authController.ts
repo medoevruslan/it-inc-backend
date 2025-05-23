@@ -11,7 +11,7 @@ const login = async (req: Request<{}, {}, InputLoginType>, res: Response) => {
     const result = await authService.login(req.body);
 
     if (result.status !== ResultStatus.Success) {
-      res.status(HttpStatuses.Unauthorized).send({ errorMessages: result.extensions });
+      res.status(HttpStatuses.Unauthorized).send({ errorsMessages: result.extensions });
       return;
     }
 
@@ -46,7 +46,13 @@ const me = async (req: Request<{}, {}, InputLoginType>, res: Response) => {
 const registration = async (req: Request<{}, {}, InputUserType>, res: Response) => {
   try {
     const result = await authService.register(req.body);
-    res.status(HttpStatuses.Success).send(result);
+
+    if (result.status !== ResultStatus.Success) {
+      res.status(result.status).send({ errorsMessages: result.extensions });
+      return
+    }
+
+    res.sendStatus(HttpStatuses.NoContent)
   } catch (err: unknown) {
     handleApiError(err, res);
   }
@@ -56,10 +62,10 @@ const registrationConfirmation = async (req: Request<{}, {}, { code: string }>, 
   try {
     const result = await authService.registrationConfirm(req.body.code);
     if (result.status !== ResultStatus.Success) {
-      res.status(result.status).send({ errorMessages: result.extensions });
+      res.status(result.status).send({ errorsMessages: result.extensions });
       return
     }
-    res.sendStatus(204);
+    res.sendStatus(HttpStatuses.NoContent);
   } catch (err: unknown) {
     handleApiError(err, res);
   }
@@ -69,7 +75,7 @@ const registrationEmailResend = async (req: Request<{}, {}, { email: string }>, 
   try {
     const result = await authService.resendRegistrationCode(req.body.email)
     if (result.status != ResultStatus.Success) {
-      res.status(result.status).send({ errorMessages: result.extensions });
+      res.status(result.status).send({ errorsMessages: result.extensions });
       return
     }
     res.sendStatus(HttpStatuses.NoContent)
