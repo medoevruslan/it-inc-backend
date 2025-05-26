@@ -1,12 +1,13 @@
-import { req, toBase64 } from './test-helpers';
+import { addUser, req, toBase64 } from './test-helpers';
 import { SETTINGS } from '../src/settings';
 import { DBType } from '../src/db/db';
-import { blog1, comment1, post1, user1, video1 } from './datasets';
+import { blog1, comment1, post1, refreshToken1, user1, video1 } from './datasets';
 import { BlogDbType } from '../src/db/blog-db-type';
 import { InputBlogType, UpdateBlogType } from '../src/input-output-types/blog-types';
 import { ObjectId } from 'mongodb';
 import { InputPostType } from '../src/input-output-types/post-types';
 import { db } from '../src/db/mongoDb';
+import { HttpStatuses } from '../src/shared/enums';
 
 
 jest.setTimeout(100000000);
@@ -27,9 +28,15 @@ describe('tests for /blogs', () => {
       blogs: [blog1],
       users: [user1],
       comments: [comment1],
+      refreshTokensValid: [refreshToken1],
+      refreshTokensBlocked: [refreshToken1]
     };
     await db.dropCollections();
   });
+
+  afterAll(async () => {
+    await db.close()
+  })
 
   it('should return empty array', async () => {
     const res = await req.get(SETTINGS.PATH.BLOGS).expect(200);
@@ -46,6 +53,14 @@ describe('tests for /blogs', () => {
   });
 
   it('should create multiple blogs and return proper response', async () => {
+    const newUser = await addUser(codedAuth);
+
+    const loginResponse = await req
+      .post(`${SETTINGS.PATH.AUTH}/login`)
+      .send({ loginOrEmail: newUser.login, password: newUser.password })
+      .expect(HttpStatuses.Success);
+
+
     const newBlogs = Array.from({ length: 15 }).map((_, idx) => ({
       name: 'new blog' + idx,
       websiteUrl: 'https://new.some.com',
@@ -53,7 +68,7 @@ describe('tests for /blogs', () => {
     }));
 
     for (const blog of newBlogs) {
-      await req.post(SETTINGS.PATH.BLOGS).set('Authorization', `Basic ${codedAuth}`).send(blog).expect(201);
+      await req.post(SETTINGS.PATH.BLOGS).set('Authorization', `Bearer ${ loginResponse.body.accessToken}`).send(blog).expect(201);
     }
 
     const blogsResponse = await req.get(SETTINGS.PATH.BLOGS).expect(200);

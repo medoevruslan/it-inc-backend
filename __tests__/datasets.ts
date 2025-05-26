@@ -7,6 +7,7 @@ import { ObjectId, WithId } from 'mongodb';
 import { UserDbType } from '../src/db/user-db-type';
 import { CommentDbType } from '../src/db/comment-db-type';
 import { v4 as uuidV4 } from 'uuid'
+import { TokenDbType } from '../src/db/token-db-type';
 
 export const video1: VideoDBType = {
   id: generateId(),
@@ -60,6 +61,11 @@ export const comment1: WithId<CommentDbType> = {
   createdAt: new Date(),
   postId: new ObjectId().toString(),
 };
+
+export const refreshToken1: WithId<TokenDbType> = {
+  _id: new ObjectId(),
+  token: uuidV4()
+}
 
 export function getRandomLogin(length = 8): string {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';

@@ -1,6 +1,6 @@
 import { db } from '../src/db/mongoDb';
 import { SETTINGS } from '../src/settings';
-import { req, toBase64 } from './test-helpers';
+import { addUser, req, toBase64 } from './test-helpers';
 import { comment1, post1 } from './datasets';
 import { InputUserType, OutputUserAccountType } from '../src/input-output-types/user-types';
 import { HttpStatuses } from '../src/shared/enums';
@@ -286,19 +286,3 @@ describe('test /comments', () => {
     });
   });
 });
-
-const addUser = async (auth: string): Promise<OutputUserAccountType & { password: string }> => {
-  const newUser: Partial<InputUserType> = {
-    login: 'newlgn',
-    email: 'newwmail@some.com',
-    password: 'new password',
-  };
-
-  const createUserResponse = await req
-    .post(SETTINGS.PATH.USERS)
-    .set('Authorization', `Basic ${auth}`)
-    .send(newUser)
-    .expect(HttpStatuses.Created);
-
-  return { ...createUserResponse.body, password: newUser.password };
-};
