@@ -8,25 +8,29 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { db } from '../src/db/mongoDb';
 import { user1 } from './datasets';
 import { add } from 'date-fns';
+import { addUser, req, toBase64 } from './test-helpers';
+import { SETTINGS } from '../src/settings';
+import { HttpStatuses } from '../src/shared/enums';
 
-jest.mock('../src/managers/emailManager')
+jest.mock('../src/managers/emailManager');
 
-jest.setTimeout(100000000)
+jest.setTimeout(100000000);
 
 describe('integration tests for auth', () => {
 
   let mongoServer: MongoMemoryServer;
+  const codedAuth = toBase64(SETTINGS.ADMIN_AUTH);
 
   beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
     const uri = mongoServer.getUri();
-    await db.run(uri)
-  })
+    await db.run(uri);
+  });
 
   afterAll(async () => {
-    await db.close()
-    await mongoServer.stop()
-  })
+    await db.close();
+    await mongoServer.stop();
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -53,12 +57,12 @@ describe('integration tests for auth', () => {
         password: password,
       });
 
-      expect(result.data?.accountData.email).toBe(email)
-      expect(result.data?.accountData.login).toBe(login)
-      expect(result.data?.emailConfirmation.isConfirmed).toBe(false)
+      expect(result.data?.accountData.email).toBe(email);
+      expect(result.data?.accountData.login).toBe(login);
+      expect(result.data?.emailConfirmation.isConfirmed).toBe(false);
       expect(new Date(result.data?.emailConfirmation.expirationDate ?? 0).getTime()).toBeGreaterThan(Date.now());
 
-      expect(emailManager.sendEmailConfirmation).toHaveBeenCalledTimes(1)
+      expect(emailManager.sendEmailConfirmation).toHaveBeenCalledTimes(1);
     });
     it('should return null because user with same name is registered', async () => {
       const login = 'some user';
@@ -71,9 +75,9 @@ describe('integration tests for auth', () => {
         password: password,
       });
 
-      expect(result.data).toBeNull()
-      expect(result.extensions[0]).toEqual({ field: 'login', message: 'Login should be unique' })
-      expect(emailManager.sendEmailConfirmation).toHaveBeenCalledTimes(0)
+      expect(result.data).toBeNull();
+      expect(result.extensions[0]).toEqual({ field: 'login', message: 'Login should be unique' });
+      expect(emailManager.sendEmailConfirmation).toHaveBeenCalledTimes(0);
     });
     it('should return null because user with same email is registered', async () => {
       const login = 'some';
@@ -86,67 +90,89 @@ describe('integration tests for auth', () => {
         password: password,
       });
 
-      expect(result.data).toBeNull()
-      expect(result.extensions[0]).toEqual({ field: 'email', message: 'Email should be unique' })
-      expect(emailManager.sendEmailConfirmation).toHaveBeenCalledTimes(0)
+      expect(result.data).toBeNull();
+      expect(result.extensions[0]).toEqual({ field: 'email', message: 'Email should be unique' });
+      expect(emailManager.sendEmailConfirmation).toHaveBeenCalledTimes(0);
     });
   });
   describe('email confirmation', () => {
     it('should reject user because code expired', async () => {
-      await db.seed({ users: [user1] })
+      await db.seed({ users: [user1] });
 
-      const result = await authService.registrationConfirm(user1.emailConfirmation.confirmationCode)
+      const result = await authService.registrationConfirm(user1.emailConfirmation.confirmationCode);
 
       expect(result.data).toBeFalsy();
-      expect(result.errorMessage).toBe('Confirmation code has been expired')
-    })
+      expect(result.errorMessage).toBe('Confirmation code has been expired');
+    });
     it('should reject user because wrong code', async () => {
-      const result = await authService.registrationConfirm('wrong code')
+      const result = await authService.registrationConfirm('wrong code');
 
       expect(result.data).toBeFalsy();
-      expect(result.errorMessage).toBe('User is not found')
-    })
+      expect(result.errorMessage).toBe('User is not found');
+    });
     it('should accept user code', async () => {
-      await db.dropCollections()
+      await db.dropCollections();
 
       const userWithGoodCode = user1;
-      userWithGoodCode.emailConfirmation.expirationDate = add(new Date(), { minutes: 10 })
+      userWithGoodCode.emailConfirmation.expirationDate = add(new Date(), { minutes: 10 });
 
-      await db.seed({ users: [userWithGoodCode] })
+      await db.seed({ users: [userWithGoodCode] });
 
-      const result = await authService.registrationConfirm(user1.emailConfirmation.confirmationCode)
-      const user = await db.getCollections().usersCollection.findOne({ _id: userWithGoodCode._id })
+      const result = await authService.registrationConfirm(user1.emailConfirmation.confirmationCode);
+      const user = await db.getCollections().usersCollection.findOne({ _id: userWithGoodCode._id });
 
       expect(result.data).toBeTruthy();
       expect(user?.emailConfirmation.isConfirmed).toBeTruthy();
-    })
-  })
+    });
+  });
   describe('resend email confirmation', () => {
     it('should reject user because email already is confirmed', async () => {
       const userWithConfirmedEmail = user1;
-      userWithConfirmedEmail.emailConfirmation.isConfirmed = true
-      await db.seed({ users: [userWithConfirmedEmail] })
+      userWithConfirmedEmail.emailConfirmation.isConfirmed = true;
+      await db.seed({ users: [userWithConfirmedEmail] });
 
-      const result = await authService.resendRegistrationCode(userWithConfirmedEmail.accountData.email)
+      const result = await authService.resendRegistrationCode(userWithConfirmedEmail.accountData.email);
 
       expect(result.data).toBeNull();
-      expect(result.errorMessage).toBe('Email is already confirmed')
-    })
+      expect(result.errorMessage).toBe('Email is already confirmed');
+    });
     it('should reject user because email is not correct format', async () => {
-      const result = await authService.resendRegistrationCode('corrupted.email.com')
+      const result = await authService.resendRegistrationCode('corrupted.email.com');
 
       expect(result.data).toBeNull();
-      expect(result.errorMessage).toBe('Bad email format')
-    })
+      expect(result.errorMessage).toBe('Bad email format');
+    });
     it('should resend email', async () => {
       await db.dropCollections();
-      await db.seed({ users: [user1] })
+      await db.seed({ users: [user1] });
 
-      const result = await authService.resendRegistrationCode(user1.accountData.email)
+      const result = await authService.resendRegistrationCode(user1.accountData.email);
 
-      expect(emailManager.sendEmailConfirmation).toHaveBeenCalledTimes(1)
+      expect(emailManager.sendEmailConfirmation).toHaveBeenCalledTimes(1);
       expect(result.data).toBeTruthy();
-    })
+    });
 
-  })
+  });
+  describe('should logout', () => {
+    it('add refresh token to black list on logout', async () => {
+      const tokens1 = await db.getCollections().refreshTokensBlockedCollection.find().toArray();
+
+      expect(tokens1.length).toBe(0);
+
+      const user = await addUser(codedAuth);
+
+      const loginResponse = await req.post(`${SETTINGS.PATH.AUTH}/login`).send({
+        loginOrEmail: user.login,
+        password: user.password,
+      }).expect(HttpStatuses.Success);
+
+      const cookies = loginResponse.header['set-cookie'][0].split(';')[0];
+
+      await req.post(`${SETTINGS.PATH.AUTH}/logout`).set('Authorization', `Bearer ${loginResponse.body.accessToken}`).set('Cookie', cookies).expect(204);
+
+      const tokens2 = await db.getCollections().refreshTokensBlockedCollection.find().toArray();
+
+      expect(tokens2.length).toBe(1);
+    });
+  });
 });
