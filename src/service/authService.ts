@@ -10,13 +10,14 @@ import { UserDbType } from '../db/user-db-type';
 import { JwtService } from './jwtService';
 import { v4 as uuidV4 } from 'uuid';
 import { add } from 'date-fns';
+import { db } from '../db/mongoDb';
 
 export class AuthService {
 
   constructor(protected emailManager: EmailManager, protected userService: UserService, protected userRepository: UserRepository, protected jwtService: JwtService) {
   }
 
-  public async login(input: InputLoginType): Promise<Result<{ accessToken: string }>> {
+  public async login(input: InputLoginType): Promise<Result<{ accessToken: string, refreshToken: string }>> {
     const foundUser = await this.userRepository.findByLoginOrEmail(input.loginOrEmail);
 
     if (foundUser === null) {
@@ -37,12 +38,13 @@ export class AuthService {
       };
     }
 
-    const accessToken = await this.jwtService.createToken(foundUser._id.toString());
+    const accessToken = await this.jwtService.createAccessToken(foundUser._id.toString());
+    const refreshToken = await this.jwtService.createRefreshToken(foundUser._id.toString());
 
     return {
       status: ResultStatus.Success,
       extensions: [],
-      data: { accessToken },
+      data: { accessToken, refreshToken },
     };
   }
 
@@ -88,7 +90,7 @@ export class AuthService {
         verificationCode: newUser.emailConfirmation.confirmationCode,
       });
     } catch (err) {
-      console.error(`error on send email: ${err}`)
+      console.error(`error on send email: ${err}`);
     }
 
 
@@ -206,13 +208,22 @@ export class AuthService {
         verificationCode,
       });
     } catch (err) {
-      console.error(`error on send email: ${err}`)
+      console.error(`error on send email: ${err}`);
     }
 
     return {
       status: ResultStatus.Success,
       extensions: [],
       data: true,
+    };
+  }
+
+  async logout(refreshToken: string): Promise<Result<boolean>> {
+    await db.getCollections().refreshTokensBlockedCollection.insertOne({ token: refreshToken });
+    return {
+      status: ResultStatus.Success,
+      extensions: [],
+      data: null,
     };
   }
 }
