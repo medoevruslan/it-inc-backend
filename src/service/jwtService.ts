@@ -22,7 +22,11 @@ export class JwtService {
     }
   }
 
-  public async createToken(userId: string) {
-    return jwt.sign({ userId }, SETTINGS.JWT, { expiresIn: SETTINGS.TOKEN_EXP_TIME });
+  public async createAccessToken(userId: string) {
+    return jwt.sign({ userId }, SETTINGS.JWT, { expiresIn: SETTINGS.ACCESS_TOKEN_EXP_TIME });
+  }
+
+  public async createRefreshToken(userId: string) {
+    return jwt.sign({ userId }, SETTINGS.JWT, { expiresIn: SETTINGS.REFRESH_TOKEN_EXP_TIME });
   }
 }

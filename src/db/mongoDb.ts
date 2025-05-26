@@ -6,6 +6,7 @@ import { DBType } from './db';
 import { UserDbType } from './user-db-type';
 import { Nullable } from '../shared/types';
 import { CommentDbType } from './comment-db-type';
+import { TokenDbType } from './token-db-type';
 
 export const db = {
   client: {} as MongoClient,
@@ -52,6 +53,8 @@ export const db = {
       blogsCollection: this.getDbName().collection<BlogDbType>(SETTINGS.PATH.BLOGS),
       usersCollection: this.getDbName().collection<UserDbType>(SETTINGS.PATH.USERS),
       commentsCollection: this.getDbName().collection<CommentDbType>(SETTINGS.PATH.COMMENTS),
+      refreshTokensBlockedCollection: this.getDbName().collection<TokenDbType>('refreshTokensBlocked'),
+      refreshTokensValidCollection: this.getDbName().collection<TokenDbType>('refreshTokensValid')
     };
   },
 
@@ -62,5 +65,7 @@ export const db = {
     if (dataset.posts) await collections.postCollection.insertMany(dataset.posts);
     if (dataset.users) await collections.usersCollection.insertMany(dataset.users);
     if (dataset.comments) await collections.commentsCollection.insertMany(dataset.comments);
+    if (dataset.refreshTokensBlocked) await collections.refreshTokensBlockedCollection.insertMany(dataset.refreshTokensBlocked);
+    if (dataset.refreshTokensValid) await collections.refreshTokensBlockedCollection.insertMany(dataset.refreshTokensValid);
   },
 };

@@ -21,7 +21,9 @@ export const SETTINGS = {
   MONGO_URL: Process.env.MONGO_URL || 'mongodb://localhost:27017',
   DATABASE: Process.env.DATABASE || 'test',
   JWT: Process.env.JWT_SECRET as string,
-  TOKEN_EXP_TIME: Process.env.EXP_TIME as SignOptions['expiresIn'],
+  ACCESS_TOKEN_EXP_TIME: Process.env.ACCESS_EXP_TIME as SignOptions['expiresIn'],
+  REFRESH_TOKEN_EXP_TIME: Process.env.REFRESH_EXP_TIME as SignOptions['expiresIn'],
+  COOKIES_EXP_TIME: Number(Process.env.REFRESH_EXP_TIME) || 20,
   GOOGLE: {
     CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
