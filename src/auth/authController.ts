@@ -5,17 +5,27 @@ import { userQueryRepository } from '../repository/userQueryRepository';
 import { handleApiError } from '../shared/utils';
 import { InputUserType } from '../input-output-types/user-types';
 import { authService } from '../composition-root';
+import { SETTINGS } from '../settings';
+import { add } from 'date-fns';
 
 const login = async (req: Request<{}, {}, InputLoginType>, res: Response) => {
   try {
     const result = await authService.login(req.body);
 
-    if (result.status !== ResultStatus.Success) {
+    if (result.status !== ResultStatus.Success || !result.data) {
       res.status(HttpStatuses.Unauthorized).send({ errorsMessages: result.extensions });
       return;
     }
 
-    res.status(HttpStatuses.Success).send(result.data);
+    res.cookie('refreshToken', result.data!.refreshToken, {
+      httpOnly: true,
+      secure: true,
+      expires: add(new Date(), { seconds: SETTINGS.COOKIES_EXP_TIME }),
+    });
+
+    const accessToken = result.data.accessToken;
+
+    res.status(HttpStatuses.Success).send({ accessToken });
   } catch (err) {
     handleApiError(err, res);
   }
@@ -49,10 +59,10 @@ const registration = async (req: Request<{}, {}, InputUserType>, res: Response) 
 
     if (result.status !== ResultStatus.Success) {
       res.status(result.status).send({ errorsMessages: result.extensions });
-      return
+      return;
     }
 
-    res.sendStatus(HttpStatuses.NoContent)
+    res.sendStatus(HttpStatuses.NoContent);
   } catch (err: unknown) {
     handleApiError(err, res);
   }
@@ -63,7 +73,7 @@ const registrationConfirmation = async (req: Request<{}, {}, { code: string }>, 
     const result = await authService.registrationConfirm(req.body.code);
     if (result.status !== ResultStatus.Success) {
       res.status(result.status).send({ errorsMessages: result.extensions });
-      return
+      return;
     }
     res.sendStatus(HttpStatuses.NoContent);
   } catch (err: unknown) {
@@ -73,21 +83,34 @@ const registrationConfirmation = async (req: Request<{}, {}, { code: string }>, 
 
 const registrationEmailResend = async (req: Request<{}, {}, { email: string }>, res: Response) => {
   try {
-    const result = await authService.resendRegistrationCode(req.body.email)
+    const result = await authService.resendRegistrationCode(req.body.email);
     if (result.status != ResultStatus.Success) {
       res.status(result.status).send({ errorsMessages: result.extensions });
-      return
+      return;
     }
-    res.sendStatus(HttpStatuses.NoContent)
+    res.sendStatus(HttpStatuses.NoContent);
   } catch (err: unknown) {
+    handleApiError(err, res);
+  }
+};
+
+const logout = async (req: Request, res: Response) => {
+  try {
+    if (!req.cookies.refreshToken) {
+      res.sendStatus(HttpStatuses.Unauthorized);
+      return;
+    }
+    await authService.logout(req.cookies.refreshToken);
+    res.sendStatus(HttpStatuses.NoContent);
+  } catch (err) {
     handleApiError(err, res);
   }
 };
 
 export const authController = {
   me,
-  login,
+  login, logout,
   registration,
   registrationConfirmation,
-  registrationEmailResend
+  registrationEmailResend,
 };
