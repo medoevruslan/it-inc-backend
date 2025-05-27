@@ -24,6 +24,7 @@ export const db = {
       // Send a ping to confirm a successful connection
       await this.getDbName().command({ ping: 1 });
 
+      await this.init(); // set up DB
       console.log('Pinged your deployment. You successfully connected to MongoDB!');
       return true;
     } catch (err) {
@@ -47,6 +48,10 @@ export const db = {
     }
   },
 
+  async init() {
+    await this.getCollections().refreshTokensBlockedCollection.createIndex({ token: 1 }, { unique: true });
+  },
+
   getCollections() {
     return {
       postCollection: this.getDbName().collection<PostDbType>(SETTINGS.PATH.POSTS),
@@ -54,7 +59,7 @@ export const db = {
       usersCollection: this.getDbName().collection<UserDbType>(SETTINGS.PATH.USERS),
       commentsCollection: this.getDbName().collection<CommentDbType>(SETTINGS.PATH.COMMENTS),
       refreshTokensBlockedCollection: this.getDbName().collection<TokenDbType>('refreshTokensBlocked'),
-      refreshTokensValidCollection: this.getDbName().collection<TokenDbType>('refreshTokensValid')
+      refreshTokensValidCollection: this.getDbName().collection<TokenDbType>('refreshTokensValid'),
     };
   },
 
