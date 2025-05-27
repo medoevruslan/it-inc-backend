@@ -13,3 +13,4 @@ authRouter.post('/registration', userBodyValidator, validationErrorMiddleware, a
 authRouter.post('/registration-confirmation', authController.registrationConfirmation);
 authRouter.post('/registration-email-resending', authController.registrationEmailResend);
 authRouter.post('/logout', accessTokenGuard, authController.logout);
+authRouter.post('/refresh-token', accessTokenGuard, authController.refreshToken);

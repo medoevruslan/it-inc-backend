@@ -10,11 +10,11 @@ import { UserDbType } from '../db/user-db-type';
 import { JwtService } from './jwtService';
 import { v4 as uuidV4 } from 'uuid';
 import { add } from 'date-fns';
-import { db } from '../db/mongoDb';
+import { RefreshTokenBlockedRepository } from '../repository/refreshTokenBlockedRepository';
 
 export class AuthService {
 
-  constructor(protected emailManager: EmailManager, protected userService: UserService, protected userRepository: UserRepository, protected jwtService: JwtService) {
+  constructor(protected emailManager: EmailManager, protected userService: UserService, protected userRepository: UserRepository, protected jwtService: JwtService, protected refreshTokensBlockedRepository: RefreshTokenBlockedRepository) {
   }
 
   public async login(input: InputLoginType): Promise<Result<{ accessToken: string, refreshToken: string }>> {
@@ -219,11 +219,56 @@ export class AuthService {
   }
 
   async logout(refreshToken: string): Promise<Result<boolean>> {
-    await db.getCollections().refreshTokensBlockedCollection.insertOne({ token: refreshToken });
+    await this.refreshTokensBlockedRepository.add(refreshToken);
     return {
       status: ResultStatus.Success,
       extensions: [],
       data: null,
+    };
+  }
+
+  async refreshToken(currentToken: string): Promise<Result<{ refreshToken: string, accessToken: string }>> {
+    const user = await this.jwtService.decodeToken<{ userId: string }>(currentToken);
+
+    if (!user) {
+      return {
+        status: ResultStatus.BadRequest,
+        errorMessage: `Can't decode token`,
+        extensions: [],
+        data: null,
+      };
+    }
+
+    const foundUser = await this.userRepository.findById(user.userId);
+
+    if (!foundUser) {
+      console.log(`There is no such user with id: ${user.userId}`)
+      return {
+        status: ResultStatus.BadRequest,
+        errorMessage: `Can't find user`,
+        extensions: [],
+        data: null,
+      }
+    }
+
+    const result = await this.refreshTokensBlockedRepository.add(currentToken);
+
+    if (!result) {
+      return  {
+        status: ResultStatus.BadRequest,
+        errorMessage: `Token: ${currentToken} is in black list`,
+        extensions: [],
+        data: null,
+      }
+    }
+
+    const accessToken = await this.jwtService.createAccessToken(user.userId);
+    const refreshToken = await this.jwtService.createRefreshToken(user.userId);
+
+    return {
+      status: ResultStatus.Success,
+      extensions: [],
+      data: { accessToken, refreshToken },
     };
   }
 }

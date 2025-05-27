@@ -107,10 +107,42 @@ const logout = async (req: Request, res: Response) => {
   }
 };
 
+const refreshToken = async (req: Request, res: Response) => {
+  try {
+    const currentToken = req.cookies.refreshToken as string | undefined;
+
+    if (!currentToken) {
+      res.sendStatus(HttpStatuses.Unauthorized);
+      console.log('no refreshToken found');
+      return;
+    }
+
+    const result = await authService.refreshToken(currentToken);
+
+    if (result.status !== ResultStatus.Success || !result.data) {
+      res.status(HttpStatuses.Unauthorized).send({ errorsMessages: result.extensions });
+      return;
+    }
+
+    res.cookie('refreshToken', result.data.refreshToken, {
+      httpOnly: true,
+      secure: true,
+      expires: add(new Date(), { seconds: SETTINGS.COOKIES_EXP_TIME }),
+    });
+
+    const accessToken = result.data.accessToken;
+
+    res.status(HttpStatuses.Success).send({ accessToken });
+  } catch (err) {
+    handleApiError(err, res);
+  }
+};
+
 export const authController = {
   me,
   login, logout,
   registration,
   registrationConfirmation,
   registrationEmailResend,
+  refreshToken
 };
