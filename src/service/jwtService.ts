@@ -13,9 +13,9 @@ export class JwtService {
     }
   }
 
-  public async decodeToken(token: string): Promise<any> {
+  public async decodeToken<T>(token: string): Promise<Nullable<T>> {
     try {
-      return jwt.decode(token);
+      return jwt.decode(token) as T;
     } catch (e: unknown) {
       console.error("Can't decode token", e);
       return null;
