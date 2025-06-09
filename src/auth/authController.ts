@@ -98,9 +98,17 @@ const logout = async (req: Request, res: Response) => {
   try {
     if (!req.cookies.refreshToken) {
       res.sendStatus(HttpStatuses.Unauthorized);
+      console.log('no refreshToken found');
       return;
     }
-    await authService.logout(req.cookies.refreshToken);
+    const result = await authService.logout(req.cookies.refreshToken);
+
+    if (result.status !== ResultStatus.Success) {
+      console.log('result.status !== ResultStatus.Success || !result.data >> ', result);
+      res.status(HttpStatuses.Unauthorized).send({ errorsMessages: result.extensions });
+      return;
+    }
+
     res.sendStatus(HttpStatuses.NoContent);
   } catch (err) {
     handleApiError(err, res);
@@ -111,6 +119,8 @@ const refreshToken = async (req: Request, res: Response) => {
   try {
     const currentToken = req.cookies.refreshToken as string | undefined;
 
+    console.log('refreshToken controller: found currentToken >> ', currentToken);
+
     if (!currentToken) {
       res.sendStatus(HttpStatuses.Unauthorized);
       console.log('no refreshToken found');
@@ -120,6 +130,7 @@ const refreshToken = async (req: Request, res: Response) => {
     const result = await authService.refreshToken(currentToken);
 
     if (result.status !== ResultStatus.Success || !result.data) {
+      console.log('result.status !== ResultStatus.Success || !result.data >> ', result);
       res.status(HttpStatuses.Unauthorized).send({ errorsMessages: result.extensions });
       return;
     }

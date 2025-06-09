@@ -219,7 +219,30 @@ export class AuthService {
   }
 
   async logout(refreshToken: string): Promise<Result<boolean>> {
+    const isBlakListed = await this.refreshTokensBlockedRepository.findByToken(refreshToken);
+
+    if (isBlakListed) {
+      return {
+        status: ResultStatus.BadRequest,
+        errorMessage: `Token is in black list`,
+        extensions: [{ field: 'token', message:  'Token is in black list'}],
+        data: null,
+      };
+    }
+
+    const result = await this.jwtService.verifyToken<{ userId: string }>(refreshToken)
+
+    if (!result) {
+      return {
+        status: ResultStatus.BadRequest,
+        errorMessage: `Token is not valid`,
+        extensions: [{ field: 'token', message: 'Token is not valid' }],
+        data: null,
+      };
+    }
+
     await this.refreshTokensBlockedRepository.add(refreshToken);
+
     return {
       status: ResultStatus.Success,
       extensions: [],
@@ -228,12 +251,12 @@ export class AuthService {
   }
 
   async refreshToken(currentToken: string): Promise<Result<{ refreshToken: string, accessToken: string }>> {
-    const user = await this.jwtService.decodeToken<{ userId: string }>(currentToken);
+    const user = await this.jwtService.verifyToken<{ userId: string }>(currentToken);
 
     if (!user) {
       return {
         status: ResultStatus.BadRequest,
-        errorMessage: `Can't decode token`,
+        errorMessage: `Token is not valid`,
         extensions: [],
         data: null,
       };

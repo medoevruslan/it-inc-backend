@@ -12,6 +12,7 @@ export const accessTokenGuard = async (req: Request, res: Response, next: NextFu
 
   if (authType !== 'Bearer') {
     res.sendStatus(HttpStatuses.Unauthorized);
+    console.log('accessTokenGuard: no Bearer token found')
     return;
   }
 
@@ -25,5 +26,6 @@ export const accessTokenGuard = async (req: Request, res: Response, next: NextFu
     return;
   }
 
+  console.log('accessTokenGuard: no payload from token found')
   res.sendStatus(HttpStatuses.Unauthorized);
 };

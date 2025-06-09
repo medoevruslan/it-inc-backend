@@ -10,7 +10,7 @@ import { blogQueryValidator } from '../validation';
 import { getPostsByBlogByIdController } from './getPostsByBlogByIdController';
 import { createPostByBlogByIdController } from './createPostByBlogByIdController';
 import { postByBlogIdBodyValidator } from '../validation/postByBlogIdBodyValidator';
-import { accessTokenGuard, baseAuthGuard } from '../middlewares/guard';
+import { baseAuthGuard } from '../middlewares/guard';
 
 export const blogsRouter = Router();
 
@@ -24,6 +24,6 @@ blogsRouter.post(
   validationErrorMiddleware,
   createPostByBlogByIdController,
 );
-blogsRouter.post('/', blogBodyValidator, accessTokenGuard, validationErrorMiddleware, createBlogController);
+blogsRouter.post('/', blogBodyValidator, baseAuthGuard, validationErrorMiddleware, createBlogController);
 blogsRouter.put('/:id', blogBodyValidator, baseAuthGuard, validationErrorMiddleware, updateBlogController);
 blogsRouter.delete('/:id', baseAuthGuard, deleteBlogController);
