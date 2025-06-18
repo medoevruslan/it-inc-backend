@@ -1,4 +1,4 @@
-export type DeviceAuthSessionsType = {
+export type DeviceAuthSessionsDbType = {
   iat: Date,
   dId: string,
   ip: string,
