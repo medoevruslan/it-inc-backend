@@ -4,7 +4,7 @@ import { SignOptions } from 'jsonwebtoken';
 
 config();
 
-export const BASE_URL = '/ht_08/api';
+export const BASE_URL = '/ht_09/api';
 
 export const SETTINGS = {
   PORT: process.env.PORT || 3003,
@@ -15,6 +15,7 @@ export const SETTINGS = {
     USERS: `${BASE_URL}/users`,
     AUTH: `${BASE_URL}/auth`,
     COMMENTS: `${BASE_URL}/comments`,
+    SECURITY: `${BASE_URL}/security`,
     TESTING: `${BASE_URL}/testing/all-data`,
   },
   ADMIN_AUTH: 'admin:qwerty',

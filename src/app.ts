@@ -11,6 +11,7 @@ import { authRouter } from './auth';
 import { Request, Response, ErrorRequestHandler, NextFunction } from 'express';
 import { commentsRouter } from './comments';
 import cookieParser from 'cookie-parser';
+import { securityRouter } from './devices';
 
 export const app = express();
 app.use(express.json());
@@ -28,6 +29,7 @@ app.use(SETTINGS.PATH.POSTS, postsRouter);
 app.use(SETTINGS.PATH.USERS, usersRouter);
 app.use(SETTINGS.PATH.AUTH, authRouter);
 app.use(SETTINGS.PATH.COMMENTS, commentsRouter);
+app.use(SETTINGS.PATH.SECURITY, securityRouter)
 app.use(SETTINGS.PATH.TESTING, testingRouter);
 
 app.use((err: ErrorRequestHandler, req: Request, res: Response, next: NextFunction) => {
