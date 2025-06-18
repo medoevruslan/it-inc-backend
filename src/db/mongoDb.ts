@@ -7,6 +7,8 @@ import { UserDbType } from './user-db-type';
 import { Nullable } from '../shared/types';
 import { CommentDbType } from './comment-db-type';
 import { TokenDbType } from './token-db-type';
+import { ApiRequestsDataDbType } from './api-requests-data-db-type';
+import { DeviceAuthSessionsDbType } from './device-auth-sessions-db-type';
 
 export const db = {
   client: {} as MongoClient,
@@ -60,6 +62,8 @@ export const db = {
       commentsCollection: this.getDbName().collection<CommentDbType>(SETTINGS.PATH.COMMENTS),
       refreshTokensBlockedCollection: this.getDbName().collection<TokenDbType>('refreshTokensBlocked'),
       refreshTokensValidCollection: this.getDbName().collection<TokenDbType>('refreshTokensValid'),
+      apiRequestsData: this.getDbName().collection<ApiRequestsDataDbType>('apiRequests'),
+      deviceAuthSessions: this.getDbName().collection<DeviceAuthSessionsDbType>('deviceAuthSessions')
     };
   },
 
