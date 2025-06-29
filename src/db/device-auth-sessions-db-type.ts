@@ -1,7 +1,8 @@
 export type DeviceAuthSessionsDbType = {
-  iat: Date,
-  dId: string,
+  iat: number,
+  deviceId: string,
   ip: string,
   deviceName: string,
   userId: string
+  exp: number
 }
