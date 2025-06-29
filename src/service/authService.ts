@@ -1,4 +1,4 @@
-import { InputLoginType } from '../input-output-types/auth-types';
+import { InputLoginType, LoginServiceInput } from '../input-output-types/auth-types';
 import bcrypt from 'bcrypt';
 import { HttpStatuses, ResultStatus } from '../shared/enums';
 import { Result } from '../shared/types';
@@ -11,13 +11,22 @@ import { JwtService } from './jwtService';
 import { v4 as uuidV4 } from 'uuid';
 import { add } from 'date-fns';
 import { RefreshTokenBlockedRepository } from '../repository/refreshTokenBlockedRepository';
+import { DeviceAuthSessionsRepository } from '../repository/deviceAuthSessionsRepository';
+import { numericPatterns } from 'date-fns/parse/_lib/constants';
+
 
 export class AuthService {
 
-  constructor(protected emailManager: EmailManager, protected userService: UserService, protected userRepository: UserRepository, protected jwtService: JwtService, protected refreshTokensBlockedRepository: RefreshTokenBlockedRepository) {
+  constructor(
+    protected emailManager: EmailManager,
+    protected userService: UserService,
+    protected userRepository: UserRepository,
+    protected jwtService: JwtService,
+    protected refreshTokensBlockedRepository: RefreshTokenBlockedRepository,
+    protected deviceAuthSessionsRepository: DeviceAuthSessionsRepository) {
   }
 
-  public async login(input: InputLoginType): Promise<Result<{ accessToken: string, refreshToken: string }>> {
+  public async login(input: LoginServiceInput): Promise<Result<{ accessToken: string, refreshToken: string }>> {
     const foundUser = await this.userRepository.findByLoginOrEmail(input.loginOrEmail);
 
     if (foundUser === null) {
@@ -38,8 +47,26 @@ export class AuthService {
       };
     }
 
-    const accessToken = await this.jwtService.createAccessToken(foundUser._id.toString());
-    const refreshToken = await this.jwtService.createRefreshToken(foundUser._id.toString());
+    const deviceId = uuidV4();
+    const userId = foundUser._id.toString();
+    const userIp = input.ip ?? '-1'
+    const deviceName = input.userAgent ?? 'default-client'
+
+    const accessToken = await this.jwtService.createAccessToken(userId);
+    const { token: refreshToken, tokenData } = await this.jwtService.createRefreshToken(deviceId);
+
+    console.log(`New session: deviceId=${deviceId}, ip=${userIp}, userAgent=${deviceName}`);
+
+    if (!tokenData?.iat || !tokenData.exp) {
+      console.log('could not find iat or exp date ')
+      return {
+        status: ResultStatus.ServerError,
+        extensions: [{ field: 'token', message: 'could not find iat or exp date ' }],
+        data: null,
+      };
+    }
+
+    await this.deviceAuthSessionsRepository.add({ deviceId, userId, iat: tokenData.iat, deviceName, ip: userIp, exp: tokenData.exp});
 
     return {
       status: ResultStatus.Success,
@@ -225,12 +252,12 @@ export class AuthService {
       return {
         status: ResultStatus.BadRequest,
         errorMessage: `Token is in black list`,
-        extensions: [{ field: 'token', message:  'Token is in black list'}],
+        extensions: [{ field: 'token', message: 'Token is in black list' }],
         data: null,
       };
     }
 
-    const result = await this.jwtService.verifyToken<{ userId: string }>(refreshToken)
+    const result = await this.jwtService.verifyToken<{ userId: string }>(refreshToken);
 
     if (!result) {
       return {
@@ -265,28 +292,28 @@ export class AuthService {
     const foundUser = await this.userRepository.findById(user.userId);
 
     if (!foundUser) {
-      console.log(`There is no such user with id: ${user.userId}`)
+      console.log(`There is no such user with id: ${user.userId}`);
       return {
         status: ResultStatus.BadRequest,
         errorMessage: `Can't find user`,
         extensions: [],
         data: null,
-      }
+      };
     }
 
     const result = await this.refreshTokensBlockedRepository.add(currentToken);
 
     if (!result) {
-      return  {
+      return {
         status: ResultStatus.BadRequest,
         errorMessage: `Token: ${currentToken} is in black list`,
         extensions: [],
         data: null,
-      }
+      };
     }
 
     const accessToken = await this.jwtService.createAccessToken(user.userId);
-    const refreshToken = await this.jwtService.createRefreshToken(user.userId);
+    const { token: refreshToken } = await this.jwtService.createRefreshToken(user.userId);
 
     return {
       status: ResultStatus.Success,

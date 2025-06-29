@@ -26,7 +26,9 @@ export class JwtService {
     return jwt.sign({ userId }, SETTINGS.JWT, { expiresIn: SETTINGS.ACCESS_TOKEN_EXP_TIME });
   }
 
-  public async createRefreshToken(userId: string) {
-    return jwt.sign({ userId }, SETTINGS.JWT, { expiresIn: SETTINGS.REFRESH_TOKEN_EXP_TIME });
+  public async createRefreshToken(deviceId: string) {
+    const token = jwt.sign({ deviceId }, SETTINGS.JWT, { expiresIn: SETTINGS.REFRESH_TOKEN_EXP_TIME });
+    const tokenData = jwt.decode(token, { json: true })
+    return { token, tokenData }
   }
 }
