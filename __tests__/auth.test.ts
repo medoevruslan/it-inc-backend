@@ -44,7 +44,7 @@ describe('integration tests for auth', () => {
   const emailManager = new EmailManager(emailAdapter);
   const jwtService = new JwtService();
   const refreshTokenBlockedRepository = new RefreshTokenBlockedRepository();
-  const deviceAuthSessionsRepository = new DeviceAuthSessionsRepository()
+  const deviceAuthSessionsRepository = new DeviceAuthSessionsRepository();
 
   const authService = new AuthService(emailManager, userService, userRepository, jwtService, refreshTokenBlockedRepository, deviceAuthSessionsRepository);
 
@@ -190,13 +190,11 @@ describe('integration tests for auth', () => {
 
       await new Promise(res => setTimeout(res, 1000)); // make some delay to issue diff access token on refresh-token endpoint
       const cookies = loginResponse.header['set-cookie'][0].split(';')[0];
-      const refreshResponse = await req.post(`${SETTINGS.PATH.AUTH}/refresh-token`).set('Authorization', `Bearer ${loginResponse.body.accessToken}`).set('Cookie', cookies).expect(200);
+      const refreshResponse = await req.post(`${SETTINGS.PATH.AUTH}/refresh-token`).set('Cookie', cookies).expect(200);
 
 
-      expect(refreshResponse.body.accessToken,
-      ).toBeDefined();
-      expect(refreshResponse.body.accessToken,
-      ).not.toEqual(loginResponse.body.accessToken);
+      expect(refreshResponse.body.accessToken).toBeDefined();
+      expect(refreshResponse.body.accessToken).not.toEqual(loginResponse.body.accessToken);
 
     });
     it('should not refresh token because it is in black list', async () => {
@@ -213,10 +211,10 @@ describe('integration tests for auth', () => {
 
       await req.post(`${SETTINGS.PATH.AUTH}/logout`).set('Authorization', `Bearer ${loginResponse.body.accessToken}`).set('Cookie', cookies).expect(HttpStatuses.NoContent);
 
-      const refreshResponse = await req.post(`${SETTINGS.PATH.AUTH}/refresh-token`).set('Authorization', `Bearer ${loginResponse.body.accessToken}`).set('Cookie', cookies).expect(HttpStatuses.Unauthorized);
+      const refreshResponse = await req.post(`${SETTINGS.PATH.AUTH}/refresh-token`).set('Cookie', cookies).expect(HttpStatuses.Unauthorized);
 
       expect(refreshResponse.body.accessToken,
-      ).not.toBeDefined()
+      ).not.toBeDefined();
     });
   });
 });

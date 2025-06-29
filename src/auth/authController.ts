@@ -133,7 +133,7 @@ const refreshToken = async (req: Request, res: Response) => {
     const result = await authService.refreshToken(currentToken);
 
     if (result.status !== ResultStatus.Success || !result.data) {
-      console.log('result.status !== ResultStatus.Success || !result.data >> ', result);
+      console.log('refreshToken bad result: ', result);
       res.status(HttpStatuses.Unauthorized).send({ errorsMessages: result.extensions });
       return;
     }
