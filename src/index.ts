@@ -3,6 +3,8 @@ import { SETTINGS } from './settings';
 import * as Process from 'process';
 import { db } from './db/mongoDb';
 
+app.set('trust proxy', true);
+
 const startApp = async () => {
   const isDbStarted = await db.run(SETTINGS.MONGO_URL);
 
