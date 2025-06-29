@@ -12,6 +12,7 @@ import { addUser, req, toBase64 } from './test-helpers';
 import { SETTINGS } from '../src/settings';
 import { HttpStatuses } from '../src/shared/enums';
 import { RefreshTokenBlockedRepository } from '../src/repository/refreshTokenBlockedRepository';
+import { DeviceAuthSessionsRepository } from '../src/repository/deviceAuthSessionsRepository';
 
 jest.mock('../src/managers/emailManager');
 
@@ -43,9 +44,9 @@ describe('integration tests for auth', () => {
   const emailManager = new EmailManager(emailAdapter);
   const jwtService = new JwtService();
   const refreshTokenBlockedRepository = new RefreshTokenBlockedRepository();
+  const deviceAuthSessionsRepository = new DeviceAuthSessionsRepository()
 
-  const authService = new AuthService(emailManager, userService, userRepository, jwtService, refreshTokenBlockedRepository);
-
+  const authService = new AuthService(emailManager, userService, userRepository, jwtService, refreshTokenBlockedRepository, deviceAuthSessionsRepository);
 
   describe('should create and return user', () => {
     it('should return created user', async () => {

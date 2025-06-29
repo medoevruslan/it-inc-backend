@@ -10,14 +10,17 @@ import { add } from 'date-fns';
 
 const login = async (req: Request<{}, {}, InputLoginType>, res: Response) => {
   try {
-    const result = await authService.login(req.body);
+    const ip = req.ip;
+    const userAgent = req.header('user-agent')
+
+    const result = await authService.login({ ...req.body, ip, userAgent  });
 
     if (result.status !== ResultStatus.Success || !result.data) {
       res.status(HttpStatuses.Unauthorized).send({ errorsMessages: result.extensions });
       return;
     }
 
-    res.cookie('refreshToken', result.data!.refreshToken, {
+    res.cookie('refreshToken', result.data.refreshToken, {
       httpOnly: true,
       secure: true,
       expires: add(new Date(), { seconds: SETTINGS.COOKIES_EXP_TIME }),
