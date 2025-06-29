@@ -2,26 +2,17 @@ import { DeviceAuthSessionsDbType } from '../db/device-auth-sessions-db-type';
 import { db } from '../db/mongoDb';
 
 
-export class DeviceAuthSessionsRepository {
-  async add(data: DeviceAuthSessionsDbType){
-    const result = await db.getCollections().deviceAuthSessions.insertOne(data)
-    return result.insertedId
-  }
-
+export class DeviceAuthSessionsQueryRepository {
   async findAll(){
       return db.getCollections().deviceAuthSessions.find().toArray();
   }
 
-  async findByDeviceId(dId: string) {
-    return db.getCollections().deviceAuthSessions.find({ dId })
+  async findByDeviceId(deviceId: string) {
+    return db.getCollections().deviceAuthSessions.findOne({ deviceId });
   }
 
   async findByUserId(userId: string) {
-    return db.getCollections().deviceAuthSessions.find({userId})
+    return db.getCollections().deviceAuthSessions.find({userId}).toArray()
   }
 
-  async delete(deviceId: string){
-    const result = await db.getCollections().deviceAuthSessions.deleteOne({ dId: deviceId })
-    return result.deletedCount === 1
-  }
 }

@@ -6,6 +6,7 @@ import { AuthService } from './service/authService';
 import { EmailManager } from './managers/emailManager';
 import { RefreshTokenBlockedRepository } from './repository/refreshTokenBlockedRepository';
 import { DeviceAuthSessionsRepository } from './repository/deviceAuthSessionsRepository';
+import { DeviceSessionsService } from './service/deviceSessionsService';
 
 const userRepository = new UserRepository();
 const emailAdapter = new EmailAdapter();
@@ -17,5 +18,5 @@ export const jwtService = new JwtService();
 const refreshTokensBlockedRepository = new RefreshTokenBlockedRepository()
 const deviceAuthSessionsRepository = new DeviceAuthSessionsRepository()
 
-
+export const deviceSessionsService = new DeviceSessionsService(deviceAuthSessionsRepository, jwtService)
 export const authService = new AuthService(emailManager, userService, userRepository, jwtService, refreshTokensBlockedRepository, deviceAuthSessionsRepository)

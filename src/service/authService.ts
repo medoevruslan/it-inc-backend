@@ -277,8 +277,8 @@ export class AuthService {
     };
   }
 
-  async refreshToken(currentToken: string): Promise<Result<{ refreshToken: string, accessToken: string }>> {
-    const user = await this.jwtService.verifyToken<{ userId: string }>(currentToken);
+  async refreshToken(refreshToken: string): Promise<Result<{ refreshToken: string, accessToken: string }>> {
+    const user = await this.jwtService.verifyToken<{ userId: string }>(refreshToken);
 
     if (!user) {
       return {
@@ -301,24 +301,24 @@ export class AuthService {
       };
     }
 
-    const result = await this.refreshTokensBlockedRepository.add(currentToken);
+    const result = await this.refreshTokensBlockedRepository.add(refreshToken);
 
     if (!result) {
       return {
         status: ResultStatus.BadRequest,
-        errorMessage: `Token: ${currentToken} is in black list`,
+        errorMessage: `Token: ${refreshToken} is in black list`,
         extensions: [],
         data: null,
       };
     }
 
     const accessToken = await this.jwtService.createAccessToken(user.userId);
-    const { token: refreshToken } = await this.jwtService.createRefreshToken(user.userId);
+    const { token: newRefreshToken } = await this.jwtService.createRefreshToken(user.userId);
 
     return {
       status: ResultStatus.Success,
       extensions: [],
-      data: { accessToken, refreshToken },
+      data: { accessToken, refreshToken: newRefreshToken },
     };
   }
 }

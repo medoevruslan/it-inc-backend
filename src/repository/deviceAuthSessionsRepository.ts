@@ -12,16 +12,16 @@ export class DeviceAuthSessionsRepository {
       return db.getCollections().deviceAuthSessions.find().toArray();
   }
 
-  async findByDeviceId(dId: string) {
-    return db.getCollections().deviceAuthSessions.find({ dId })
+  async findByDeviceIdAndIat(deviceId: string, iat: number) {
+    return db.getCollections().deviceAuthSessions.findOne({ deviceId, iat })
   }
 
   async findByUserId(userId: string) {
-    return db.getCollections().deviceAuthSessions.find({userId})
+    return db.getCollections().deviceAuthSessions.find({userId}).toArray()
   }
 
   async delete(deviceId: string){
-    const result = await db.getCollections().deviceAuthSessions.deleteOne({ dId: deviceId })
+    const result = await db.getCollections().deviceAuthSessions.deleteOne({ deviceId })
     return result.deletedCount === 1
   }
 }

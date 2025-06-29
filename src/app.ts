@@ -11,7 +11,7 @@ import { authRouter } from './auth';
 import { Request, Response, ErrorRequestHandler, NextFunction } from 'express';
 import { commentsRouter } from './comments';
 import cookieParser from 'cookie-parser';
-import { securityRouter } from './devices';
+import { securityRouter } from './device-sessions';
 
 export const app = express();
 app.use(express.json());
