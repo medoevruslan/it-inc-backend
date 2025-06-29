@@ -171,7 +171,7 @@ describe('integration tests for auth', () => {
 
       const cookies = loginResponse.header['set-cookie'][0].split(';')[0];
 
-      await req.post(`${SETTINGS.PATH.AUTH}/logout`).set('Authorization', `Bearer ${loginResponse.body.accessToken}`).set('Cookie', cookies).expect(204);
+      await req.post(`${SETTINGS.PATH.AUTH}/logout`).set('Cookie', cookies).expect(204);
 
       const tokens2 = await db.getCollections().refreshTokensBlockedCollection.find().toArray();
 
