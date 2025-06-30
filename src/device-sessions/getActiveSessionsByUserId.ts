@@ -16,8 +16,8 @@ export const getActiveSessionsByUserId = async (req: Request, res: Response) => 
       return;
     }
 
-    const result = await deviceSessionsService.findSessionsByUserId({ refreshToken: currentToken });
-    res.status(HttpStatuses.Success).send(result)
+    const result = await deviceSessionsService.findSessionsByTokenPayload(currentToken);
+    res.status(HttpStatuses.Success).send(result);
   } catch (e) {
     handleApiError(e, res);
   }

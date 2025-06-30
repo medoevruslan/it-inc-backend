@@ -1,4 +1,4 @@
-import { InputLoginType, LoginServiceInput } from '../input-output-types/auth-types';
+import {  LoginServiceInput } from '../input-output-types/auth-types';
 import bcrypt from 'bcrypt';
 import { HttpStatuses, ResultStatus } from '../shared/enums';
 import { Result } from '../shared/types';
@@ -11,8 +11,7 @@ import { JwtService } from './jwtService';
 import { v4 as uuidV4 } from 'uuid';
 import { add } from 'date-fns';
 import { RefreshTokenBlockedRepository } from '../repository/refreshTokenBlockedRepository';
-import { DeviceAuthSessionsRepository } from '../repository/deviceAuthSessionsRepository';
-import { numericPatterns } from 'date-fns/parse/_lib/constants';
+import { DeviceSessionsService } from './deviceSessionsService';
 
 
 export class AuthService {
@@ -23,7 +22,8 @@ export class AuthService {
     protected userRepository: UserRepository,
     protected jwtService: JwtService,
     protected refreshTokensBlockedRepository: RefreshTokenBlockedRepository,
-    protected deviceAuthSessionsRepository: DeviceAuthSessionsRepository) {
+    protected deviceSessionsService: DeviceSessionsService
+  ) {
   }
 
   public async login(input: LoginServiceInput): Promise<Result<{ accessToken: string, refreshToken: string }>> {
@@ -66,7 +66,7 @@ export class AuthService {
       };
     }
 
-    await this.deviceAuthSessionsRepository.add({ deviceId, userId, iat: tokenData.iat, deviceName, ip: userIp, exp: tokenData.exp});
+    await this.deviceSessionsService.create({ deviceId, userId, iat: tokenData.iat, deviceName, ip: userIp, exp: tokenData.exp});
 
     return {
       status: ResultStatus.Success,
@@ -278,32 +278,28 @@ export class AuthService {
   }
 
   async refreshToken(refreshToken: string): Promise<Result<{ refreshToken: string, accessToken: string }>> {
-    const user = await this.jwtService.verifyToken<{ userId: string }>(refreshToken);
+    const tokenResult = await this.jwtService.verifyToken<{ deviceId: string, iat: number }>(refreshToken);
 
-    if (!user) {
+    if (!tokenResult) {
+      console.log(`refreshToken token bad result: ${tokenResult}`)
       return {
         status: ResultStatus.BadRequest,
         errorMessage: `Token is not valid`,
-        extensions: [],
+        extensions: [{ field: 'token', message: 'Token is not valid' }],
         data: null,
       };
     }
 
-    const foundUser = await this.userRepository.findById(user.userId);
+    const deviceSessionResult = await this.deviceSessionsService.findSessionByDeviceIdAndIat(tokenResult.deviceId, tokenResult.iat)
 
-    if (!foundUser) {
-      console.log(`There is no such user with id: ${user.userId}`);
-      return {
-        status: ResultStatus.BadRequest,
-        errorMessage: `Can't find user`,
-        extensions: [],
-        data: null,
-      };
+    if (!deviceSessionResult.data) {
+      console.log('There is no such deviceSession [deviceId:]', tokenResult.deviceId);
+      return deviceSessionResult;
     }
 
-    const result = await this.refreshTokensBlockedRepository.add(refreshToken);
+    const refreshTokensBlockedResult = await this.refreshTokensBlockedRepository.add(refreshToken);
 
-    if (!result) {
+    if (!refreshTokensBlockedResult) {
       return {
         status: ResultStatus.BadRequest,
         errorMessage: `Token: ${refreshToken} is in black list`,
@@ -312,8 +308,23 @@ export class AuthService {
       };
     }
 
-    const accessToken = await this.jwtService.createAccessToken(user.userId);
-    const { token: newRefreshToken } = await this.jwtService.createRefreshToken(user.userId);
+    const deviceId = deviceSessionResult.data.deviceId
+    const userId = deviceSessionResult.data.userId
+    const iat = deviceSessionResult.data.iat
+
+    const accessToken = await this.jwtService.createAccessToken(userId);
+    const { token: newRefreshToken, tokenData } = await this.jwtService.createRefreshToken(deviceId);
+
+    if (!tokenData?.iat || !tokenData.exp) {
+      console.log('could not find iat or exp date ')
+      return {
+        status: ResultStatus.ServerError,
+        extensions: [{ field: 'token', message: 'could not find iat or exp date ' }],
+        data: null,
+      };
+    }
+
+    const updatedDeviceSessionResult = await this.deviceSessionsService.update({ deviceId, iat, iatUpdated: tokenData.iat, expUpdated: tokenData.exp  })
 
     return {
       status: ResultStatus.Success,
