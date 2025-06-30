@@ -19,4 +19,4 @@ const refreshTokensBlockedRepository = new RefreshTokenBlockedRepository()
 const deviceAuthSessionsRepository = new DeviceAuthSessionsRepository()
 
 export const deviceSessionsService = new DeviceSessionsService(deviceAuthSessionsRepository, jwtService)
-export const authService = new AuthService(emailManager, userService, userRepository, jwtService, refreshTokensBlockedRepository, deviceAuthSessionsRepository)
+export const authService = new AuthService(emailManager, userService, userRepository, jwtService, refreshTokensBlockedRepository, deviceSessionsService)
