@@ -3,10 +3,12 @@ import { OutputDeviceSessionType } from '../input-output-types/device-session-ty
 
 export const sessionsMapper =  {
   mapSessionsToOutputType(session: DeviceAuthSessionsDbType): OutputDeviceSessionType {
+    const jwtInMilliseconds = session.iat * 1000
+
     return {
       ip: session.ip,
       deviceId: session.deviceId,
-      lastActiveDate: new Date(session.iat).toISOString() ,
+      lastActiveDate: new Date(jwtInMilliseconds).toISOString() ,
       title: session.deviceName
     }
   }
