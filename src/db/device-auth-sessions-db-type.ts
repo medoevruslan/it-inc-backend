@@ -6,3 +6,10 @@ export type DeviceAuthSessionsDbType = {
   userId: string
   exp: number
 }
+
+export type DeviceAuthSessionsUpdateType = {
+  deviceId: string,
+  iat: number,
+  expUpdated: number,
+  iatUpdated: number
+}
