@@ -1,4 +1,4 @@
-import { DeviceAuthSessionsDbType } from '../db/device-auth-sessions-db-type';
+import { DeviceAuthSessionsDbType, DeviceAuthSessionsUpdateType } from '../db/device-auth-sessions-db-type';
 import { db } from '../db/mongoDb';
 
 
@@ -6,6 +6,12 @@ export class DeviceAuthSessionsRepository {
   async add(data: DeviceAuthSessionsDbType){
     const result = await db.getCollections().deviceAuthSessions.insertOne(data)
     return result.insertedId
+  }
+
+  async update(data: DeviceAuthSessionsUpdateType) {
+    const { deviceId, iat, iatUpdated, expUpdated } = data
+    const result = await db.getCollections().deviceAuthSessions.updateOne({ deviceId, iat }, { $set: { iat: iatUpdated, exp: expUpdated } })
+    return result.matchedCount === 1
   }
 
   async findAll(){
