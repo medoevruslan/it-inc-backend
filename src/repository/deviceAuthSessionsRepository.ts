@@ -30,4 +30,9 @@ export class DeviceAuthSessionsRepository {
     const result = await db.getCollections().deviceAuthSessions.deleteOne({ deviceId })
     return result.deletedCount === 1
   }
+
+  async deleteByUserId(userId: string, options: { skip: {deviceId: string} }) {
+    const result = await db.getCollections().deviceAuthSessions.deleteMany({ userId, deviceId: { $ne: options.skip.deviceId } })
+    return result.deletedCount > 0
+  }
 }
