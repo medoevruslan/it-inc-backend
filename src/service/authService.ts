@@ -257,9 +257,10 @@ export class AuthService {
       };
     }
 
-    const result = await this.jwtService.verifyToken<{ userId: string }>(refreshToken);
+    const tokenResult = await this.jwtService.verifyToken<{ deviceId: string, iat: number }>(refreshToken);
 
-    if (!result) {
+    if (!tokenResult) {
+      console.log('Token verify bad result: ', tokenResult)
       return {
         status: ResultStatus.BadRequest,
         errorMessage: `Token is not valid`,
@@ -269,6 +270,17 @@ export class AuthService {
     }
 
     await this.refreshTokensBlockedRepository.add(refreshToken);
+    const isSessionDeleted = await this.deviceSessionsService.deleteSessionByDeviceId(tokenResult.deviceId)
+
+    if (!isSessionDeleted) {
+      console.log('Delete session failed')
+      return {
+        status: ResultStatus.ServerError,
+        errorMessage: `Could not delete session for device: ${tokenResult.deviceId}`,
+        extensions: [{ field: 'token', message: 'Token is not valid' }],
+        data: null,
+      };
+    }
 
     return {
       status: ResultStatus.Success,
