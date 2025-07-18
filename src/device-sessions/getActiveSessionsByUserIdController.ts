@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { handleApiError } from '../shared/utils';
-import { HttpStatuses } from '../shared/enums';
+import { HttpStatuses, ResultStatus } from '../shared/enums';
 import { deviceSessionsService } from '../composition-root';
 
 
@@ -17,7 +17,14 @@ export const getActiveSessionsByUserId = async (req: Request, res: Response) => 
     }
 
     const result = await deviceSessionsService.findSessionsByTokenPayload(currentToken);
-    res.status(HttpStatuses.Success).send(result);
+
+    if (result.status !== ResultStatus.Success) {
+      res.sendStatus(HttpStatuses.Unauthorized);
+      console.log(result.errorMessage);
+      return;
+    }
+
+    res.status(HttpStatuses.Success).send(result.data);
   } catch (e) {
     handleApiError(e, res);
   }
