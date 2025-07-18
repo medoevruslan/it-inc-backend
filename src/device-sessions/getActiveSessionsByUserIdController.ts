@@ -4,19 +4,11 @@ import { HttpStatuses, ResultStatus } from '../shared/enums';
 import { deviceSessionsService } from '../composition-root';
 
 
-export const getActiveSessionsByUserId = async (req: Request, res: Response) => {
+export const getActiveSessionsByUserIdController = async (req: Request, res: Response) => {
   try {
-    const currentToken = req.cookies.refreshToken as string | undefined;
+    const userId = req.userId!
 
-    console.log('getActiveSessionsByUserId controller: found currentToken >> ', currentToken);
-
-    if (!currentToken) {
-      res.sendStatus(HttpStatuses.Unauthorized);
-      console.log('no refreshToken found');
-      return;
-    }
-
-    const result = await deviceSessionsService.findSessionsByTokenPayload(currentToken);
+    const result = await deviceSessionsService.findSessionsByUserId(userId);
 
     if (result.status !== ResultStatus.Success) {
       res.sendStatus(HttpStatuses.Unauthorized);
