@@ -1,5 +1,3 @@
-import { WithId } from 'mongodb';
-
 export type UserDbType = UserType;
 
 type UserAccount = {

@@ -28,7 +28,7 @@ describe('tests for device sessions', () => {
   });
 
   it('should login and add device sessions', async () => {
-    const sessions1 = await db.getCollections().deviceAuthSessions.find().toArray();
+    const sessions1 = await db.getCollections().deviceAuthSessionsCollection.find().toArray();
     const sessionCount = 4;
 
     expect(sessions1.length).toBe(0);
@@ -134,7 +134,7 @@ describe('tests for device sessions', () => {
     const logoutResult = await req.post(`${SETTINGS.PATH.AUTH}/logout`).set('Cookie', loginResponseCookies).expect(HttpStatuses.NoContent);
     const resSessions2 = await req.get(`${SETTINGS.PATH.SECURITY}/devices`).set('Cookie', loginResponseCookies).expect(HttpStatuses.Unauthorized);
 
-    const sessions = await db.getCollections().deviceAuthSessions.find().toArray()
+    const sessions = await db.getCollections().deviceAuthSessionsCollection.find().toArray()
     expect(sessions.length).toBe(3)
 
   });
@@ -162,7 +162,7 @@ describe('tests for device sessions', () => {
     await req.post(`${SETTINGS.PATH.AUTH}/logout`).set('Cookie', loginResponseCookies).expect(HttpStatuses.NoContent);
     await req.get(`${SETTINGS.PATH.SECURITY}/devices`).set('Cookie', loginResponseCookies).expect(HttpStatuses.Unauthorized);
 
-    const sessions = await db.getCollections().deviceAuthSessions.find().toArray()
+    const sessions = await db.getCollections().deviceAuthSessionsCollection.find().toArray()
     expect(sessions.length).toBe(3)
 
   });

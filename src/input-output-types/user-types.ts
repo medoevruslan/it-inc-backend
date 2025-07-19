@@ -1,7 +1,6 @@
 import { UserDbType } from '../db/user-db-type';
-import { Nullable } from '../shared/types';
 
-export type InputUserType = Omit<UserDbType['accountData'], 'createdAt'>;
+export type InputUserType = Omit<UserAccountType['accountData'], 'createdAt'>;
 export type OutputUserAccountType = Omit<UserAccountType['accountData'], 'password'> & { id: string };
 
 export type UserAccountType = UserDbType;

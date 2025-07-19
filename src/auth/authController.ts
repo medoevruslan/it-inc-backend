@@ -99,11 +99,6 @@ const registrationEmailResend = async (req: Request<{}, {}, { email: string }>, 
 
 const logout = async (req: Request, res: Response) => {
   try {
-    if (!req.cookies.refreshToken) {
-      res.sendStatus(HttpStatuses.Unauthorized);
-      console.log('no refreshToken found');
-      return;
-    }
     const result = await authService.logout(req.cookies.refreshToken);
 
     if (result.status !== ResultStatus.Success) {
@@ -120,17 +115,7 @@ const logout = async (req: Request, res: Response) => {
 
 const refreshToken = async (req: Request, res: Response) => {
   try {
-    const currentToken = req.cookies.refreshToken as string | undefined;
-
-    console.log('refreshToken controller: found currentToken >> ', currentToken);
-
-    if (!currentToken) {
-      res.sendStatus(HttpStatuses.Unauthorized);
-      console.log('no refreshToken found');
-      return;
-    }
-
-    const result = await authService.refreshToken(currentToken);
+    const result = await authService.refreshToken(req.cookies.refreshToken);
 
     if (result.status !== ResultStatus.Success || !result.data) {
       console.log('refreshToken bad result: ', result);
