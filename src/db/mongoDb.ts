@@ -52,6 +52,7 @@ export const db = {
 
   async init() {
     await this.getCollections().refreshTokensBlockedCollection.createIndex({ token: 1 }, { unique: true });
+    await this.getCollections().apiRequestsDataCollection.createIndex({ date: 1 }, { expireAfterSeconds: 60 });
   },
 
   getCollections() {
@@ -62,8 +63,8 @@ export const db = {
       commentsCollection: this.getDbName().collection<CommentDbType>(SETTINGS.PATH.COMMENTS),
       refreshTokensBlockedCollection: this.getDbName().collection<TokenDbType>('refreshTokensBlocked'),
       refreshTokensValidCollection: this.getDbName().collection<TokenDbType>('refreshTokensValid'),
-      apiRequestsData: this.getDbName().collection<ApiRequestsDataDbType>('apiRequests'),
-      deviceAuthSessions: this.getDbName().collection<DeviceAuthSessionsDbType>('deviceAuthSessions')
+      apiRequestsDataCollection: this.getDbName().collection<ApiRequestsDataDbType>('apiRequests'),
+      deviceAuthSessionsCollection: this.getDbName().collection<DeviceAuthSessionsDbType>('deviceAuthSessions')
     };
   },
 

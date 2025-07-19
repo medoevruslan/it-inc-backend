@@ -12,6 +12,7 @@ import { Request, Response, ErrorRequestHandler, NextFunction } from 'express';
 import { commentsRouter } from './comments';
 import cookieParser from 'cookie-parser';
 import { securityRouter } from './device-sessions';
+import { rateLimitApiGuard } from './middlewares/guard/rateLimitApiGuard';
 
 export const app = express();
 app.use(express.json());
