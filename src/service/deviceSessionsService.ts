@@ -6,6 +6,7 @@ import { ObjectId } from 'mongodb';
 import { Result } from '../shared/types';
 import { sessionsMapper } from '../mapping/sessionsMapper';
 import { OutputDeviceSessionType } from '../input-output-types/device-session-types';
+import { db } from '../db/mongoDb';
 
 export class DeviceSessionsService {
 
@@ -19,6 +20,10 @@ export class DeviceSessionsService {
 
   public async update(data: DeviceAuthSessionsUpdateType) {
     return this.deviceAuthSessionsRepository.update(data);
+  }
+
+  public async findAll(): Promise<DeviceAuthSessionsDbType[]> {
+    return db.getCollections().deviceAuthSessionsCollection.find().toArray();
   }
 
   public async findSessionsByUserId(userId: string): Promise<Result<OutputDeviceSessionType[]>> {
