@@ -12,7 +12,6 @@ import { Request, Response, ErrorRequestHandler, NextFunction } from 'express';
 import { commentsRouter } from './comments';
 import cookieParser from 'cookie-parser';
 import { securityRouter } from './device-sessions';
-import { rateLimitApiGuard } from './middlewares/guard/rateLimitApiGuard';
 
 export const app = express();
 app.use(express.json());
@@ -21,7 +20,7 @@ app.use(cookieParser())
 
 app.get('/', (req, res) => {
   // shows project version
-  res.status(200).json({ version: '8.0' });
+  res.status(200).json({ version: '9.0' });
 });
 
 app.use(SETTINGS.PATH.VIDEOS, videosRouter);
