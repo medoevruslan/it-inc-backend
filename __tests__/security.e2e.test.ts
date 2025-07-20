@@ -3,6 +3,7 @@ import { db } from '../src/db/mongoDb';
 import { req, toBase64 } from './test-helpers';
 import { SETTINGS } from '../src/settings';
 import { InputUserType } from '../src/input-output-types/user-types';
+import { RATE_LIMIT_MAX } from '../src/middlewares/guard/rateLimitApiGuard';
 
 describe('tests for security', () => {
 
@@ -28,8 +29,7 @@ describe('tests for security', () => {
     it('should prevent more than 2 requests in 10 sec on register', async () => {
       await db.dropCollections();
 
-      const MAX_REQUESTS = 2;
-      const totalRequests = 7;
+      const totalRequests = 15;
 
       const newUsers: InputUserType[] = Array.from({ length: totalRequests }).map((_, idx) => ({
         login: 'newlgn' + idx,
@@ -43,7 +43,7 @@ describe('tests for security', () => {
           .post(`${SETTINGS.PATH.AUTH}/registration`)
           .send(user);
 
-        if (i <= MAX_REQUESTS) {
+        if (i <= RATE_LIMIT_MAX) {
           expect(response.status).toBe(204);
         } else {
           expect(response.status).toBe(429);

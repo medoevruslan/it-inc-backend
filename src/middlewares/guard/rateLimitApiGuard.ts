@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { apiRequestsSecurityQueryRepository } from '../../composition-root';
 import { HttpStatuses } from '../../shared/enums';
 
-const RATE_LIMIT_MAX = 2;
+export const RATE_LIMIT_MAX = 5;
 
 export const rateLimitApiGuard = async (req: Request, res: Response, next: NextFunction) => {
   const ip = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || req.ip || 'unknown';
