@@ -111,15 +111,10 @@ export class AuthService {
 
     const createdUserId = await this.userRepository.create(newUser);
 
-    try {
       this.emailManager.sendEmailConfirmation({
         email: newUser.accountData.email,
         verificationCode: newUser.emailConfirmation.confirmationCode,
-      });
-    } catch (err) {
-      console.error(`error on send email: ${err}`);
-    }
-
+      }).catch((err) => console.error(`error on send email: ${err}`));
 
     return {
       status: ResultStatus.Success,
@@ -229,14 +224,10 @@ export class AuthService {
       },
     });
 
-    try {
       this.emailManager.sendEmailConfirmation({
         email,
         verificationCode,
-      });
-    } catch (err) {
-      console.error(`error on send email: ${err}`);
-    }
+      }).catch((err) =>  console.error(`error on send email: ${err}`));
 
     return {
       status: ResultStatus.Success,
