@@ -1,32 +1,44 @@
-import { req, toBase64 } from './test-helpers';
+import { addUser, req, toBase64 } from './test-helpers';
 import { SETTINGS } from '../src/settings';
 import { DBType } from '../src/db/db';
-import { blog1, comment1, post1, user1, video1 } from './datasets';
+import { blog1, comment1, post1, refreshToken1, user1, video1 } from './datasets';
 import { BlogDbType } from '../src/db/blog-db-type';
 import { InputBlogType, UpdateBlogType } from '../src/input-output-types/blog-types';
 import { ObjectId } from 'mongodb';
 import { InputPostType } from '../src/input-output-types/post-types';
 import { db } from '../src/db/mongoDb';
+import { HttpStatuses } from '../src/shared/enums';
 
-(async () => await db.run(SETTINGS.MONGO_URL))();
+
+jest.setTimeout(100000000);
 
 describe('tests for /blogs', () => {
   let dataset1: DBType;
 
   const codedAuth = toBase64(SETTINGS.ADMIN_AUTH);
 
-  beforeEach(() => {
+  beforeAll(async () => {
+    await db.run(SETTINGS.MONGO_URL);
+  })
+
+  beforeEach(async () => {
     dataset1 = {
       videos: [video1],
       posts: [post1],
       blogs: [blog1],
       users: [user1],
       comments: [comment1],
+      refreshTokensValid: [refreshToken1],
+      refreshTokensBlocked: [refreshToken1]
     };
+    await db.dropCollections();
   });
 
+  afterAll(async () => {
+    await db.close()
+  })
+
   it('should return empty array', async () => {
-    await db.dropCollections();
     const res = await req.get(SETTINGS.PATH.BLOGS).expect(200);
 
     expect(res.body.items.length).toBe(0);
@@ -41,7 +53,13 @@ describe('tests for /blogs', () => {
   });
 
   it('should create multiple blogs and return proper response', async () => {
-    await db.dropCollections();
+    const newUser = await addUser(codedAuth);
+
+    const loginResponse = await req
+      .post(`${SETTINGS.PATH.AUTH}/login`)
+      .send({ loginOrEmail: newUser.login, password: newUser.password })
+      .expect(HttpStatuses.Success);
+
 
     const newBlogs = Array.from({ length: 15 }).map((_, idx) => ({
       name: 'new blog' + idx,
@@ -50,7 +68,7 @@ describe('tests for /blogs', () => {
     }));
 
     for (const blog of newBlogs) {
-      await req.post(SETTINGS.PATH.BLOGS).set('Authorization', `Basic ${codedAuth}`).send(blog).expect(201);
+      await req.post(SETTINGS.PATH.BLOGS).set('Authorization', `Bearer ${ loginResponse.body.accessToken}`).send(blog).expect(201);
     }
 
     const blogsResponse = await req.get(SETTINGS.PATH.BLOGS).expect(200);
@@ -63,8 +81,6 @@ describe('tests for /blogs', () => {
   });
 
   it('should set default query parameters', async () => {
-    await db.dropCollections();
-
     const res = await req.get(SETTINGS.PATH.BLOGS).expect(200);
 
     expect(res.body.items.length).toBe(0);
@@ -75,7 +91,6 @@ describe('tests for /blogs', () => {
   });
 
   it('should create new blog', async () => {
-    await db.dropCollections();
     const newBlog: Partial<BlogDbType> = {
       name: 'new blog',
       websiteUrl: 'https://new.some.com',
@@ -94,7 +109,6 @@ describe('tests for /blogs', () => {
   });
 
   it('should create new post by existing blogId', async () => {
-    await db.dropCollections();
     const initialBlogId = new ObjectId();
     const newBlog: Partial<BlogDbType> = {
       _id: initialBlogId,
@@ -130,7 +144,6 @@ describe('tests for /blogs', () => {
   });
 
   it('should find blog by searchNameTerm', async () => {
-    await db.dropCollections();
     const newBlog: Partial<BlogDbType> = {
       name: 'new blog',
       websiteUrl: 'https://new.some.com',
@@ -149,7 +162,6 @@ describe('tests for /blogs', () => {
   });
 
   it('should not find any blog by searchNameTerm', async () => {
-    await db.dropCollections();
     const newBlog: Partial<BlogDbType> = {
       name: 'new blog',
       websiteUrl: 'https://new.some.com',
@@ -170,7 +182,6 @@ describe('tests for /blogs', () => {
   });
 
   it('should sortBy name ascending', async () => {
-    await db.dropCollections();
     const aNewBlog: Partial<BlogDbType> = {
       name: 'a blog',
       websiteUrl: 'https://new.some.com',
@@ -216,7 +227,6 @@ describe('tests for /blogs', () => {
   });
 
   it('should sortBy name descending', async () => {
-    await db.dropCollections();
     const aNewBlog: Partial<BlogDbType> = {
       name: 'a blog',
       websiteUrl: 'https://new.some.com',
@@ -262,8 +272,6 @@ describe('tests for /blogs', () => {
   });
 
   it('should get posts by blogId', async () => {
-    await db.dropCollections();
-
     const newBlog: Partial<BlogDbType> = {
       name: 'new blog',
       websiteUrl: 'https://new.some.com',
@@ -334,6 +342,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should throw auth error on create new blog because wrong auth', async () => {
+    await db.dropCollections();
     const newBlog: any = {
       name: 'new blog',
       websiteUrl: 'https://new.some.com',
@@ -346,6 +355,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should delete blog by id', async () => {
+    await db.dropCollections();
     await db.seed(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
@@ -362,6 +372,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should not delete blog by wrong id', async () => {
+    await db.dropCollections();
     await db.seed(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
@@ -378,6 +389,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should not delete blog because unauthorized', async () => {
+    await db.dropCollections();
     await db.seed(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
@@ -391,6 +403,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should update blog by id', async () => {
+    await db.dropCollections();
     await db.seed(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
@@ -417,6 +430,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should not update blog by id because partial update data', async () => {
+    await db.dropCollections();
     await db.seed(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
@@ -436,6 +450,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should not update blog by id because wrong id', async () => {
+    await db.dropCollections();
     await db.seed(dataset1);
 
     const update: Partial<UpdateBlogType['update']> = {
@@ -452,6 +467,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should not update blog by id because unauthorized', async () => {
+    await db.dropCollections();
     await db.seed(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
@@ -474,6 +490,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should not update blog by id because wrong auth', async () => {
+    await db.dropCollections();
     await db.seed(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);
@@ -500,6 +517,7 @@ describe('tests for /blogs', () => {
   });
 
   it('should return error if :id from uri param not found', async () => {
+    await db.dropCollections();
     await db.seed(dataset1);
 
     const response1 = await req.get(SETTINGS.PATH.BLOGS).expect(200);

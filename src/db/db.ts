@@ -3,6 +3,7 @@ import { PostDbType } from './post-db.type';
 import { BlogDbType } from './blog-db-type';
 import { UserDbType } from './user-db-type';
 import { CommentDbType } from './comment-db-type';
+import { TokenDbType } from './token-db-type';
 
 export type DBType = {
   videos: VideoDBType[];
@@ -10,6 +11,8 @@ export type DBType = {
   blogs: BlogDbType[];
   users: UserDbType[];
   comments: CommentDbType[];
+  refreshTokensBlocked: TokenDbType[];
+  refreshTokensValid: TokenDbType[];
 };
 
 export const db: DBType = {
@@ -18,6 +21,8 @@ export const db: DBType = {
   blogs: [],
   users: [],
   comments: [],
+  refreshTokensBlocked: [],
+  refreshTokensValid: []
 };
 
 export const setDB = (dataset?: Partial<DBType>) => {
@@ -27,6 +32,8 @@ export const setDB = (dataset?: Partial<DBType>) => {
     db.blogs = [];
     db.users = [];
     db.comments = [];
+    db.refreshTokensBlocked = []
+    db.refreshTokensValid = []
     return;
   }
 
@@ -35,4 +42,6 @@ export const setDB = (dataset?: Partial<DBType>) => {
   db.blogs = dataset.blogs || db.blogs;
   db.users = dataset.users || db.users;
   db.comments = dataset.comments || db.comments;
+  db.refreshTokensBlocked = dataset.refreshTokensBlocked || db.refreshTokensBlocked
+  db.refreshTokensValid = dataset.refreshTokensValid || db.refreshTokensValid
 };

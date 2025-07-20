@@ -3,13 +3,15 @@ import { blogRepository, postRepository } from '../repository';
 import { ObjectId } from 'mongodb';
 import { GetAllQueryParams } from '../shared/types';
 import { OutputModelTypeWithInfo } from '../input-output-types/common-types';
+import { HttpStatuses } from '../shared/enums';
+import { CommentInputType } from '../input-output-types/comment-types';
 
 export const postService = {
   async create(input: InputPostType): Promise<OutputPostType> {
     const foundBlog = await blogRepository.findById(input.blogId);
 
     if (!foundBlog) {
-      throw new Error('404');
+      throw new Error(HttpStatuses.NotFound.toString());
     }
 
     const createdId = await postRepository.create({
@@ -21,20 +23,20 @@ export const postService = {
     const createdPost = await postRepository.findById(createdId);
 
     if (!createdPost) {
-      throw new Error('500');
+      throw new Error(HttpStatuses.ServerError.toString());
     }
 
     return createdPost;
   },
   async update({ postId, update }: UpdatePostType): Promise<boolean> {
     if (!ObjectId.isValid(postId)) {
-      throw new Error('400');
+      throw new Error(HttpStatuses.BadRequest.toString());
     }
 
     const success = await postRepository.update({ postId, update });
 
     if (!success) {
-      throw new Error('404');
+      throw new Error(HttpStatuses.NotFound.toString());
     }
     return success;
   },
@@ -43,26 +45,27 @@ export const postService = {
   },
   async findById(id: string): Promise<OutputPostType> {
     if (!ObjectId.isValid(id)) {
-      throw new Error('400');
+      throw new Error(HttpStatuses.BadRequest.toString());
     }
 
     const found = await postRepository.findById(id);
 
     if (!found) {
-      throw new Error('404');
+      console.log(`post ${id} not found`);
+      throw new Error(HttpStatuses.NotFound.toString());
     }
 
     return found;
   },
   async deleteById(id: string): Promise<boolean> {
     if (!ObjectId.isValid(id)) {
-      throw new Error('400');
+      throw new Error(HttpStatuses.BadRequest.toString());
     }
 
     const success = await postRepository.deleteById(id);
 
     if (!success) {
-      throw new Error('404');
+      throw new Error(HttpStatuses.NotFound.toString());
     }
 
     return success;

@@ -9,6 +9,6 @@ import { baseAuthGuard } from '../middlewares/guard';
 
 export const usersRouter = Router();
 
-usersRouter.get('/', userQueryValidator, baseAuthGuard, getUsersController);
+usersRouter.get('/', userQueryValidator, baseAuthGuard,validationErrorMiddleware, getUsersController);
 usersRouter.post('/', userBodyValidator, baseAuthGuard, validationErrorMiddleware, createUserController);
 usersRouter.delete('/:id', baseAuthGuard, deleteUserController);

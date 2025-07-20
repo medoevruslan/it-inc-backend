@@ -6,6 +6,8 @@ import { BlogDbType } from '../src/db/blog-db-type';
 import { ObjectId, WithId } from 'mongodb';
 import { UserDbType } from '../src/db/user-db-type';
 import { CommentDbType } from '../src/db/comment-db-type';
+import { v4 as uuidV4 } from 'uuid'
+import { TokenDbType } from '../src/db/token-db-type';
 
 export const video1: VideoDBType = {
   id: generateId(),
@@ -39,15 +41,35 @@ export const blog1: BlogDbType = {
 
 export const user1: WithId<UserDbType> = {
   _id: new ObjectId(),
-  login: ('n' + Date.now() + Math.random()).slice(0, 5),
-  email: 'some@email.com',
-  password: ('n' + Date.now() + Math.random()).slice(0, 5),
-  createdAt: new Date(),
+  accountData: {
+    login: ('n' + Date.now() + Math.random()).slice(0, 5),
+    email: 'some@email.com',
+    password: ('n' + Date.now() + Math.random()).slice(0, 5),
+    createdAt: new Date(),
+  },
+  emailConfirmation: {
+    isConfirmed: false,
+    expirationDate: new Date(),
+    confirmationCode: uuidV4()
+  },
 };
 
 export const comment1: WithId<CommentDbType> = {
   _id: new ObjectId(),
-  commentatorInfo: { userId: ('n' + Date.now() + Math.random()).slice(0, 5), userLogin: 'some_login' },
-  content: '',
+  commentatorInfo: { userId: new ObjectId().toString(), userLogin: 'some_login' },
+  content: 'some'.repeat(10),
   createdAt: new Date(),
+  postId: new ObjectId().toString(),
 };
+
+export const refreshToken1: WithId<TokenDbType> = {
+  _id: new ObjectId(),
+  token: uuidV4()
+}
+
+export function getRandomLogin(length = 8): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  return Array.from({ length })
+    .map(() => chars[Math.floor(Math.random() * chars.length)])
+    .join('');
+}

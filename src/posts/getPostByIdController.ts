@@ -1,8 +1,6 @@
 import { Request, Response } from 'express';
-import { OutputPostType } from '../input-output-types/post-types';
-import { postRepository } from '../repository';
-import { ObjectId } from 'mongodb';
 import { postService } from '../service/postService';
+import { HttpStatuses } from '../shared/enums';
 
 export const getPostByIdController = async (req: Request<{ id: string }>, res: Response) => {
   try {
@@ -14,7 +12,7 @@ export const getPostByIdController = async (req: Request<{ id: string }>, res: R
     if (isFinite(errorCode)) {
       res.status(errorCode).send();
     } else {
-      res.status(500).send(error.message);
+      res.status(HttpStatuses.ServerError).send(error.message);
     }
   }
 };

@@ -6,10 +6,12 @@ export enum HttpStatuses {
   Unauthorized = 401,
   Forbidden = 403,
   NotFound = 404,
+  TooManyRequests = 429,
   ServerError = 500,
 }
 
 export enum ResultStatus {
   Success = HttpStatuses.Success,
   BadRequest = HttpStatuses.BadRequest,
+  ServerError = HttpStatuses.ServerError,
 }

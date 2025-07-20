@@ -644,6 +644,11 @@
   dependencies:
     "@types/node" "*"
 
+"@types/cookie-parser@^1.4.8":
+  version "1.4.8"
+  resolved "https://registry.yarnpkg.com/@types/cookie-parser/-/cookie-parser-1.4.8.tgz#d2215e7915f624fbfe4233da8f063f511679f1f3"
+  integrity sha512-l37JqFrOJ9yQfRQkljb41l0xVphc7kg5JTjjr+pLRZ0IyZ49V4BQ8vbF4Ut2C2e+WH4al3xD3ZwYwIUfnbT4NQ==
+
 "@types/cookiejar@^2.1.5":
   version "2.1.5"
   resolved "https://registry.npmjs.org/@types/cookiejar/-/cookiejar-2.1.5.tgz"
@@ -744,6 +749,13 @@
   integrity sha512-F8Q+SeGimwOo86fiovQh8qiXfFEh2/ocYv7tU5pJ3EXMSSxk1Joj5wefpFK2fHTf/N6HKGSxIDBT9f3gCxXPkQ==
   dependencies:
     undici-types "~6.20.0"
+
+"@types/nodemailer@^6.4.17":
+  version "6.4.17"
+  resolved "https://registry.yarnpkg.com/@types/nodemailer/-/nodemailer-6.4.17.tgz#5c82a42aee16a3dd6ea31446a1bd6a447f1ac1a4"
+  integrity sha512-I9CCaIp6DTldEg7vyUTZi8+9Vo0hi1/T8gv3C89yk1rSAAzoKQ8H8ki/jBYJSFoH/BisgLP8tkZMlQ91CIquww==
+  dependencies:
+    "@types/node" "*"
 
 "@types/qs@*":
   version "6.9.17"
@@ -1284,6 +1296,14 @@ convert-source-map@^2.0.0:
   resolved "https://registry.npmjs.org/convert-source-map/-/convert-source-map-2.0.0.tgz"
   integrity sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==
 
+cookie-parser@^1.4.7:
+  version "1.4.7"
+  resolved "https://registry.yarnpkg.com/cookie-parser/-/cookie-parser-1.4.7.tgz#e2125635dfd766888ffe90d60c286404fa0e7b26"
+  integrity sha512-nGUvgXnotP3BsjiLX2ypbQnWoGUPIIfHQNZkkC668ntrzGWEZVW70HDEB1qnNGMicPje6EttlIgzo51YSwNQGw==
+  dependencies:
+    cookie "0.7.2"
+    cookie-signature "1.0.6"
+
 cookie-signature@1.0.6:
   version "1.0.6"
   resolved "https://registry.npmjs.org/cookie-signature/-/cookie-signature-1.0.6.tgz"
@@ -1293,6 +1313,11 @@ cookie@0.7.1:
   version "0.7.1"
   resolved "https://registry.npmjs.org/cookie/-/cookie-0.7.1.tgz"
   integrity sha512-6DnInpx7SJ2AK3+CTUE/ZM0vWTUboZCegxhC2xiIydHR9jNuTAASBrfEpHhiGOZw/nX51bHt6YQl8jsGo4y/0w==
+
+cookie@0.7.2:
+  version "0.7.2"
+  resolved "https://registry.yarnpkg.com/cookie/-/cookie-0.7.2.tgz#556369c472a2ba910f2979891b526b3436237ed7"
+  integrity sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==
 
 cookiejar@^2.1.4:
   version "2.1.4"
@@ -1333,6 +1358,11 @@ cross-spawn@^7.0.3:
     path-key "^3.1.0"
     shebang-command "^2.0.0"
     which "^2.0.1"
+
+date-fns@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-4.1.0.tgz#64b3d83fff5aa80438f5b1a633c2e83b8a1c2d14"
+  integrity sha512-Ukq0owbQXxa/U3EGtsdVBkR1w7KOQ5gIBqdH2hkvknzZPYvBxb/aa6E8L7tmjFtkwZBu3UXBbjIgPo/Ez4xaNg==
 
 debug@2.6.9:
   version "2.6.9"
@@ -2758,6 +2788,11 @@ node-releases@^2.0.19:
   resolved "https://registry.npmjs.org/node-releases/-/node-releases-2.0.19.tgz"
   integrity sha512-xxOWJsBKtzAq7DY0J+DTzuz58K8e7sJbdgwkbMWQe8UYB6ekmsQ45q0M/tJDsGaZmbC+l7n57UV8Hl5tHxO9uw==
 
+nodemailer@^7.0.3:
+  version "7.0.3"
+  resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-7.0.3.tgz#c098ce79ac60c7c111a86949eed2f99bd00cdac3"
+  integrity sha512-Ajq6Sz1x7cIK3pN6KesGTah+1gnwMnx5gKl3piQlQQE/PwyJ4Mbc8is2psWYxK3RJTVeqsDaCv8ZzXLCDHMTZw==
+
 nodemon@^3.1.9:
   version "3.1.9"
   resolved "https://registry.npmjs.org/nodemon/-/nodemon-3.1.9.tgz"
@@ -3500,6 +3535,11 @@ utils-merge@1.0.1:
   version "1.0.1"
   resolved "https://registry.npmjs.org/utils-merge/-/utils-merge-1.0.1.tgz"
   integrity sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==
+
+uuid@^11.1.0:
+  version "11.1.0"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-11.1.0.tgz#9549028be1753bb934fc96e2bca09bb4105ae912"
+  integrity sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==
 
 v8-compile-cache-lib@^3.0.1:
   version "3.0.1"

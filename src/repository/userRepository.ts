@@ -1,23 +1,38 @@
-import { UserDbType } from '../db/user-db-type';
+import { UserType } from '../db/user-db-type';
 import { db } from '../db/mongoDb';
 import { ObjectId } from 'mongodb';
+import { userMapper } from '../mapping/userMapper';
 
-export const userRepository = {
-  async create(user: UserDbType) {
+export class UserRepository {
+  public async create(user: UserType) {
     const result = await db.getCollections().usersCollection.insertOne({
       ...user,
     });
     return result.insertedId.toString();
-  },
+  }
 
-  async findByLoginOrEmail(loginOrEmail: string) {
+  public async findByLoginOrEmail(loginOrEmail: string) {
     return await db
       .getCollections()
-      .usersCollection.findOne({ $or: [{ email: loginOrEmail }, { login: loginOrEmail }] });
-  },
+      .usersCollection.findOne({ $or: [{ 'accountData.email': loginOrEmail }, { 'accountData.login': loginOrEmail }] });
+  }
 
-  async deleteById(userId: string) {
+  public async findByConfirmationCode(code: string) {
+    return await db.getCollections().usersCollection.findOne({ 'emailConfirmation.confirmationCode': code });
+  }
+
+  public async findById(id: string) {
+    const result = await db.getCollections().usersCollection.findOne({ _id: new ObjectId(id) });
+    return result ? userMapper.mapUserToOutputType(result) : null;
+  }
+
+  public async deleteById(userId: string) {
     const result = await db.getCollections().usersCollection.deleteOne({ _id: new ObjectId(userId) });
     return result.deletedCount === 1;
-  },
-};
+  }
+
+  public async update(userId: string, update: Partial<UserType>) {
+    const result = await db.getCollections().usersCollection.updateOne({ _id: new ObjectId(userId) }, { $set: update });
+    return result.matchedCount === 1;
+  }
+}

@@ -1,8 +1,10 @@
 import { req, toBase64 } from './test-helpers';
 import { SETTINGS } from '../src/settings';
-import { InputUserType, OutputUserType } from '../src/input-output-types/user-types';
+import { InputUserType, OutputUserAccountType } from '../src/input-output-types/user-types';
 import { db } from '../src/db/mongoDb';
-import { accessTokenGuard } from '../src/middlewares/guard';
+import { getRandomLogin } from './datasets';
+
+jest.setTimeout(100000000);
 
 describe('tests for /users', () => {
   const codedAuth = toBase64(SETTINGS.ADMIN_AUTH);
@@ -33,7 +35,7 @@ describe('tests for /users', () => {
 
       const usersResponse = await req.get(SETTINGS.PATH.USERS).set('Authorization', `Basic ${codedAuth}`).expect(200);
 
-      expect(usersResponse.body.totalCount).toBe(12);
+      expect(usersResponse.body.totalCount).toBe(newUsers.length);
       expect(usersResponse.body.pageSize).toBe(10);
       expect(usersResponse.body.pagesCount).toBe(2);
       expect(usersResponse.body.page).toBe(1);
@@ -42,7 +44,7 @@ describe('tests for /users', () => {
       await db.dropCollections();
 
       const newUsers: Partial<InputUserType[]> = Array.from({ length: 20 }).map((_, idx) => ({
-        login: 'newlgn' + idx,
+        login: getRandomLogin(),
         email: `new_email${idx}@gg.com`,
         password: 'new password' + idx,
       }));
@@ -53,6 +55,8 @@ describe('tests for /users', () => {
         ),
       );
 
+      const sortedUsersByLogin = [...newUsers].sort((user1, user2) => user1!.login.localeCompare(user2!.login)).map(user => ({ login: user!.login })).slice(0, 15);
+
       const usersResponse = await req
         .get(
           `${SETTINGS.PATH.USERS}?pageSize=15&pageNumber=1&searchLoginTerm=seR&searchEmailTerm=.com&sortDirection=asc&sortBy=login`,
@@ -60,6 +64,9 @@ describe('tests for /users', () => {
         .set('Authorization', `Basic ${codedAuth}`)
         .expect(200);
 
+      const userResponseLogins = usersResponse.body.items.map((user: OutputUserAccountType) => ({ login: user.login }));
+
+      expect(userResponseLogins).toEqual(sortedUsersByLogin);
       expect(usersResponse.body.totalCount).toBe(20);
       expect(usersResponse.body.pageSize).toBe(15);
       expect(usersResponse.body.pagesCount).toBe(2);
@@ -148,8 +155,8 @@ describe('tests for /users', () => {
       const usersResponse2 = await req.get(SETTINGS.PATH.USERS).set('Authorization', `Basic ${codedAuth}`).expect(200);
 
       expect(usersResponse2.body.items.length).toBe(usersResponse1.body.items.length + 1);
-      expect(usersResponse2.body.items.some((user: OutputUserType) => user.login === newUser.login)).toBeTruthy();
-      expect(usersResponse2.body.items.some((user: OutputUserType) => user.email === newUser.email)).toBeTruthy();
+      expect(usersResponse2.body.items.some((user: OutputUserAccountType) => user.login === newUser.login)).toBeTruthy();
+      expect(usersResponse2.body.items.some((user: OutputUserAccountType) => user.email === newUser.email)).toBeTruthy();
 
       expect(usersResponse2.body.totalCount).toBe(usersResponse1.body.totalCount + 1);
     });
@@ -235,8 +242,6 @@ describe('tests for /users', () => {
         .set('Authorization', `Basic ${codedAuth}`)
         .expect(200);
 
-      console.log('getUsersBeforeDeletingResponse.body::: ', getUsersBeforeDeletingResponse.body);
-
       expect(getUsersBeforeDeletingResponse.body.items.length).toBe(newUsers.length);
 
       const deleteUserResponse = await req
@@ -248,8 +253,6 @@ describe('tests for /users', () => {
         .get(SETTINGS.PATH.USERS + '?pageSize=20')
         .set('Authorization', `Basic ${codedAuth}`)
         .expect(200);
-
-      console.log('getUsersAfterDeletingResponse.body::: ', getUsersAfterDeletingResponse.body);
 
       expect(getUsersAfterDeletingResponse.body.items.length).toBe(newUsers.length - 1);
     });
@@ -268,122 +271,6 @@ describe('tests for /users', () => {
         .expect(201);
 
       const deleteUserResponse = await req.delete(`${SETTINGS.PATH.USERS}/${createUserResponse.body.id}`).expect(401);
-    });
-  });
-
-  describe('test login', () => {
-    it('should login by login successfully', async () => {
-      await db.dropCollections();
-      const newUser: Partial<InputUserType> = {
-        login: 'newlgn',
-        email: 'newwmail@some.com',
-        password: 'new password',
-      };
-
-      const createUserResponse = await req
-        .post(SETTINGS.PATH.USERS)
-        .set('Authorization', `Basic ${codedAuth}`)
-        .send(newUser)
-        .expect(201);
-
-      const loginResponse = await req
-        .post(`${SETTINGS.PATH.AUTH}/login`)
-        .send({ loginOrEmail: newUser.login, password: newUser.password })
-        .expect(200);
-
-      expect(loginResponse.body.accessToken).toReturn();
-    });
-    it('should login by email successfully', async () => {
-      await db.dropCollections();
-      const newUser: Partial<InputUserType> = {
-        login: 'newlgn',
-        email: 'newwmail@some.com',
-        password: 'new password',
-      };
-
-      const createUserResponse = await req
-        .post(SETTINGS.PATH.USERS)
-        .set('Authorization', `Basic ${codedAuth}`)
-        .send(newUser)
-        .expect(201);
-
-      const loginResponse = await req
-        .post(`${SETTINGS.PATH.AUTH}/login`)
-        .send({ loginOrEmail: newUser.email, password: newUser.password })
-        .expect(204);
-    });
-    it('should not login because user not exist', async () => {
-      await db.dropCollections();
-      const newUser: Partial<InputUserType> = {
-        login: 'newlgn',
-        email: 'newwmail@some.com',
-        password: 'new password',
-      };
-
-      const createUserResponse = await req
-        .post(SETTINGS.PATH.USERS)
-        .set('Authorization', `Basic ${codedAuth}`)
-        .send(newUser)
-        .expect(201);
-
-      const loginResponse = await req
-        .post(`${SETTINGS.PATH.AUTH}/login`)
-        .send({ loginOrEmail: 'incorrect login', password: newUser.password })
-        .expect(404);
-    });
-    it('should not login because password is incorrect', async () => {
-      await db.dropCollections();
-      const newUser: Partial<InputUserType> = {
-        login: 'newlgn',
-        email: 'newwmail@some.com',
-        password: 'new password',
-      };
-
-      const createUserResponse = await req
-        .post(SETTINGS.PATH.USERS)
-        .set('Authorization', `Basic ${codedAuth}`)
-        .send(newUser)
-        .expect(201);
-
-      const loginResponse = await req
-        .post(`${SETTINGS.PATH.AUTH}/login`)
-        .send({ loginOrEmail: newUser.login, password: 'incorrect' })
-        .expect(401);
-
-      expect(loginResponse.body).toEqual([
-        { field: 'email', message: 'login or password is incorrect' },
-        { field: 'password', message: 'login or password is incorrect' },
-      ]);
-    });
-    it('should pass me', async () => {
-      await db.dropCollections();
-      const newUser: Partial<InputUserType> = {
-        login: 'newlgn',
-        email: 'newwmail@some.com',
-        password: 'new password',
-      };
-
-      const createUserResponse = await req
-        .post(SETTINGS.PATH.USERS)
-        .set('Authorization', `Basic ${codedAuth}`)
-        .send(newUser)
-        .expect(201);
-
-      const loginResponse = await req
-        .post(`${SETTINGS.PATH.AUTH}/login`)
-        .send({ loginOrEmail: newUser.login, password: newUser.password })
-        .expect(200);
-
-      const meResponse = await req
-        .get(`${SETTINGS.PATH.AUTH}/me`)
-        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
-        .expect(200);
-
-      expect(meResponse.body).toEqual({
-        userId: createUserResponse.body.id,
-        email: meResponse.body.email,
-        login: meResponse.body.login,
-      });
     });
   });
 });

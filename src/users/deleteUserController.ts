@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { HttpStatuses } from '../shared/enums';
-import { userService } from '../service/userService';
+import { userService } from '../composition-root';
+
+
 export const deleteUserController = async (req: Request<{ id: string }>, res: Response) => {
   try {
     await userService.deleteById(req.params.id);
