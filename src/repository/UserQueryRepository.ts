@@ -5,7 +5,7 @@ import { GetAllUsersQueryParams, OutputUserAccountType } from '../input-output-t
 import { OutputModelTypeWithInfo } from '../input-output-types/common-types';
 import { UserDbType } from '../db/user-db-type';
 
-export const userQueryRepository = {
+export class UserQueryRepository {
   async findAll(inputFilter: GetAllUsersQueryParams): Promise<OutputModelTypeWithInfo<OutputUserAccountType>> {
     const { sortDirection, sortBy, pageSize, pageNumber, searchLoginTerm, searchEmailTerm } = inputFilter;
     let filter = {} as Filter<UserDbType>;
@@ -47,16 +47,18 @@ export const userQueryRepository = {
       totalCount: totalCount,
       items: users.map(userMapper.mapUserToOutputType),
     };
-  },
+  }
+
   async findById(id: string) {
     const result = await db.getCollections().usersCollection.findOne({ _id: new ObjectId(id) });
     return result ? userMapper.mapUserToOutputType(result) : null;
-  },
+  }
 
   async findByLoginOrEmail(loginOrEmail: string) {
     const result = await db
       .getCollections()
       .usersCollection.findOne({ $or: [{ email: loginOrEmail }, { login: loginOrEmail }] });
     return result ? userMapper.mapUserToOutputType(result) : null;
-  },
-};
+  }
+}
+

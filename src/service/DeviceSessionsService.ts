@@ -1,5 +1,5 @@
-import { DeviceAuthSessionsRepository } from '../repository/deviceAuthSessionsRepository';
-import { JwtService } from './jwtService';
+import { DeviceAuthSessionsRepository } from '../repository/DeviceAuthSessionsRepository';
+import { JwtService } from './JwtService';
 import { ResultStatus } from '../shared/enums';
 import { DeviceAuthSessionsDbType, DeviceAuthSessionsUpdateType } from '../db/device-auth-sessions-db-type';
 import { ObjectId } from 'mongodb';

@@ -6,7 +6,7 @@ import { ObjectId } from 'mongodb';
 import { HttpStatuses } from '../shared/enums';
 import { add } from 'date-fns';
 import { v4 as uuidV4 } from 'uuid';
-import { UserRepository } from '../repository/userRepository';
+import { UserRepository } from '../repository/UserRepository';
 
 export class UserService {
 

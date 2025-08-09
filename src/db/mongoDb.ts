@@ -75,7 +75,5 @@ export const db = {
     if (dataset.posts) await collections.postCollection.insertMany(dataset.posts);
     if (dataset.users) await collections.usersCollection.insertMany(dataset.users);
     if (dataset.comments) await collections.commentsCollection.insertMany(dataset.comments);
-    if (dataset.refreshTokensBlocked) await collections.refreshTokensBlockedCollection.insertMany(dataset.refreshTokensBlocked);
-    if (dataset.refreshTokensValid) await collections.refreshTokensBlockedCollection.insertMany(dataset.refreshTokensValid);
   },
 };

@@ -1,14 +1,11 @@
 import { Router } from 'express';
-import { getActiveSessionsByUserIdController } from './getActiveSessionsByUserIdController';
-import { deleteActiveSessionsExceptForActiveController } from './deleteActiveSessionsExceptForActiveController';
-import { deleteUserSessionByDeviceIdController } from './deleteUserSessionByDeviceIdController';
 import { refreshTokenGuard } from '../middlewares/guard/refreshTokenGuard';
-
+import { deviceSessionsController } from '../composition-root';
 
 export const securityRouter = Router()
 
-securityRouter.get('/devices/', refreshTokenGuard, getActiveSessionsByUserIdController)
-securityRouter.delete('/devices/', refreshTokenGuard, deleteActiveSessionsExceptForActiveController)
-securityRouter.delete('/devices/:deviceId',refreshTokenGuard, deleteUserSessionByDeviceIdController)
+securityRouter.get('/devices/', refreshTokenGuard, deviceSessionsController.getActiveSessionsByUserId.bind(deviceSessionsController))
+securityRouter.delete('/devices/', refreshTokenGuard, deviceSessionsController.deleteActiveSessionsExceptForActive.bind(deviceSessionsController))
+securityRouter.delete('/devices/:deviceId',refreshTokenGuard, deviceSessionsController.deleteUserSessionByDeviceId.bind(deviceSessionsController))
 
 

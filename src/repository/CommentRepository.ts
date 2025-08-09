@@ -6,27 +6,32 @@ import { GetAllQueryParamNoSearchTerm } from '../shared/types';
 import { HttpStatuses } from '../shared/enums';
 import { commentMapper } from '../mapping/commentMapper';
 
-export const commentRepository = {
+export class CommentRepository {
+
   async create(comment: CommentDbType) {
     const result = await db.getCollections().commentsCollection.insertOne({ ...comment });
     return result.insertedId.toString();
-  },
+  }
+
   async update({ commentId, update }: CommentUpdateType) {
     const result = await db
       .getCollections()
       .commentsCollection.updateOne({ _id: new ObjectId(commentId) }, { $set: { ...update } });
     return result.matchedCount === 1;
-  },
+  }
+
   async delete(commentId: string) {
     const result = await db.getCollections().commentsCollection.deleteOne({ _id: new ObjectId(commentId) });
     return result.deletedCount === 1;
-  },
+  }
+
   async findAll() {
     return db.getCollections().commentsCollection.find().toArray();
-  },
+  }
+
   async findById(commentId: string) {
     return db.getCollections().commentsCollection.findOne({ _id: new ObjectId(commentId) });
-  },
+  }
 
   async findByPostId(postId: string, query: GetAllQueryParamNoSearchTerm<CommentType>) {
     if (!ObjectId.isValid(postId)) {
@@ -58,5 +63,7 @@ export const commentRepository = {
       totalCount: totalCount,
       items: comments.map(commentMapper.mapCommentToOutputType),
     };
-  },
-};
+  }
+
+}
+

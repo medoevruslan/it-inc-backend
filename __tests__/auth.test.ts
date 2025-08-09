@@ -3,7 +3,7 @@ import { UserRepository } from '../src/repository/userRepository';
 import { UserService } from '../src/service/userService';
 import { EmailAdapter } from '../src/adapters/emailAdapter';
 import { EmailManager } from '../src/managers/emailManager';
-import { JwtService } from '../src/service/jwtService';
+import { JwtService } from '../src/service/JwtService';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { db } from '../src/db/mongoDb';
 import { user1 } from './datasets';
@@ -11,9 +11,9 @@ import { add } from 'date-fns';
 import { addUser, req, toBase64 } from './test-helpers';
 import { SETTINGS } from '../src/settings';
 import { HttpStatuses } from '../src/shared/enums';
-import { RefreshTokenBlockedRepository } from '../src/repository/refreshTokenBlockedRepository';
-import { DeviceAuthSessionsRepository } from '../src/repository/deviceAuthSessionsRepository';
-import { DeviceSessionsService } from '../src/service/deviceSessionsService';
+import { RefreshTokenBlockedRepository } from '../src/repository/RefreshTokenBlockedRepository';
+import { DeviceAuthSessionsRepository } from '../src/repository/DeviceAuthSessionsRepository';
+import { DeviceSessionsService } from '../src/service/DeviceSessionsService';
 
 jest.mock('../src/managers/emailManager');
 

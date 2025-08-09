@@ -19,7 +19,7 @@ describe('tests for /blogs', () => {
 
   beforeAll(async () => {
     await db.run(SETTINGS.MONGO_URL);
-  })
+  });
 
   beforeEach(async () => {
     dataset1 = {
@@ -29,14 +29,14 @@ describe('tests for /blogs', () => {
       users: [user1],
       comments: [comment1],
       refreshTokensValid: [refreshToken1],
-      refreshTokensBlocked: [refreshToken1]
+      refreshTokensBlocked: [refreshToken1],
     };
     await db.dropCollections();
   });
 
   afterAll(async () => {
-    await db.close()
-  })
+    await db.close();
+  });
 
   it('should return empty array', async () => {
     const res = await req.get(SETTINGS.PATH.BLOGS).expect(200);
@@ -68,7 +68,7 @@ describe('tests for /blogs', () => {
     }));
 
     for (const blog of newBlogs) {
-      await req.post(SETTINGS.PATH.BLOGS).set('Authorization', `Bearer ${ loginResponse.body.accessToken}`).send(blog).expect(201);
+      await req.post(SETTINGS.PATH.BLOGS).set('Authorization', `Basic ${codedAuth}`).send(blog).expect(201);
     }
 
     const blogsResponse = await req.get(SETTINGS.PATH.BLOGS).expect(200);

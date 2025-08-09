@@ -1,16 +1,14 @@
 import { db } from '../db/mongoDb';
-import { ObjectId, WithId } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import { HttpStatuses } from '../shared/enums';
 import { commentMapper } from '../mapping/commentMapper';
-import { GetAllQueryParamNoSearchTerm } from '../shared/types';
-import { CommentType } from '../input-output-types/comment-types';
-import { CommentDbType } from '../db/comment-db-type';
 
-export const commentQueryRepository = {
+export class CommentQueryRepository {
   async findAll() {
     const foundComments = await db.getCollections().commentsCollection.find().toArray();
     return foundComments.map(commentMapper.mapCommentToOutputType);
-  },
+  }
+
   async findById(commentId: string) {
     if (!ObjectId.isValid(commentId)) {
       throw new Error(HttpStatuses.BadRequest.toString());
@@ -22,6 +20,6 @@ export const commentQueryRepository = {
       throw new Error(HttpStatuses.NotFound.toString());
     }
     return commentMapper.mapCommentToOutputType(foundComment);
-  },
+  }
 
-};
+}

@@ -2,7 +2,6 @@ import { db } from '../src/db/mongoDb';
 import { SETTINGS } from '../src/settings';
 import { addUser, req, toBase64 } from './test-helpers';
 import { comment1, post1 } from './datasets';
-import { InputUserType, OutputUserAccountType } from '../src/input-output-types/user-types';
 import { HttpStatuses } from '../src/shared/enums';
 import { CommentInputType } from '../src/input-output-types/comment-types';
 import { ObjectId } from 'mongodb';

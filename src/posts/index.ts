@@ -1,24 +1,18 @@
 import { Router } from 'express';
-import { getPostsController } from './getPostsController';
-import { createPostController } from './createPostController';
-import { updatePostController } from './updatePostController';
-import { deletePostController } from './deletePostController';
 import { postBodyValidator } from '../validation';
 import { validationErrorMiddleware } from '../middlewares';
-import { getPostByIdController } from './getPostByIdController';
 import { postQueryValidator } from '../validation/postQueryValidator';
 import { accessTokenGuard, baseAuthGuard } from '../middlewares/guard';
-import { createPostCommentsController } from './createPostCommentsController';
-import { getPostCommentsController } from './getPostCommentsController';
 import { commentsQueryValidator } from '../validation/commentQueryValidator';
 import { commentBodyValidator } from '../validation/commentBodyValidator';
+import { postsController } from '../composition-root';
 
 export const postsRouter = Router();
 
-postsRouter.get('/', postQueryValidator, getPostsController);
-postsRouter.get('/:id', getPostByIdController);
-postsRouter.post('/', postBodyValidator, baseAuthGuard, validationErrorMiddleware, createPostController);
-postsRouter.put('/:id', postBodyValidator, baseAuthGuard, validationErrorMiddleware, updatePostController);
-postsRouter.delete('/:id', baseAuthGuard, deletePostController);
-postsRouter.post('/:postId/comments', commentBodyValidator, accessTokenGuard, validationErrorMiddleware, createPostCommentsController);
-postsRouter.get('/:postId/comments', commentsQueryValidator,  getPostCommentsController);
+postsRouter.get('/', postQueryValidator, postsController.getPosts.bind(postsController));
+postsRouter.get('/:id', postsController.getPostById.bind(postsController));
+postsRouter.post('/', postBodyValidator, baseAuthGuard, validationErrorMiddleware, postsController.createPost.bind(postsController));
+postsRouter.put('/:id', postBodyValidator, baseAuthGuard, validationErrorMiddleware, postsController.updatePost.bind(postsController));
+postsRouter.delete('/:id', baseAuthGuard, postsController.deletePost.bind(postsController));
+postsRouter.post('/:postId/comments', commentBodyValidator, accessTokenGuard, validationErrorMiddleware, postsController.createPostComments.bind(postsController));
+postsRouter.get('/:postId/comments', commentsQueryValidator,  postsController.getPostComments.bind(postsController));

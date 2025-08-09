@@ -24,7 +24,8 @@
     "watch": "tsc -w",
     "dev": "nodemon --inspect dist/index.js",
     "jest": "jest -i",
-    "jest:coverage": "jest -i --coverage"
+    "jest:coverage": "jest -i --coverage",
+    "type-check": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.8",

@@ -1,13 +1,12 @@
-import { BASE_URL } from '../settings';
-import { EmailAdapter } from '../adapters/emailAdapter';
-
+import { EmailAdapter } from '../adapters/EmailAdapter';
 
 export class EmailManager {
 
-  constructor(protected emailAdapter: EmailAdapter) {}
+  constructor(protected emailAdapter: EmailAdapter) {
+  }
 
   async sendEmailConfirmation(userData: { email: string, verificationCode: string }) {
-    const transporter = this.emailAdapter.getTransporter()
+    const transporter = this.emailAdapter.getTransporter();
 
     const sendMailInfo = await transporter.sendMail({
       from: 'Blog service <rus.terra.86@gmail.com>',
@@ -16,7 +15,7 @@ export class EmailManager {
       html: `<h1>Thank for your registration</h1>
               <p>To finish registration please follow the link below:
               <a href='https://somesite.com/confirm-email?code=${userData.verificationCode}'>complete registration</a>
-              </p>`
+              </p>`,
     });
 
     return sendMailInfo;

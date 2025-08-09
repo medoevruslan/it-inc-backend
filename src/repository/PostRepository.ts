@@ -5,15 +5,18 @@ import { GetAllQueryParams } from '../shared/types';
 import { db } from '../db/mongoDb';
 import { OutputModelTypeWithInfo } from '../input-output-types/common-types';
 
-export const postRepository = {
+export class PostRepository {
+
   async create(input: InputPostType & { blogName: string }): Promise<string> {
     const result = await db.getCollections().postCollection.insertOne(input);
     return result.insertedId.toString();
-  },
+  }
+
   async update({ postId, update }: UpdatePostType): Promise<boolean> {
     const result = await db.getCollections().postCollection.updateOne({ _id: new ObjectId(postId) }, { $set: update });
     return result.matchedCount === 1;
-  },
+  }
+
   async findAll(inputFilter: GetAllQueryParams<PostType>): Promise<OutputModelTypeWithInfo<OutputPostType>> {
     const { sortDirection, sortBy, pageSize, pageNumber, searchNameTerm } = inputFilter;
     const filter = searchNameTerm ? { name: { $regex: searchNameTerm, $options: 'i' } } : {};
@@ -41,11 +44,13 @@ export const postRepository = {
       totalCount: totalCount,
       items: posts.map(this.mapToOutputType),
     };
-  },
+  }
+
   async findById(id: string): Promise<OutputPostType | null> {
     const post = await db.getCollections().postCollection.findOne({ _id: new ObjectId(id) });
     return post === null ? null : this.mapToOutputType(post);
-  },
+  }
+
   async findByBlogId(
     id: string,
     inputFilter: GetAllQueryParams<PostType>,
@@ -76,11 +81,13 @@ export const postRepository = {
       totalCount: totalCount,
       items: posts.map(this.mapToOutputType),
     };
-  },
+  }
+
   async deleteById(id: string): Promise<boolean> {
     const result = await db.getCollections().postCollection.deleteOne({ _id: new ObjectId(id) });
     return result.deletedCount === 1;
-  },
+  }
+
   mapToOutputType(post: PostDbType): OutputPostType {
     return {
       id: post._id.toString(),
@@ -91,5 +98,6 @@ export const postRepository = {
       shortDescription: post.shortDescription,
       createdAt: post.createdAt,
     };
-  },
-};
+  }
+
+}

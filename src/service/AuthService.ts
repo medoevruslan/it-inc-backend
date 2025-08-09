@@ -1,17 +1,17 @@
-import {  LoginServiceInput } from '../input-output-types/auth-types';
+import { LoginServiceInput } from '../input-output-types/auth-types';
 import bcrypt from 'bcrypt';
 import { HttpStatuses, ResultStatus } from '../shared/enums';
 import { Result } from '../shared/types';
 import { InputUserType } from '../input-output-types/user-types';
-import { EmailManager } from '../managers/emailManager';
-import { UserService } from './userService';
-import { UserRepository } from '../repository/userRepository';
+import { EmailManager } from '../managers/EmailManager';
+import { UserService } from './UserService';
+import { UserRepository } from '../repository/UserRepository';
 import { UserDbType } from '../db/user-db-type';
-import { JwtService } from './jwtService';
 import { v4 as uuidV4 } from 'uuid';
 import { add } from 'date-fns';
-import { RefreshTokenBlockedRepository } from '../repository/refreshTokenBlockedRepository';
-import { DeviceSessionsService } from './deviceSessionsService';
+import { DeviceSessionsService } from './DeviceSessionsService';
+import { JwtService } from './JwtService';
+import { RefreshTokenBlockedRepository } from '../repository/RefreshTokenBlockedRepository';
 
 
 export class AuthService {
@@ -22,7 +22,7 @@ export class AuthService {
     protected userRepository: UserRepository,
     protected jwtService: JwtService,
     protected refreshTokensBlockedRepository: RefreshTokenBlockedRepository,
-    protected deviceSessionsService: DeviceSessionsService
+    protected deviceSessionsService: DeviceSessionsService,
   ) {
   }
 
@@ -49,8 +49,8 @@ export class AuthService {
 
     const deviceId = uuidV4();
     const userId = foundUser._id.toString();
-    const userIp = input.ip ?? '-1'
-    const deviceName = input.userAgent ?? 'default-client'
+    const userIp = input.ip ?? '-1';
+    const deviceName = input.userAgent ?? 'default-client';
 
     const accessToken = await this.jwtService.createAccessToken(userId);
     const { token: refreshToken, tokenData } = await this.jwtService.createRefreshToken(deviceId);
@@ -58,7 +58,7 @@ export class AuthService {
     console.log(`New session: deviceId=${deviceId}, ip=${userIp}, userAgent=${deviceName}`);
 
     if (!tokenData?.iat || !tokenData.exp) {
-      console.log('could not find iat or exp date ')
+      console.log('could not find iat or exp date ');
       return {
         status: ResultStatus.ServerError,
         extensions: [{ field: 'token', message: 'could not find iat or exp date ' }],
@@ -66,7 +66,14 @@ export class AuthService {
       };
     }
 
-    await this.deviceSessionsService.create({ deviceId, userId, iat: tokenData.iat, deviceName, ip: userIp, exp: tokenData.exp});
+    await this.deviceSessionsService.create({
+      deviceId,
+      userId,
+      iat: tokenData.iat,
+      deviceName,
+      ip: userIp,
+      exp: tokenData.exp,
+    });
 
     return {
       status: ResultStatus.Success,
@@ -111,10 +118,10 @@ export class AuthService {
 
     const createdUserId = await this.userRepository.create(newUser);
 
-      this.emailManager.sendEmailConfirmation({
-        email: newUser.accountData.email,
-        verificationCode: newUser.emailConfirmation.confirmationCode,
-      }).catch((err) => console.error(`error on send email: ${err}`));
+    this.emailManager.sendEmailConfirmation({
+      email: newUser.accountData.email,
+      verificationCode: newUser.emailConfirmation.confirmationCode,
+    }).catch((err) => console.error(`error on send email: ${err}`));
 
     return {
       status: ResultStatus.Success,
@@ -224,10 +231,10 @@ export class AuthService {
       },
     });
 
-      this.emailManager.sendEmailConfirmation({
-        email,
-        verificationCode,
-      }).catch((err) =>  console.error(`error on send email: ${err}`));
+    this.emailManager.sendEmailConfirmation({
+      email,
+      verificationCode,
+    }).catch((err) => console.error(`error on send email: ${err}`));
 
     return {
       status: ResultStatus.Success,
@@ -251,7 +258,7 @@ export class AuthService {
     const tokenResult = await this.jwtService.verifyToken<{ deviceId: string, iat: number }>(refreshToken);
 
     if (!tokenResult) {
-      console.log('Token verify bad result: ', tokenResult)
+      console.log('Token verify bad result: ', tokenResult);
       return {
         status: ResultStatus.BadRequest,
         errorMessage: `Token is not valid`,
@@ -261,10 +268,10 @@ export class AuthService {
     }
 
     await this.refreshTokensBlockedRepository.add(refreshToken);
-    const isSessionDeleted = await this.deviceSessionsService.deleteSessionByDeviceId(tokenResult.deviceId)
+    const isSessionDeleted = await this.deviceSessionsService.deleteSessionByDeviceId(tokenResult.deviceId);
 
     if (!isSessionDeleted) {
-      console.log('Delete session failed')
+      console.log('Delete session failed');
       return {
         status: ResultStatus.ServerError,
         errorMessage: `Could not delete session for device: ${tokenResult.deviceId}`,
@@ -284,7 +291,7 @@ export class AuthService {
     const tokenResult = await this.jwtService.verifyToken<{ deviceId: string, iat: number }>(refreshToken);
 
     if (!tokenResult) {
-      console.log(`refreshToken token bad result: ${tokenResult}`)
+      console.log(`refreshToken token bad result: ${tokenResult}`);
       return {
         status: ResultStatus.BadRequest,
         errorMessage: `Token is not valid`,
@@ -293,7 +300,7 @@ export class AuthService {
       };
     }
 
-    const deviceSessionResult = await this.deviceSessionsService.findSessionByDeviceIdAndIat(tokenResult.deviceId, tokenResult.iat)
+    const deviceSessionResult = await this.deviceSessionsService.findSessionByDeviceIdAndIat(tokenResult.deviceId, tokenResult.iat);
 
     if (!deviceSessionResult.data) {
       console.log('There is no such deviceSession [deviceId:]', tokenResult.deviceId);
@@ -311,15 +318,15 @@ export class AuthService {
       };
     }
 
-    const deviceId = deviceSessionResult.data.deviceId
-    const userId = deviceSessionResult.data.userId
-    const iat = deviceSessionResult.data.iat
+    const deviceId = deviceSessionResult.data.deviceId;
+    const userId = deviceSessionResult.data.userId;
+    const iat = deviceSessionResult.data.iat;
 
     const accessToken = await this.jwtService.createAccessToken(userId);
     const { token: newRefreshToken, tokenData } = await this.jwtService.createRefreshToken(deviceId);
 
     if (!tokenData?.iat || !tokenData.exp) {
-      console.log('could not find iat or exp date ')
+      console.log('could not find iat or exp date ');
       return {
         status: ResultStatus.ServerError,
         extensions: [{ field: 'token', message: 'could not find iat or exp date ' }],
@@ -327,7 +334,12 @@ export class AuthService {
       };
     }
 
-    const updatedDeviceSessionResult = await this.deviceSessionsService.update({ deviceId, iat, iatUpdated: tokenData.iat, expUpdated: tokenData.exp  })
+    const updatedDeviceSessionResult = await this.deviceSessionsService.update({
+      deviceId,
+      iat,
+      iatUpdated: tokenData.iat,
+      expUpdated: tokenData.exp,
+    });
 
     return {
       status: ResultStatus.Success,

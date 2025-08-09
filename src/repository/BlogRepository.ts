@@ -5,17 +5,20 @@ import { GetAllQueryParams } from '../shared/types';
 import { db } from '../db/mongoDb';
 import { OutputModelTypeWithInfo } from '../input-output-types/common-types';
 
-export const blogRepository = {
+export class BlogRepository {
+
   async create(input: BlogDbTypeWithoutId): Promise<string> {
     const result = await db.getCollections().blogsCollection.insertOne(input);
     return result.insertedId.toString();
-  },
+  }
+
   async update({ blogId, update }: UpdateBlogType): Promise<boolean> {
     const result = await db
       .getCollections()
       .blogsCollection.updateOne({ _id: new ObjectId(blogId) }, { $set: { ...update } });
     return result.matchedCount === 1;
-  },
+  }
+
   async findAll(inputFilter: GetAllQueryParams<BlogType>): Promise<OutputModelTypeWithInfo<OutputBlogType>> {
     const { sortDirection, sortBy, pageSize, pageNumber, searchNameTerm } = inputFilter;
     const filter = searchNameTerm ? { name: { $regex: searchNameTerm, $options: 'i' } } : {};
@@ -43,16 +46,19 @@ export const blogRepository = {
       totalCount: totalCount,
       items: blogs.map(this.mapToOutputType),
     };
-  },
+  }
+
   async findById(id: string): Promise<OutputBlogType | null> {
     const filter = { _id: new ObjectId(id) };
     const blog = await db.getCollections().blogsCollection.findOne(filter);
     return blog === null ? null : this.mapToOutputType(blog);
-  },
+  }
+
   async deleteById(id: string): Promise<boolean> {
     const result = await db.getCollections().blogsCollection.deleteOne({ _id: new ObjectId(id) });
     return result.deletedCount === 1;
-  },
+  }
+
 
   mapToOutputType(blog: BlogDbType): OutputBlogType {
     return {
@@ -63,5 +69,6 @@ export const blogRepository = {
       createdAt: blog.createdAt,
       isMembership: blog.isMembership,
     };
-  },
-};
+  }
+
+}

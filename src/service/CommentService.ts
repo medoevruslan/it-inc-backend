@@ -1,27 +1,30 @@
 import { ObjectId } from 'mongodb';
 import { HttpStatuses } from '../shared/enums';
-import { commentRepository } from '../repository/commentRepository';
+import { CommentRepository } from '../repository/CommentRepository';
 import { CommentInputType, CommentType, CommentUpdateType } from '../input-output-types/comment-types';
 import { CommentDbType } from '../db/comment-db-type';
-import { postService } from './postService';
-import { userQueryRepository } from '../repository/userQueryRepository';
 import { GetAllQueryParamNoSearchTerm } from '../shared/types';
+import { UserQueryRepository } from '../repository/UserQueryRepository';
+import { PostService } from './PostService';
 
-export const commentService = {
+export class CommentService {
+  constructor(protected postService: PostService, protected commentRepository: CommentRepository, protected userQueryRepository: UserQueryRepository) {
+  }
+
   async create({ userId, postId, content }: CommentInputType) {
     if (!ObjectId.isValid(postId)) {
       console.log('post id is not valid on create comment');
       throw new Error(HttpStatuses.BadRequest.toString());
     }
 
-    const foundPost = await postService.findById(postId);
+    const foundPost = await this.postService.findById(postId);
 
     if (!foundPost) {
       console.log(`post ${postId} not found on create comment`);
       throw new Error(HttpStatuses.NotFound.toString());
     }
 
-    const foundUser = await userQueryRepository.findById(userId);
+    const foundUser = await this.userQueryRepository.findById(userId);
 
     const newComment: CommentDbType = {
       content,
@@ -33,14 +36,15 @@ export const commentService = {
       },
     };
 
-    return await commentRepository.create(newComment);
-  },
+    return await this.commentRepository.create(newComment);
+  }
+
   async update(userId: string, { commentId, update }: CommentUpdateType) {
     if (!ObjectId.isValid(commentId) || !ObjectId.isValid(userId)) {
       throw new Error(HttpStatuses.NotFound.toString());
     }
 
-    const foundComment = await commentRepository.findById(commentId);
+    const foundComment = await this.commentRepository.findById(commentId);
 
     if (!foundComment) {
       console.log(`comment ${commentId} not found on update`);
@@ -52,14 +56,15 @@ export const commentService = {
       throw new Error(HttpStatuses.Forbidden.toString());
     }
 
-    return commentRepository.update({ commentId, update });
-  },
+    return this.commentRepository.update({ commentId, update });
+  }
+
   async delete(userId: string, commentId: string) {
     if (!ObjectId.isValid(commentId) || !ObjectId.isValid(userId)) {
       throw new Error(HttpStatuses.NotFound.toString());
     }
 
-    const foundComment = await commentRepository.findById(commentId);
+    const foundComment = await this.commentRepository.findById(commentId);
 
     if (!foundComment) {
       console.log(`comment ${commentId} not found on delete`);
@@ -71,8 +76,8 @@ export const commentService = {
       throw new Error(HttpStatuses.Forbidden.toString());
     }
 
-    return commentRepository.delete(commentId);
-  },
+    return this.commentRepository.delete(commentId);
+  }
 
   async findByPostId(postId: string, query: GetAllQueryParamNoSearchTerm<CommentType>) {
     if (!ObjectId.isValid(postId)) {
@@ -80,9 +85,9 @@ export const commentService = {
       throw new Error(HttpStatuses.BadRequest.toString());
     }
 
-    const foundPost = await postService.findById(postId);
+    const foundPost = await this.postService.findById(postId);
 
-    return await commentRepository.findByPostId(foundPost.id, query);
-  },
+    return await this.commentRepository.findByPostId(foundPost.id, query);
+  }
 
-};
+}

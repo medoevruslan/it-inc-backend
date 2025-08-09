@@ -1,7 +1,7 @@
-import { req, toBase64 } from './test-helpers';
+import { addUser, req, toBase64 } from './test-helpers';
 import { SETTINGS } from '../src/settings';
 import { DBType } from '../src/db/db';
-import { blog1, comment1, post1, user1, video1 } from './datasets';
+import { blog1, comment1, post1, refreshToken1, user1, video1 } from './datasets';
 import { PostDbType } from '../src/db/post-db.type';
 import { generateIdString } from '../src/shared/utils';
 import { InputPostType, UpdatePostType } from '../src/input-output-types/post-types';
@@ -27,6 +27,8 @@ describe('tests for /posts', () => {
       blogs: [blog1],
       users: [user1],
       comments: [comment1],
+      refreshTokensValid: [refreshToken1],
+      refreshTokensBlocked: [refreshToken1],
     };
   });
 
