@@ -6,10 +6,22 @@ import { add } from 'date-fns';
 import { addUser, req, toBase64 } from './test-helpers';
 import { SETTINGS } from '../src/settings';
 import { HttpStatuses } from '../src/shared/enums';
-import { container } from '../src/composition-root';
 import { EmailManager } from '../src/managers/EmailManager';
+import { UserRepository } from '../src/repository/UserRepository';
+import { EmailAdapter } from '../src/adapters/EmailAdapter';
+import { JwtService } from '../src/service/JwtService';
+import { UserService } from '../src/service/UserService';
+import { RefreshTokenBlockedRepository } from '../src/repository/RefreshTokenBlockedRepository';
+import { DeviceAuthSessionsRepository } from '../src/repository/DeviceAuthSessionsRepository';
+import { DeviceSessionsService } from '../src/service/DeviceSessionsService';
 
-jest.mock('../src/managers/emailManager');
+jest.mock('../src/managers/EmailManager', () => {
+  const mock = {
+    sendEmailConfirmation: jest.fn().mockResolvedValue({}),
+    sendPasswordRecovery: jest.fn().mockResolvedValue({}),
+  };
+  return { EmailManager: jest.fn(() => mock) };
+});
 
 jest.setTimeout(100000000);
 
@@ -17,6 +29,9 @@ describe('integration tests for auth', () => {
 
   let mongoServer: MongoMemoryServer;
   const codedAuth = toBase64(SETTINGS.ADMIN_AUTH);
+
+  let authService: AuthService;
+  let emailManager: EmailManager;
 
   beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
@@ -31,11 +46,22 @@ describe('integration tests for auth', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    const userRepository = new UserRepository();
+    const emailAdapter = new EmailAdapter();
+    const userService = new UserService(userRepository);
+    emailManager = new EmailManager(emailAdapter);
+    const jwtService = new JwtService();
+    const refreshTokenBlockedRepository = new RefreshTokenBlockedRepository();
+    const deviceAuthSessionsRepository = new DeviceAuthSessionsRepository();
+    const deviceSessionsService = new DeviceSessionsService(deviceAuthSessionsRepository);
+
+    authService = new AuthService(emailManager, userService, userRepository, jwtService, refreshTokenBlockedRepository, deviceSessionsService);
+
   });
 
 
-  const emailManager = container.get(EmailManager);
-  const authService = container.get(AuthService)
+
 
   describe('should create and return user', () => {
     it('should return created user', async () => {
@@ -119,6 +145,7 @@ describe('integration tests for auth', () => {
   });
   describe('resend email confirmation', () => {
     it('should reject user because email already is confirmed', async () => {
+      await db.dropCollections()
       const userWithConfirmedEmail = user1;
       userWithConfirmedEmail.emailConfirmation.isConfirmed = true;
       await db.seed({ users: [userWithConfirmedEmail] });
@@ -141,9 +168,25 @@ describe('integration tests for auth', () => {
       const result = await authService.resendRegistrationCode(user1.accountData.email);
 
       expect(emailManager.sendEmailConfirmation).toHaveBeenCalledTimes(1);
+      expect(emailManager.sendEmailConfirmation).toHaveBeenCalledWith({
+        email: user1.accountData.email,
+        verificationCode: expect.any(String),
+      });
       expect(result.data).toBeTruthy();
     });
 
+  });
+  describe('recovery password', () => {
+    it('should send code to users email with recovery code', async () => {
+      const result = await authService.recoverPassword('medoev1986@gmail.com')
+
+      expect(result.data).toBe(true);
+      expect(emailManager.sendPasswordRecovery).toHaveBeenCalledTimes(1);
+      expect(emailManager.sendPasswordRecovery).toHaveBeenCalledWith({
+        email: 'medoev1986@gmail.com',
+        recoveryCode: expect.any(String),
+      });
+    })
   });
   describe('logout', () => {
     it('add refresh token to black list on logout', async () => {
