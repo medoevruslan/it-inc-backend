@@ -122,7 +122,7 @@ export class AuthService {
     this.emailManager.sendEmailConfirmation({
       email: newUser.accountData.email,
       verificationCode: newUser.emailConfirmation.confirmationCode,
-    }).catch((err) => console.error(`error on send email: ${err}`));
+    }).catch(e => console.log(`have an error on register ${JSON.stringify(e)}`))
 
     return {
       status: ResultStatus.Success,
@@ -235,7 +235,33 @@ export class AuthService {
     this.emailManager.sendEmailConfirmation({
       email,
       verificationCode,
-    }).catch((err) => console.error(`error on send email: ${err}`));
+    })
+
+    return {
+      status: ResultStatus.Success,
+      extensions: [],
+      data: true,
+    };
+  }
+
+  async recoverPassword(email: string): Promise<Result<boolean>> {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+      return {
+        status: ResultStatus.BadRequest,
+        errorMessage: 'Bad email format',
+        extensions: [{ field: 'email', message: 'Bad email format' }],
+        data: null,
+      };
+    }
+
+    const recoveryCode = uuidV4();
+
+    this.emailManager.sendPasswordRecovery({
+      email,
+      recoveryCode,
+    }).catch(e => console.log(`have an error on send password recovery ${JSON.stringify(e)}`))
 
     return {
       status: ResultStatus.Success,

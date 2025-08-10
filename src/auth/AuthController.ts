@@ -103,6 +103,19 @@ export class AuthController {
     }
   }
 
+  async passwordRecovery(req: Request<{}, {}, { email: string }>, res: Response) {
+    try {
+      const result = await this.authService.recoverPassword(req.body.email);
+      if (result.status != ResultStatus.Success) {
+        res.status(result.status).send({ errorsMessages: result.extensions });
+        return;
+      }
+      res.sendStatus(HttpStatuses.NoContent);
+    } catch (err: unknown) {
+      handleApiError(err, res);
+    }
+  }
+
   async logout(req: Request, res: Response) {
     try {
       const result = await this.authService.logout(req.cookies.refreshToken);
