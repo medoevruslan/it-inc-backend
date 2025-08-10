@@ -19,3 +19,4 @@ authRouter.post('/registration-confirmation', rateLimitApiGuard, authController.
 authRouter.post('/registration-email-resending', rateLimitApiGuard, authController.registrationEmailResend.bind(authController));
 authRouter.post('/logout', rateLimitApiGuard, refreshTokenGuard, authController.logout.bind(authController));
 authRouter.post('/refresh-token', refreshTokenGuard, authController.refreshToken.bind(authController));
+authRouter.post('/password-recovery', rateLimitApiGuard, authController.passwordRecovery.bind(authController));
