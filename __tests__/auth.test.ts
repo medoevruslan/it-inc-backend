@@ -1,9 +1,4 @@
-import { AuthService } from '../src/service/authService';
-import { UserRepository } from '../src/repository/userRepository';
-import { UserService } from '../src/service/userService';
-import { EmailAdapter } from '../src/adapters/emailAdapter';
-import { EmailManager } from '../src/managers/emailManager';
-import { JwtService } from '../src/service/JwtService';
+import { AuthService } from '../src/service/AuthService';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { db } from '../src/db/mongoDb';
 import { user1 } from './datasets';
@@ -11,9 +6,8 @@ import { add } from 'date-fns';
 import { addUser, req, toBase64 } from './test-helpers';
 import { SETTINGS } from '../src/settings';
 import { HttpStatuses } from '../src/shared/enums';
-import { RefreshTokenBlockedRepository } from '../src/repository/RefreshTokenBlockedRepository';
-import { DeviceAuthSessionsRepository } from '../src/repository/DeviceAuthSessionsRepository';
-import { DeviceSessionsService } from '../src/service/DeviceSessionsService';
+import { container } from '../src/composition-root';
+import { EmailManager } from '../src/managers/EmailManager';
 
 jest.mock('../src/managers/emailManager');
 
@@ -39,16 +33,9 @@ describe('integration tests for auth', () => {
     jest.clearAllMocks();
   });
 
-  const userRepository = new UserRepository();
-  const emailAdapter = new EmailAdapter();
-  const userService = new UserService(userRepository);
-  const emailManager = new EmailManager(emailAdapter);
-  const jwtService = new JwtService();
-  const refreshTokenBlockedRepository = new RefreshTokenBlockedRepository();
-  const deviceAuthSessionsRepository = new DeviceAuthSessionsRepository();
-  const deviceSessionsService = new DeviceSessionsService(deviceAuthSessionsRepository, jwtService);
 
-  const authService = new AuthService(emailManager, userService, userRepository, jwtService, refreshTokenBlockedRepository, deviceSessionsService);
+  const emailManager = container.get(EmailManager);
+  const authService = container.get(AuthService)
 
   describe('should create and return user', () => {
     it('should return created user', async () => {

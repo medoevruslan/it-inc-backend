@@ -7,10 +7,12 @@ import { Result } from '../shared/types';
 import { sessionsMapper } from '../mapping/sessionsMapper';
 import { OutputDeviceSessionType } from '../input-output-types/device-session-types';
 import { db } from '../db/mongoDb';
+import { inject, injectable } from 'inversify';
 
+@injectable()
 export class DeviceSessionsService {
 
-  public constructor(protected deviceAuthSessionsRepository: DeviceAuthSessionsRepository, protected jwtService: JwtService) {
+  public constructor(@inject(DeviceAuthSessionsRepository) protected deviceAuthSessionsRepository: DeviceAuthSessionsRepository) {
   }
 
   public async create(data: DeviceAuthSessionsDbType) {

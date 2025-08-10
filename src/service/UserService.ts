@@ -7,10 +7,12 @@ import { HttpStatuses } from '../shared/enums';
 import { add } from 'date-fns';
 import { v4 as uuidV4 } from 'uuid';
 import { UserRepository } from '../repository/UserRepository';
+import { inject, injectable } from 'inversify';
 
+@injectable()
 export class UserService {
 
-  constructor(protected userRepository: UserRepository) {
+  constructor(@inject(UserRepository) protected userRepository: UserRepository) {
   }
 
   public async create(user: InputUserType) {

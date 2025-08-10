@@ -1,7 +1,9 @@
 import nodemailer from 'nodemailer';
 import { SETTINGS } from '../settings';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import { injectable } from 'inversify';
 
+@injectable()
 export class EmailAdapter {
   private readonly transporter: nodemailer.Transporter<SMTPTransport.SentMessageInfo, SMTPTransport.Options>;
 

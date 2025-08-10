@@ -5,7 +5,10 @@ import { postQueryValidator } from '../validation/postQueryValidator';
 import { accessTokenGuard, baseAuthGuard } from '../middlewares/guard';
 import { commentsQueryValidator } from '../validation/commentQueryValidator';
 import { commentBodyValidator } from '../validation/commentBodyValidator';
-import { postsController } from '../composition-root';
+import { container } from '../composition-root';
+import { PostsController } from './PostsController';
+
+const postsController = container.get(PostsController)
 
 export const postsRouter = Router();
 

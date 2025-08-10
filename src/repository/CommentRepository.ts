@@ -5,7 +5,9 @@ import { CommentDbType } from '../db/comment-db-type';
 import { GetAllQueryParamNoSearchTerm } from '../shared/types';
 import { HttpStatuses } from '../shared/enums';
 import { commentMapper } from '../mapping/commentMapper';
+import { injectable } from 'inversify';
 
+@injectable()
 export class CommentRepository {
 
   async create(comment: CommentDbType) {

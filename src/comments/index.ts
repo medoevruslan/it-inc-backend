@@ -2,7 +2,10 @@ import { Router } from 'express';
 import { accessTokenGuard } from '../middlewares/guard';
 import { validationErrorMiddleware } from '../middlewares';
 import { commentBodyValidator } from '../validation/commentBodyValidator';
-import { commentsController } from '../composition-root';
+import { container } from '../composition-root';
+import { CommentsController } from './CommentsController';
+
+const commentsController = container.get(CommentsController)
 
 export const commentsRouter = Router();
 

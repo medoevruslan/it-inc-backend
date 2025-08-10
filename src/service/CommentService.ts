@@ -6,9 +6,11 @@ import { CommentDbType } from '../db/comment-db-type';
 import { GetAllQueryParamNoSearchTerm } from '../shared/types';
 import { UserQueryRepository } from '../repository/UserQueryRepository';
 import { PostService } from './PostService';
+import { inject, injectable } from 'inversify';
 
+@injectable()
 export class CommentService {
-  constructor(protected postService: PostService, protected commentRepository: CommentRepository, protected userQueryRepository: UserQueryRepository) {
+  constructor(@inject(PostService)protected postService: PostService, @inject(CommentRepository)protected commentRepository: CommentRepository, @inject(UserQueryRepository)protected userQueryRepository: UserQueryRepository) {
   }
 
   async create({ userId, postId, content }: CommentInputType) {

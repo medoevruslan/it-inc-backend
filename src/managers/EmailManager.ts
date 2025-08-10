@@ -1,8 +1,9 @@
 import { EmailAdapter } from '../adapters/EmailAdapter';
+import { inject } from 'inversify';
 
 export class EmailManager {
 
-  constructor(protected emailAdapter: EmailAdapter) {
+  constructor(@inject(EmailAdapter) protected emailAdapter: EmailAdapter) {
   }
 
   async sendEmailConfirmation(userData: { email: string, verificationCode: string }) {

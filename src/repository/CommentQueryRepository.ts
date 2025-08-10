@@ -2,7 +2,9 @@ import { db } from '../db/mongoDb';
 import { ObjectId } from 'mongodb';
 import { HttpStatuses } from '../shared/enums';
 import { commentMapper } from '../mapping/commentMapper';
+import { injectable } from 'inversify';
 
+@injectable()
 export class CommentQueryRepository {
   async findAll() {
     const foundComments = await db.getCollections().commentsCollection.find().toArray();

@@ -5,10 +5,11 @@ import { GetAllQueryParams } from '../shared/types';
 import { BlogService } from '../service/BlogService';
 import { PostService } from '../service/PostService';
 import { handleApiError } from '../shared/utils';
+import { inject } from 'inversify';
 
 export class BlogController {
 
-  constructor(protected blogService: BlogService, protected postService: PostService) {
+  constructor(@inject(BlogService) protected blogService: BlogService, @inject(PostService) protected postService: PostService) {
   }
 
   async createBlog(req: Request<{}, {}, InputBlogType>, res: Response) {
@@ -16,7 +17,7 @@ export class BlogController {
       const createdBlog = await this.blogService.create(req.body);
       res.status(201).send(createdBlog);
     } catch (err: unknown) {
-      handleApiError(err, res)
+      handleApiError(err, res);
     }
   }
 
@@ -28,7 +29,7 @@ export class BlogController {
       const post = await this.postService.create({ blogId: req.params.blogId, ...req.body });
       res.status(201).send(post);
     } catch (err: unknown) {
-      handleApiError(err, res)
+      handleApiError(err, res);
     }
   }
 
@@ -52,7 +53,7 @@ export class BlogController {
       const blog = await this.blogService.findById(req.params.id);
       res.send(blog);
     } catch (err: unknown) {
-      handleApiError(err, res)
+      handleApiError(err, res);
     }
   };
 
@@ -61,7 +62,7 @@ export class BlogController {
       const blogs = await this.blogService.findAll(req.query);
       res.send(blogs);
     } catch (err: unknown) {
-      handleApiError(err, res)
+      handleApiError(err, res);
     }
   }
 
@@ -73,7 +74,7 @@ export class BlogController {
       const posts = await this.blogService.findPostsByBlogId(req.params.blogId, req.query);
       res.send(posts);
     } catch (err: unknown) {
-      handleApiError(err, res)
+      handleApiError(err, res);
     }
   };
 
@@ -85,7 +86,7 @@ export class BlogController {
       await this.blogService.update({ blogId: req.params.id, update: req.body });
       res.status(204).send();
     } catch (err: unknown) {
-      handleApiError(err, res)
+      handleApiError(err, res);
     }
   };
 

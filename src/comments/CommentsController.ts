@@ -4,10 +4,11 @@ import { handleApiError } from '../shared/utils';
 import { CommentUpdateType } from '../input-output-types/comment-types';
 import { CommentService } from '../service/CommentService';
 import { CommentQueryRepository } from '../repository/CommentQueryRepository';
+import { inject } from 'inversify';
 
 export class CommentsController {
 
-  constructor(protected commentService: CommentService, protected commentQueryRepository: CommentQueryRepository) {
+  constructor(@inject(CommentService) protected commentService: CommentService, @inject(CommentQueryRepository) protected commentQueryRepository: CommentQueryRepository) {
   }
 
   async deleteComments(req: Request<{ id: string }>, res: Response) {

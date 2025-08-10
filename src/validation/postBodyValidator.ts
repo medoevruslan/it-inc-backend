@@ -1,5 +1,6 @@
 import { body } from 'express-validator';
-import { blogRepository } from '../composition-root';
+import { container } from '../composition-root';
+import { BlogRepository } from '../repository/BlogRepository';
 
 export const postBodyValidator = [
   body('title')
@@ -33,6 +34,7 @@ export const postBodyValidator = [
     .notEmpty()
     .withMessage('required')
     .custom(async (value) => {
+      const blogRepository = container.get(BlogRepository)
       const blog = await blogRepository.findById(value);
       if (blog === null) {
         throw new Error('blog is not found');

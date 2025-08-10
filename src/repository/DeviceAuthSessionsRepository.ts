@@ -1,7 +1,8 @@
 import { DeviceAuthSessionsDbType, DeviceAuthSessionsUpdateType } from '../db/device-auth-sessions-db-type';
 import { db } from '../db/mongoDb';
+import { injectable } from 'inversify';
 
-
+@injectable()
 export class DeviceAuthSessionsRepository {
   async add(data: DeviceAuthSessionsDbType){
     const result = await db.getCollections().deviceAuthSessionsCollection.insertOne(data)

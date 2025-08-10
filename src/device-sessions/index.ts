@@ -1,6 +1,9 @@
 import { Router } from 'express';
 import { refreshTokenGuard } from '../middlewares/guard/refreshTokenGuard';
-import { deviceSessionsController } from '../composition-root';
+import { container } from '../composition-root';
+import { DeviceSessionsController } from './DeviceSessionsController';
+
+const deviceSessionsController = container.get(DeviceSessionsController)
 
 export const securityRouter = Router()
 

@@ -1,7 +1,8 @@
 import { db } from '../db/mongoDb';
 import { MongoServerError } from 'mongodb';
+import { injectable } from 'inversify';
 
-
+@injectable()
 export class RefreshTokenBlockedRepository {
   async add(token: string) {
     try {

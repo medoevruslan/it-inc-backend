@@ -1,7 +1,9 @@
 import jwt from 'jsonwebtoken';
 import { SETTINGS } from '../settings';
 import { Nullable } from '../shared/types';
+import { injectable } from 'inversify';
 
+@injectable()
 export class JwtService {
 
   public async verifyToken<T>(token: string): Promise<Nullable<T>> {

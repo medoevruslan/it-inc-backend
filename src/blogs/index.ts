@@ -3,7 +3,10 @@ import { blogBodyValidator, blogQueryValidator } from '../validation';
 import { validationErrorMiddleware } from '../middlewares';
 import { postByBlogIdBodyValidator } from '../validation/postByBlogIdBodyValidator';
 import { baseAuthGuard } from '../middlewares/guard';
-import { blogController } from '../composition-root';
+import { container } from '../composition-root';
+import { BlogController } from './BlogController';
+
+const blogController = container.get(BlogController)
 
 export const blogsRouter = Router();
 

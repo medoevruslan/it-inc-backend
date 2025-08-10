@@ -5,10 +5,13 @@ import { GetAllQueryParams } from '../shared/types';
 import { OutputModelTypeWithInfo } from '../input-output-types/common-types';
 import { PostRepository } from '../repository/PostRepository';
 import { BlogRepository } from '../repository/BlogRepository';
+import { inject, injectable } from 'inversify';
 
+@injectable()
 export class BlogService {
 
-  constructor(protected postRepository: PostRepository, protected blogRepository: BlogRepository ) {}
+  constructor(@inject(PostRepository) protected postRepository: PostRepository, @inject(BlogRepository) protected blogRepository: BlogRepository) {
+  }
 
   async create(input: InputBlogType): Promise<OutputBlogType> {
     const createdId = await this.blogRepository.create({

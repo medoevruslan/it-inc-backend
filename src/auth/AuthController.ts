@@ -5,12 +5,13 @@ import { handleApiError } from '../shared/utils';
 import { InputUserType } from '../input-output-types/user-types';
 import { SETTINGS } from '../settings';
 import { add } from 'date-fns';
-import { AuthService } from '../service/AuthService';
 import { UserQueryRepository } from '../repository/UserQueryRepository';
+import { inject } from 'inversify';
+import { AuthService } from '../service/AuthService';
 
 export class AuthController {
 
-  constructor(protected authService: AuthService, protected userQueryRepository: UserQueryRepository) {
+  constructor(@inject(AuthService) protected authService: AuthService, @inject(UserQueryRepository) protected userQueryRepository: UserQueryRepository) {
   }
 
   async login(req: Request<{}, {}, InputLoginType>, res: Response) {

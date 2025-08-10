@@ -12,17 +12,18 @@ import { add } from 'date-fns';
 import { DeviceSessionsService } from './DeviceSessionsService';
 import { JwtService } from './JwtService';
 import { RefreshTokenBlockedRepository } from '../repository/RefreshTokenBlockedRepository';
+import { inject, injectable } from 'inversify';
 
-
+@injectable()
 export class AuthService {
 
   constructor(
-    protected emailManager: EmailManager,
-    protected userService: UserService,
-    protected userRepository: UserRepository,
-    protected jwtService: JwtService,
-    protected refreshTokensBlockedRepository: RefreshTokenBlockedRepository,
-    protected deviceSessionsService: DeviceSessionsService,
+    @inject(EmailManager) protected emailManager: EmailManager,
+    @inject(UserService) protected userService: UserService,
+    @inject(UserRepository) protected userRepository: UserRepository,
+    @inject(JwtService) protected jwtService: JwtService,
+    @inject(RefreshTokenBlockedRepository) protected refreshTokensBlockedRepository: RefreshTokenBlockedRepository,
+    @inject(DeviceSessionsService) protected deviceSessionsService: DeviceSessionsService,
   ) {
   }
 

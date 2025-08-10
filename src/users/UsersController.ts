@@ -4,10 +4,11 @@ import { HttpStatuses } from '../shared/enums';
 import { handleApiError } from '../shared/utils';
 import { UserService } from '../service/UserService';
 import { UserQueryRepository } from '../repository/UserQueryRepository';
+import { inject } from 'inversify';
 
 export class UsersController {
 
-  constructor(protected userService: UserService, protected userQueryRepository: UserQueryRepository) {
+  constructor(@inject(UserService) protected userService: UserService, @inject(UserQueryRepository) protected userQueryRepository: UserQueryRepository) {
   }
 
   async getUsers(req: Request<{}, {}, {}, GetAllUsersQueryParams>, res: Response) {

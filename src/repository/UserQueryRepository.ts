@@ -4,7 +4,9 @@ import { db } from '../db/mongoDb';
 import { GetAllUsersQueryParams, OutputUserAccountType } from '../input-output-types/user-types';
 import { OutputModelTypeWithInfo } from '../input-output-types/common-types';
 import { UserDbType } from '../db/user-db-type';
+import { injectable } from 'inversify';
 
+@injectable()
 export class UserQueryRepository {
   async findAll(inputFilter: GetAllUsersQueryParams): Promise<OutputModelTypeWithInfo<OutputUserAccountType>> {
     const { sortDirection, sortBy, pageSize, pageNumber, searchLoginTerm, searchEmailTerm } = inputFilter;

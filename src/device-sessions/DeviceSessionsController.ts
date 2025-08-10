@@ -2,11 +2,13 @@ import { Request, Response } from 'express';
 import { HttpStatuses, ResultStatus } from '../shared/enums';
 import { handleApiError } from '../shared/utils';
 import { DeviceSessionsService } from '../service/DeviceSessionsService';
+import { inject } from 'inversify';
 
 
 export class DeviceSessionsController {
 
-  constructor(protected deviceSessionsService: DeviceSessionsService) {}
+  constructor(@inject(DeviceSessionsService) protected deviceSessionsService: DeviceSessionsService) {
+  }
 
   async deleteActiveSessionsExceptForActive(req: Request, res: Response) {
     try {

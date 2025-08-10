@@ -4,7 +4,9 @@ import { BlogDbType } from '../db/blog-db-type';
 import { GetAllQueryParams } from '../shared/types';
 import { db } from '../db/mongoDb';
 import { OutputModelTypeWithInfo } from '../input-output-types/common-types';
+import { injectable } from 'inversify';
 
+@injectable()
 export class BlogRepository {
 
   async create(input: BlogDbTypeWithoutId): Promise<string> {

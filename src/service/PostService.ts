@@ -5,10 +5,12 @@ import { OutputModelTypeWithInfo } from '../input-output-types/common-types';
 import { HttpStatuses } from '../shared/enums';
 import { BlogRepository } from '../repository/BlogRepository';
 import { PostRepository } from '../repository/PostRepository';
+import { inject, injectable } from 'inversify';
 
+@injectable()
 export class PostService {
 
-  constructor(protected blogRepository: BlogRepository, protected postRepository: PostRepository) {
+  constructor(@inject(BlogRepository) protected blogRepository: BlogRepository, @inject(PostRepository) protected postRepository: PostRepository) {
   }
 
   async create(input: InputPostType): Promise<OutputPostType> {
@@ -64,6 +66,7 @@ export class PostService {
 
     return found;
   }
+
   async deleteById(id: string): Promise<boolean> {
     if (!ObjectId.isValid(id)) {
       throw new Error(HttpStatuses.BadRequest.toString());

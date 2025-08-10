@@ -8,9 +8,11 @@ import { OutputModelTypeWithInfo } from '../input-output-types/common-types';
 import { CommentService } from '../service/CommentService';
 import { CommentQueryRepository } from '../repository/CommentQueryRepository';
 import { PostService } from '../service/PostService';
+import { inject, injectable } from 'inversify';
 
+@injectable()
 export class PostsController {
-  constructor(protected postService: PostService, protected commentService: CommentService, protected commentQueryRepository: CommentQueryRepository ) {
+  constructor(@inject(PostService) protected postService: PostService, @inject(CommentService) protected commentService: CommentService, @inject(CommentQueryRepository) protected commentQueryRepository: CommentQueryRepository) {
   }
 
   async createPostComments(

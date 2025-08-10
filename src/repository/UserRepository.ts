@@ -2,7 +2,9 @@ import { UserType } from '../db/user-db-type';
 import { db } from '../db/mongoDb';
 import { ObjectId } from 'mongodb';
 import { userMapper } from '../mapping/userMapper';
+import { injectable } from 'inversify';
 
+@injectable()
 export class UserRepository {
   public async create(user: UserType) {
     const result = await db.getCollections().usersCollection.insertOne({

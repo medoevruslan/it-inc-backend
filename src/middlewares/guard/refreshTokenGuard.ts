@@ -1,9 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
 import { HttpStatuses, ResultStatus } from '../../shared/enums';
-import { deviceSessionsService, jwtService } from '../../composition-root';
+import { container } from '../../composition-root';
+import { JwtService } from '../../service/JwtService';
+import { DeviceSessionsService } from '../../service/DeviceSessionsService';
 
 export const refreshTokenGuard =  async (req: Request, res: Response, next: NextFunction) => {
   const refreshToken = req.cookies.refreshToken as string | undefined;
+
+  const jwtService = container.get(JwtService)
+  const deviceSessionsService = container.get(DeviceSessionsService)
 
   console.log('refreshTokenGuard: found currentToken >> ', refreshToken);
 

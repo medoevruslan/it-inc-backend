@@ -3,7 +3,10 @@ import { validationErrorMiddleware } from '../middlewares';
 import { userQueryValidator } from '../validation/userQueryValidator';
 import { userBodyValidator } from '../validation/userBodyValidator';
 import { baseAuthGuard } from '../middlewares/guard';
-import { usersController } from '../composition-root';
+import { container } from '../composition-root';
+import { UsersController } from './UsersController';
+
+const usersController = container.get(UsersController)
 
 export const usersRouter = Router();
 

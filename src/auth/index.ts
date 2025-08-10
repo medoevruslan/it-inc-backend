@@ -5,7 +5,10 @@ import { validationErrorMiddleware } from '../middlewares';
 import { loginBodyValidator } from '../validation/loginBodyValidator';
 import { refreshTokenGuard } from '../middlewares/guard/refreshTokenGuard';
 import { rateLimitApiGuard } from '../middlewares/guard/rateLimitApiGuard';
-import { authController } from '../composition-root';
+import { container } from '../composition-root';
+import { AuthController } from './AuthController';
+
+const authController = container.get(AuthController)
 
 export const authRouter = Router();
 
