@@ -13,6 +13,7 @@ import { DeviceSessionsService } from './DeviceSessionsService';
 import { JwtService } from './JwtService';
 import { RefreshTokenBlockedRepository } from '../repository/RefreshTokenBlockedRepository';
 import { inject, injectable } from 'inversify';
+import { RESULT } from '../shared/resultTemplates';
 
 @injectable()
 export class AuthService {
@@ -60,11 +61,7 @@ export class AuthService {
 
     if (!tokenData?.iat || !tokenData.exp) {
       console.log('could not find iat or exp date ');
-      return {
-        status: ResultStatus.ServerError,
-        extensions: [{ field: 'token', message: 'could not find iat or exp date ' }],
-        data: null,
-      };
+      return RESULT.TOKEN_DATA_NOT_FOUND
     }
 
     await this.deviceSessionsService.create({
@@ -135,36 +132,15 @@ export class AuthService {
     const user = await this.userRepository.findByConfirmationCode(code);
 
     if (!user) {
-      return {
-        status: ResultStatus.BadRequest,
-        errorMessage: 'User is not found',
-        extensions: [
-          { field: 'code', message: 'code is incorrect' },
-        ],
-        data: false,
-      };
+      return RESULT.USER_CONFIRMATION_CODE_NOT_FOUND
     }
 
     if (user.emailConfirmation.isConfirmed) {
-      return {
-        status: ResultStatus.BadRequest,
-        errorMessage: 'User is already confirmed',
-        extensions: [
-          { field: 'code', message: 'user is already confirmed' },
-        ],
-        data: false,
-      };
+      return RESULT.USER_IS_ALREADY_CONFIRMED
     }
 
     if (user.emailConfirmation.expirationDate < new Date()) {
-      return {
-        status: ResultStatus.BadRequest,
-        errorMessage: 'Confirmation code has been expired',
-        extensions: [
-          { field: 'code', message: 'confirmation code has been expired' },
-        ],
-        data: false,
-      };
+      return RESULT.CODE_EXPIRED
     }
 
     const isUpdated = await this.userRepository.update(user._id.toString(), {
@@ -202,29 +178,19 @@ export class AuthService {
       };
     }
 
-    const userByEmail = await this.userRepository.findByLoginOrEmail(email);
+    const user = await this.userRepository.findByLoginOrEmail(email);
 
-    if (!userByEmail) {
-      return {
-        status: ResultStatus.BadRequest,
-        errorMessage: 'User not exists',
-        extensions: [{ field: 'email', message: 'Email is not existing' }],
-        data: null,
-      };
+    if (!user) {
+      return RESULT.USER_NOT_FOUND_BY_EMAIL
     }
 
-    if (userByEmail.emailConfirmation.isConfirmed) {
-      return {
-        status: ResultStatus.BadRequest,
-        errorMessage: 'Email is already confirmed',
-        extensions: [{ field: 'email', message: 'Email is already confirmed' }],
-        data: null,
-      };
+    if (user.emailConfirmation.isConfirmed) {
+      return RESULT.USER_IS_ALREADY_CONFIRMED
     }
 
     const verificationCode = uuidV4();
 
-    await this.userRepository.update(userByEmail?._id.toString(), {
+    await this.userRepository.update(user?._id.toString(), {
       emailConfirmation: {
         confirmationCode: verificationCode,
         isConfirmed: false,
@@ -263,10 +229,54 @@ export class AuthService {
       recoveryCode,
     }).catch(e => console.log(`have an error on send password recovery ${JSON.stringify(e)}`))
 
+    const user = await this.userRepository.findByLoginOrEmail(email);
+
+    if (!user) {
+      return RESULT.USER_NOT_FOUND_BY_EMAIL
+    }
+
+    await this.userRepository.update(user?._id.toString(), {
+      passwordRecovery: {
+        recoveryCode,
+        expirationDate: add(new Date(), { hours: 1 }),
+      }
+    });
+
     return {
       status: ResultStatus.Success,
       extensions: [],
       data: true,
+    };
+  }
+
+  async newPassword(newPassword: string, recoveryCode: string): Promise<Result<boolean>> {
+    const user = await this.userRepository.findByPasswordRecoveryCode(recoveryCode);
+
+    if (!user) {
+      return RESULT.USER_CONFIRMATION_CODE_NOT_FOUND
+    }
+
+    if (!user.passwordRecovery || user.passwordRecovery.expirationDate < new Date()) {
+      return RESULT.CODE_EXPIRED
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    const isUpdated = await this.userRepository.update(user._id.toString(), { accountData: { ...user.accountData, password: hashedPassword }, passwordRecovery: undefined })
+
+    if (!isUpdated) {
+      return {
+        status: ResultStatus.BadRequest,
+        errorMessage: 'Failed to set new password due to server error.',
+        extensions: [],
+        data: null,
+      };
+    }
+
+    return {
+      status: ResultStatus.Success,
+      extensions: [],
+      data: isUpdated,
     };
   }
 
@@ -354,11 +364,7 @@ export class AuthService {
 
     if (!tokenData?.iat || !tokenData.exp) {
       console.log('could not find iat or exp date ');
-      return {
-        status: ResultStatus.ServerError,
-        extensions: [{ field: 'token', message: 'could not find iat or exp date ' }],
-        data: null,
-      };
+      return RESULT.TOKEN_DATA_NOT_FOUND
     }
 
     const updatedDeviceSessionResult = await this.deviceSessionsService.update({

@@ -14,13 +14,20 @@ type EmailConfirmation = {
   // sentMail: SentEmail[]
 }
 
-type SentEmail = {
-  sentDate: Date;
+type PasswordRecovery = {
+  recoveryCode: string
+  expirationDate: Date;
 }
+
 
 export type UserType = {
   accountData: UserAccount
   emailConfirmation: EmailConfirmation
+  passwordRecovery?: PasswordRecovery
+}
+
+type SentEmail = {
+  sentDate: Date;
 }
 
 type RegistrationData = {

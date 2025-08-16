@@ -116,6 +116,20 @@ export class AuthController {
     }
   }
 
+  async newPassword(req: Request<{}, {}, { newPassword: string, recoveryCode: string }>, res: Response) {
+    try {
+      const { newPassword, recoveryCode } = req.body
+      const result = await this.authService.newPassword(newPassword, recoveryCode);
+      if (result.status != ResultStatus.Success) {
+        res.status(result.status).send({ errorsMessages: result.extensions });
+        return;
+      }
+      res.sendStatus(HttpStatuses.NoContent);
+    } catch (err: unknown) {
+      handleApiError(err, res);
+    }
+  }
+
   async logout(req: Request, res: Response) {
     try {
       const result = await this.authService.logout(req.cookies.refreshToken);

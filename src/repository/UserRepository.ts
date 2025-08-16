@@ -23,6 +23,10 @@ export class UserRepository {
     return await db.getCollections().usersCollection.findOne({ 'emailConfirmation.confirmationCode': code });
   }
 
+  public async findByPasswordRecoveryCode(code: string) {
+    return await db.getCollections().usersCollection.findOne({ 'passwordRecovery.recoveryCode': code });
+  }
+
   public async findById(id: string) {
     const result = await db.getCollections().usersCollection.findOne({ _id: new ObjectId(id) });
     return result ? userMapper.mapUserToOutputType(result) : null;
