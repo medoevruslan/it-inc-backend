@@ -60,9 +60,6 @@ describe('integration tests for auth', () => {
 
   });
 
-
-
-
   describe('should create and return user', () => {
     it('should return created user', async () => {
       const login = 'some user';
@@ -145,7 +142,7 @@ describe('integration tests for auth', () => {
   });
   describe('resend email confirmation', () => {
     it('should reject user because email already is confirmed', async () => {
-      await db.dropCollections()
+      await db.dropCollections();
       const userWithConfirmedEmail = user1;
       userWithConfirmedEmail.emailConfirmation.isConfirmed = true;
       await db.seed({ users: [userWithConfirmedEmail] });
@@ -178,15 +175,89 @@ describe('integration tests for auth', () => {
   });
   describe('recovery password', () => {
     it('should send code to users email with recovery code', async () => {
-      const result = await authService.recoverPassword('medoev1986@gmail.com')
+      await db.dropCollections();
+      await db.seed({ users: [user1] });
 
-      expect(result.data).toBe(true);
+      const resultRecovery = await authService.recoverPassword(user1.accountData.email);
+
+      expect(resultRecovery.data).toBe(true);
       expect(emailManager.sendPasswordRecovery).toHaveBeenCalledTimes(1);
       expect(emailManager.sendPasswordRecovery).toHaveBeenCalledWith({
-        email: 'medoev1986@gmail.com',
+        email: user1.accountData.email,
         recoveryCode: expect.any(String),
       });
-    })
+    });
+  });
+  describe('set new password', () => {
+    it('should set new password', async () => {
+      await db.dropCollections();
+      await db.seed({ users: [user1] });
+
+      const resultRecovery = await authService.recoverPassword(user1.accountData.email);
+
+      expect(resultRecovery.data).toBe(true);
+      expect(emailManager.sendPasswordRecovery).toHaveBeenCalledTimes(1);
+      expect(emailManager.sendPasswordRecovery).toHaveBeenCalledWith({
+        email: user1.accountData.email,
+        recoveryCode: expect.any(String),
+      });
+
+      const users1 = await db.getCollections().usersCollection.find({}).toArray();
+
+      const recoveryCode = users1[0].passwordRecovery?.recoveryCode;
+
+      expect(recoveryCode).toBeTruthy();
+
+      const resultNewPassword = await authService.newPassword('new_password', recoveryCode!);
+
+      expect(resultNewPassword.data).toBe(true);
+
+      const users2 = await db.getCollections().usersCollection.find({}).toArray();
+      expect(users2[0].passwordRecovery).toBeFalsy();
+    });
+
+    it('should not set new password because wrong recovery code', async () => {
+      await db.dropCollections();
+      await db.seed({ users: [user1] });
+
+      const resultRecovery = await authService.recoverPassword(user1.accountData.email);
+
+      expect(resultRecovery.data).toBe(true);
+      expect(emailManager.sendPasswordRecovery).toHaveBeenCalledTimes(1);
+      expect(emailManager.sendPasswordRecovery).toHaveBeenCalledWith({
+        email: user1.accountData.email,
+        recoveryCode: expect.any(String),
+      });
+
+      const users1 = await db.getCollections().usersCollection.find({}).toArray();
+
+      const recoveryCode = users1[0].passwordRecovery?.recoveryCode;
+
+      expect(recoveryCode).toBeTruthy();
+
+      const resultNewPassword = await authService.newPassword('new_password', 'wrong code');
+
+      expect(resultNewPassword.data).toBe(false);
+      expect(resultNewPassword.extensions[0]).toEqual({ field: 'code', message: 'Code is incorrect' });
+
+    });
+
+    it('should not set new password because expired code', async () => {
+      await db.dropCollections();
+      const user ={
+        ...user1,
+        passwordRecovery: { recoveryCode: 'some_code', expirationDate: add(new Date(), { minutes: -1 }) },
+      }
+      await db.seed({
+        users: [user],
+      });
+
+      const resultNewPassword = await authService.newPassword('new_password', user.passwordRecovery.recoveryCode);
+
+      expect(resultNewPassword.data).toBe(false);
+      expect(resultNewPassword.extensions[0]).toEqual({ field: 'code', message: 'Recovery code has expired' });
+    });
+
   });
   describe('logout', () => {
     it('add refresh token to black list on logout', async () => {
