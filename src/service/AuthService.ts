@@ -61,7 +61,7 @@ export class AuthService {
 
     if (!tokenData?.iat || !tokenData.exp) {
       console.log('could not find iat or exp date ');
-      return RESULT.TOKEN_DATA_NOT_FOUND
+      return RESULT.TOKEN_DATA_NOT_FOUND;
     }
 
     await this.deviceSessionsService.create({
@@ -119,7 +119,7 @@ export class AuthService {
     this.emailManager.sendEmailConfirmation({
       email: newUser.accountData.email,
       verificationCode: newUser.emailConfirmation.confirmationCode,
-    }).catch(e => console.log(`have an error on register ${JSON.stringify(e)}`))
+    }).catch(e => console.log(`have an error on register ${JSON.stringify(e)}`));
 
     return {
       status: ResultStatus.Success,
@@ -132,15 +132,20 @@ export class AuthService {
     const user = await this.userRepository.findByConfirmationCode(code);
 
     if (!user) {
-      return RESULT.USER_CONFIRMATION_CODE_NOT_FOUND
+      return {
+        status: ResultStatus.BadRequest,
+        errorMessage: 'User is not found',
+        extensions: [{ field: 'confirmationCode', message: 'Code is incorrect' }],
+        data: false,
+      };
     }
 
     if (user.emailConfirmation.isConfirmed) {
-      return RESULT.USER_IS_ALREADY_CONFIRMED
+      return RESULT.USER_IS_ALREADY_CONFIRMED;
     }
 
     if (user.emailConfirmation.expirationDate < new Date()) {
-      return RESULT.CODE_EXPIRED
+      return RESULT.CODE_EXPIRED;
     }
 
     const isUpdated = await this.userRepository.update(user._id.toString(), {
@@ -181,11 +186,11 @@ export class AuthService {
     const user = await this.userRepository.findByLoginOrEmail(email);
 
     if (!user) {
-      return RESULT.USER_NOT_FOUND_BY_EMAIL
+      return RESULT.USER_NOT_FOUND_BY_EMAIL;
     }
 
     if (user.emailConfirmation.isConfirmed) {
-      return RESULT.USER_IS_ALREADY_CONFIRMED
+      return RESULT.USER_IS_ALREADY_CONFIRMED;
     }
 
     const verificationCode = uuidV4();
@@ -201,7 +206,7 @@ export class AuthService {
     this.emailManager.sendEmailConfirmation({
       email,
       verificationCode,
-    })
+    });
 
     return {
       status: ResultStatus.Success,
@@ -227,20 +232,18 @@ export class AuthService {
     this.emailManager.sendPasswordRecovery({
       email,
       recoveryCode,
-    }).catch(e => console.log(`have an error on send password recovery ${JSON.stringify(e)}`))
+    }).catch(e => console.log(`have an error on send password recovery ${JSON.stringify(e)}`));
 
     const user = await this.userRepository.findByLoginOrEmail(email);
 
-    if (!user) {
-      return RESULT.USER_NOT_FOUND_BY_EMAIL
+    if (user) {
+      await this.userRepository.update(user?._id.toString(), {
+        passwordRecovery: {
+          recoveryCode,
+          expirationDate: add(new Date(), { hours: 1 }),
+        },
+      });
     }
-
-    await this.userRepository.update(user?._id.toString(), {
-      passwordRecovery: {
-        recoveryCode,
-        expirationDate: add(new Date(), { hours: 1 }),
-      }
-    });
 
     return {
       status: ResultStatus.Success,
@@ -253,16 +256,35 @@ export class AuthService {
     const user = await this.userRepository.findByPasswordRecoveryCode(recoveryCode);
 
     if (!user) {
-      return RESULT.USER_CONFIRMATION_CODE_NOT_FOUND
+      return {
+        status: ResultStatus.BadRequest,
+        errorMessage: 'User is not found',
+        extensions: [{ field: 'recoveryCode', message: 'Code is incorrect' }],
+        data: false,
+      };
+    }
+
+    if (user.passwordRecovery?.recoveryCode !== recoveryCode) {
+      return {
+        status: ResultStatus.BadRequest,
+        errorMessage: 'Recovery code is incorrect',
+        extensions: [{ field: 'recoveryCode', message: 'Code is incorrect' }],
+        data: false,
+      };
     }
 
     if (!user.passwordRecovery || user.passwordRecovery.expirationDate < new Date()) {
-      return RESULT.CODE_EXPIRED
+      return RESULT.CODE_EXPIRED;
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    const isUpdated = await this.userRepository.update(user._id.toString(), { accountData: { ...user.accountData, password: hashedPassword }, passwordRecovery: undefined })
+    const isUpdated = await this.userRepository.update(user._id.toString(), {
+      accountData: {
+        ...user.accountData,
+        password: hashedPassword,
+      }, passwordRecovery: undefined,
+    });
 
     if (!isUpdated) {
       return {
@@ -364,7 +386,7 @@ export class AuthService {
 
     if (!tokenData?.iat || !tokenData.exp) {
       console.log('could not find iat or exp date ');
-      return RESULT.TOKEN_DATA_NOT_FOUND
+      return RESULT.TOKEN_DATA_NOT_FOUND;
     }
 
     const updatedDeviceSessionResult = await this.deviceSessionsService.update({

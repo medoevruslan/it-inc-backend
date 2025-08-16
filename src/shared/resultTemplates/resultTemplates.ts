@@ -9,13 +9,6 @@ export const RESULT = {
     data: false,
   } satisfies Result<boolean>,
 
-  USER_CONFIRMATION_CODE_NOT_FOUND: {
-    status: ResultStatus.BadRequest,
-    errorMessage: 'User is not found',
-    extensions: [{ field: 'code', message: 'Code is incorrect' }],
-    data: false,
-  } satisfies Result<boolean>,
-
   USER_IS_ALREADY_CONFIRMED: {
     status: ResultStatus.BadRequest,
     errorMessage: 'User is already confirmed',
