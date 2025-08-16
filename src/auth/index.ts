@@ -7,6 +7,7 @@ import { refreshTokenGuard } from '../middlewares/guard/refreshTokenGuard';
 import { rateLimitApiGuard } from '../middlewares/guard/rateLimitApiGuard';
 import { container } from '../composition-root';
 import { AuthController } from './AuthController';
+import { newPasswordBodyValidator } from '../validation/newPasswordBodyValidator';
 
 const authController = container.get(AuthController)
 
@@ -20,4 +21,4 @@ authRouter.post('/registration-email-resending', rateLimitApiGuard, authControll
 authRouter.post('/logout', rateLimitApiGuard, refreshTokenGuard, authController.logout.bind(authController));
 authRouter.post('/refresh-token', refreshTokenGuard, authController.refreshToken.bind(authController));
 authRouter.post('/password-recovery', rateLimitApiGuard, authController.passwordRecovery.bind(authController));
-authRouter.post('/new-password', rateLimitApiGuard, authController.newPassword.bind(authController));
+authRouter.post('/new-password', rateLimitApiGuard, newPasswordBodyValidator, validationErrorMiddleware, authController.newPassword.bind(authController));

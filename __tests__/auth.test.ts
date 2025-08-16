@@ -257,7 +257,6 @@ describe('integration tests for auth', () => {
       expect(resultNewPassword.data).toBe(false);
       expect(resultNewPassword.extensions[0]).toEqual({ field: 'code', message: 'Recovery code has expired' });
     });
-
   });
   describe('logout', () => {
     it('add refresh token to black list on logout', async () => {

@@ -131,6 +131,16 @@ describe('test auth', () => {
       });
     });
   });
+  describe('new password', () => {
+    it('should not set new password because it is too short', async () => {
+      const newPasswordResponse = await req
+        .post(`${SETTINGS.PATH.AUTH}/new-password`)
+        .send({ recoveryCode:'recoveryCode', password: '1' })
+        .expect(400);
+
+      expect(newPasswordResponse.body.errorsMessages[0].message).toBe('password should be less than 20 chars and more than 5')
+    })
+  })
 });
 
 
