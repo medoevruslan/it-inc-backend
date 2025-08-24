@@ -1,6 +1,7 @@
 import mongoose, { model } from 'mongoose';
 import { LikeType } from '../shared/enums';
 import { SETTINGS } from '../settings';
+import { CommentDbType } from '../db/comment-db-type';
 
 const commentatorInfoSchema = new mongoose.Schema({
     userId: String,
@@ -23,4 +24,4 @@ const commentSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 
-export const CommentModel = model(SETTINGS.TABLE.COMMENTS, commentSchema)
+export const CommentModel = model<CommentDbType>(SETTINGS.TABLE.COMMENTS, commentSchema)

@@ -4,7 +4,7 @@ import { LikeType } from '../shared/enums';
 export type CommentDbType = WithId<{
   content: string;
   commentatorInfo: CommentatorInfo;
-  createdAt: Date;
+  createdAt: string;
   postId: string;
   likesInfo: LikesInfo
 }>;

@@ -3,12 +3,12 @@ import { HttpStatuses } from '../shared/enums';
 import { handleApiError } from '../shared/utils';
 import { InputPostType, OutputPostType, PostType } from '../input-output-types/post-types';
 import { GetAllQueryParams } from '../shared/types';
-import { CommentType } from '../input-output-types/comment-types';
 import { OutputModelTypeWithInfo } from '../input-output-types/common-types';
 import { CommentService } from '../service/CommentService';
 import { CommentQueryRepository } from '../repository/CommentQueryRepository';
 import { PostService } from '../service/PostService';
 import { inject, injectable } from 'inversify';
+import { CommentType } from '../input-output-types/comment-types';
 
 @injectable()
 export class PostsController {

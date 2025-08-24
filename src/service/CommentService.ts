@@ -1,16 +1,16 @@
 import { ObjectId } from 'mongodb';
-import { HttpStatuses } from '../shared/enums';
+import { HttpStatuses, LikeType } from '../shared/enums';
 import { CommentRepository } from '../repository/CommentRepository';
 import { CommentInputType, CommentType, CommentUpdateType } from '../input-output-types/comment-types';
-import { CommentDbType } from '../db/comment-db-type';
 import { GetAllQueryParamNoSearchTerm } from '../shared/types';
 import { UserQueryRepository } from '../repository/UserQueryRepository';
 import { PostService } from './PostService';
 import { inject, injectable } from 'inversify';
+import { UserRepository } from '../repository/UserRepository';
 
 @injectable()
 export class CommentService {
-  constructor(@inject(PostService)protected postService: PostService, @inject(CommentRepository)protected commentRepository: CommentRepository, @inject(UserQueryRepository)protected userQueryRepository: UserQueryRepository) {
+  constructor(@inject(PostService)protected postService: PostService, @inject(CommentRepository)protected commentRepository: CommentRepository, @inject(UserQueryRepository)protected usersRepository: UserRepository) {
   }
 
   async create({ userId, postId, content }: CommentInputType) {
@@ -26,16 +26,20 @@ export class CommentService {
       throw new Error(HttpStatuses.NotFound.toString());
     }
 
-    const foundUser = await this.userQueryRepository.findById(userId);
+    const foundUser = await this.usersRepository.findById(userId);
 
-    const newComment: CommentDbType = {
+    const newComment: CommentType = {
       content,
       postId,
-      createdAt: new Date(),
       commentatorInfo: {
         userId: foundUser?.id!,
         userLogin: foundUser?.login!,
       },
+      likesInfo: {
+        likesCount: 0,
+        dislikesCount: 0,
+        myStatus: LikeType.None
+      }
     };
 
     return await this.commentRepository.create(newComment);

@@ -1,38 +1,40 @@
-import { db } from '../db/mongoDb';
-import { ObjectId, WithId } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import { CommentType, CommentUpdateType } from '../input-output-types/comment-types';
 import { CommentDbType } from '../db/comment-db-type';
 import { GetAllQueryParamNoSearchTerm } from '../shared/types';
 import { HttpStatuses } from '../shared/enums';
 import { commentMapper } from '../mapping/commentMapper';
 import { injectable } from 'inversify';
+import { CommentModel } from '../model';
 
 @injectable()
 export class CommentRepository {
 
-  async create(comment: CommentDbType) {
-    const result = await db.getCollections().commentsCollection.insertOne({ ...comment });
-    return result.insertedId.toString();
+  async create(comment: CommentType) {
+    const commentModel = new CommentModel(comment);
+    await commentModel.save();
+    return commentModel._id.toString();
   }
 
   async update({ commentId, update }: CommentUpdateType) {
-    const result = await db
-      .getCollections()
-      .commentsCollection.updateOne({ _id: new ObjectId(commentId) }, { $set: { ...update } });
-    return result.matchedCount === 1;
+    const commentModel = await CommentModel.findById(commentId);
+    if (!commentModel) return false;
+    Object.assign(commentModel, update);
+    await commentModel.save();
+    return true;
   }
 
   async delete(commentId: string) {
-    const result = await db.getCollections().commentsCollection.deleteOne({ _id: new ObjectId(commentId) });
-    return result.deletedCount === 1;
+    const result = await CommentModel.findByIdAndDelete(commentId);
+    return result !== null;
   }
 
   async findAll() {
-    return db.getCollections().commentsCollection.find().toArray();
+    return CommentModel.find().lean();
   }
 
   async findById(commentId: string) {
-    return db.getCollections().commentsCollection.findOne({ _id: new ObjectId(commentId) });
+    return CommentModel.findById(commentId);
   }
 
   async findByPostId(postId: string, query: GetAllQueryParamNoSearchTerm<CommentType>) {
@@ -48,14 +50,14 @@ export class CommentRepository {
     const skip = (Number(pageNumber) - 1) * convertedPageSize;
 
     const [totalCount, comments]: [number, CommentDbType[]] = await Promise.all([
-      db.getCollections().commentsCollection.countDocuments({ postId }), // Fetch total count
-      db
-        .getCollections()
-        .commentsCollection.find({ postId })
+      CommentModel.countDocuments({ postId }), // Fetch total count
+      CommentModel.find()
+        .where('postId')
+        .equals(postId)
         .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
         .skip(skip)
         .limit(convertedPageSize)
-        .toArray(),
+        .lean(),
     ]);
 
     return {

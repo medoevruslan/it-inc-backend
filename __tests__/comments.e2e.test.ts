@@ -5,6 +5,7 @@ import { comment1, post1 } from './datasets';
 import { HttpStatuses } from '../src/shared/enums';
 import { CommentInputType } from '../src/input-output-types/comment-types';
 import { ObjectId } from 'mongodb';
+import mongoose from 'mongoose';
 
 jest.setTimeout(100000000);
 
@@ -14,8 +15,10 @@ describe('test /comments', () => {
   beforeAll(async () => {
     await db.run(SETTINGS.MONGO_URL);
   });
+  
   afterAll(async () => {
     await db.close();
+    await mongoose.disconnect()
   });
 
   describe('get comments', () => {
@@ -36,7 +39,7 @@ describe('test /comments', () => {
 
       expect(commentsResponse.body.id).toBe(comment1._id.toString());
       expect(commentsResponse.body.content).toBe(comment1.content);
-      expect(commentsResponse.body.createdAt).toBe(comment1.createdAt.toISOString());
+      expect(commentsResponse.body.createdAt).toBe(comment1.createdAt);
       expect(commentsResponse.body.commentatorInfo.userLogin).toBe(comment1.commentatorInfo.userLogin);
       expect(commentsResponse.body.commentatorInfo.userId).toBe(comment1.commentatorInfo.userId);
     });
@@ -241,6 +244,7 @@ describe('test /comments', () => {
         .expect(HttpStatuses.Success);
 
       const commentUpdate = { content: 'a'.repeat(19) };
+
       const updateResponse = await req
         .put(`${SETTINGS.PATH.COMMENTS}/${comment1._id.toString()}`)
         .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
