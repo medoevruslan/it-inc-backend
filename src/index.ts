@@ -1,7 +1,7 @@
 import { app } from './app';
 import { SETTINGS } from './settings';
 import * as Process from 'process';
-import { db } from './db/mongoDb';
+import { db } from './composition-root';
 
 app.set('trust proxy', true);
 

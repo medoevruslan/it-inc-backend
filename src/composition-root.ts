@@ -25,10 +25,12 @@ import { EmailManager } from './managers/EmailManager';
 import { EmailAdapter } from './adapters/EmailAdapter';
 import { CommentsController } from './comments/CommentsController';
 import { DeviceSessionsController } from './device-sessions/DeviceSessionsController';
+import { Db } from './db/Database';
 
 export const jwtService = new JwtService();
 
 export const container = new Container();
+export const db = new Db()
 
 container.bind(PostsController).toSelf()
 container.bind(BlogController).toSelf()
