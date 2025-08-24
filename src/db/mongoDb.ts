@@ -1,14 +1,14 @@
-import { Collection, Db, MongoClient } from 'mongodb';
+import { MongoClient } from 'mongodb';
 import { PostDbType } from './post-db.type';
 import { BlogDbType } from './blog-db-type';
 import { SETTINGS } from '../settings';
 import { DBType } from './db';
 import { UserDbType } from './user-db-type';
-import { Nullable } from '../shared/types';
 import { CommentDbType } from './comment-db-type';
 import { TokenDbType } from './token-db-type';
 import { ApiRequestsDataDbType } from './api-requests-data-db-type';
 import { DeviceAuthSessionsDbType } from './device-auth-sessions-db-type';
+import mongoose from 'mongoose';
 
 export const db = {
   client: {} as MongoClient,
@@ -23,6 +23,14 @@ export const db = {
 
       // Connect the client to the server	(optional starting in v4.7)
       await this.client.connect();
+      await mongoose.connect('mongodb+srv://admin:admin@lesson-3.zyrid.mongodb.net/blogs-platform?retryWrites=true&w=majority&appName=lesson-3');
+
+      if (mongoose.connection.readyState === 1) {
+        console.log('✅ Mongoose connected successfully');
+      } else {
+        console.error('❌ Mongoose connection failed. State:', mongoose.connection.readyState);
+      }
+
       // Send a ping to confirm a successful connection
       await this.getDbName().command({ ping: 1 });
 
@@ -57,14 +65,14 @@ export const db = {
 
   getCollections() {
     return {
-      postCollection: this.getDbName().collection<PostDbType>(SETTINGS.PATH.POSTS),
-      blogsCollection: this.getDbName().collection<BlogDbType>(SETTINGS.PATH.BLOGS),
-      usersCollection: this.getDbName().collection<UserDbType>(SETTINGS.PATH.USERS),
-      commentsCollection: this.getDbName().collection<CommentDbType>(SETTINGS.PATH.COMMENTS),
-      refreshTokensBlockedCollection: this.getDbName().collection<TokenDbType>('refreshTokensBlocked'),
-      refreshTokensValidCollection: this.getDbName().collection<TokenDbType>('refreshTokensValid'),
-      apiRequestsDataCollection: this.getDbName().collection<ApiRequestsDataDbType>('apiRequests'),
-      deviceAuthSessionsCollection: this.getDbName().collection<DeviceAuthSessionsDbType>('deviceAuthSessions')
+      postCollection: this.getDbName().collection<PostDbType>(SETTINGS.TABLE.POSTS),
+      blogsCollection: this.getDbName().collection<BlogDbType>(SETTINGS.TABLE.BLOGS),
+      usersCollection: this.getDbName().collection<UserDbType>(SETTINGS.TABLE.USERS),
+      commentsCollection: this.getDbName().collection<CommentDbType>(SETTINGS.TABLE.COMMENTS),
+      refreshTokensBlockedCollection: this.getDbName().collection<TokenDbType>(SETTINGS.TABLE.REFRESH_TOKENS_BLOCKED),
+      refreshTokensValidCollection: this.getDbName().collection<TokenDbType>(SETTINGS.TABLE.REFRESH_TOKENS_VALID),
+      apiRequestsDataCollection: this.getDbName().collection<ApiRequestsDataDbType>(SETTINGS.TABLE.API_REQUESTS_DATA),
+      deviceAuthSessionsCollection: this.getDbName().collection<DeviceAuthSessionsDbType>(SETTINGS.TABLE.DEVICE_AUTH_SESSIONS)
     };
   },
 

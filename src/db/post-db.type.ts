@@ -1,11 +1,10 @@
-import { ObjectId } from 'mongodb';
+import { WithId } from 'mongodb';
 
-export type PostDbType = {
-  _id: ObjectId;
+export type PostDbType = WithId<{
   title: string;
   shortDescription: string;
   content: string;
   blogId: string;
   blogName: string;
   createdAt: string;
-};
+}>;

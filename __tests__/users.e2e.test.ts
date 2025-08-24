@@ -3,6 +3,7 @@ import { SETTINGS } from '../src/settings';
 import { InputUserType, OutputUserAccountType } from '../src/input-output-types/user-types';
 import { db } from '../src/db/mongoDb';
 import { getRandomLogin } from './datasets';
+import mongoose from 'mongoose';
 
 jest.setTimeout(100000000);
 
@@ -15,6 +16,7 @@ describe('tests for /users', () => {
 
   afterAll(async () => {
     await db.close();
+    await mongoose.disconnect()
   });
 
   describe('test get users', () => {

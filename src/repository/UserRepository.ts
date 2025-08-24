@@ -1,44 +1,45 @@
 import { UserType } from '../db/user-db-type';
-import { db } from '../db/mongoDb';
-import { ObjectId } from 'mongodb';
 import { userMapper } from '../mapping/userMapper';
 import { injectable } from 'inversify';
+import { UserModel } from '../model/UserModel';
 
 @injectable()
 export class UserRepository {
   public async create(user: UserType) {
-    const result = await db.getCollections().usersCollection.insertOne({
-      ...user,
-    });
-    return result.insertedId.toString();
+    const userModel = new UserModel(user)
+    const result = await userModel.save()
+    return result._id.toString();
   }
 
   public async findByLoginOrEmail(loginOrEmail: string) {
-    return await db
-      .getCollections()
-      .usersCollection.findOne({ $or: [{ 'accountData.email': loginOrEmail }, { 'accountData.login': loginOrEmail }] });
+    return UserModel.findOne({ $or: [{ 'accountData.email': loginOrEmail }, { 'accountData.login': loginOrEmail }] }).lean();
   }
 
   public async findByConfirmationCode(code: string) {
-    return await db.getCollections().usersCollection.findOne({ 'emailConfirmation.confirmationCode': code });
+    return UserModel.findOne({ 'emailConfirmation.confirmationCode': code }).lean();
   }
 
   public async findByPasswordRecoveryCode(code: string) {
-    return await db.getCollections().usersCollection.findOne({ 'passwordRecovery.recoveryCode': code });
+    return UserModel.findOne({ 'passwordRecovery.recoveryCode': code }).lean();
   }
 
   public async findById(id: string) {
-    const result = await db.getCollections().usersCollection.findOne({ _id: new ObjectId(id) });
+    const result = await UserModel.findById(id).lean();
     return result ? userMapper.mapUserToOutputType(result) : null;
   }
 
   public async deleteById(userId: string) {
-    const result = await db.getCollections().usersCollection.deleteOne({ _id: new ObjectId(userId) });
-    return result.deletedCount === 1;
+    const result = await UserModel.findByIdAndDelete(userId);
+    return result !== null
   }
 
   public async update(userId: string, update: Partial<UserType>) {
-    const result = await db.getCollections().usersCollection.updateOne({ _id: new ObjectId(userId) }, { $set: update });
-    return result.matchedCount === 1;
+    const user = await UserModel.findById( userId);
+    if (!user) return false
+    Object.assign(user, update)
+
+    await user.save()
+
+    return true
   }
 }

@@ -33,3 +33,6 @@ type SentEmail = {
 type RegistrationData = {
   id: string;
 }
+
+
+

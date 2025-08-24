@@ -3,14 +3,16 @@ import { Filter, ObjectId, WithId } from 'mongodb';
 import { db } from '../db/mongoDb';
 import { GetAllUsersQueryParams, OutputUserAccountType } from '../input-output-types/user-types';
 import { OutputModelTypeWithInfo } from '../input-output-types/common-types';
-import { UserDbType } from '../db/user-db-type';
+import { UserDbType, UserType } from '../db/user-db-type';
 import { injectable } from 'inversify';
+import { UserModel } from '../model/UserModel';
+import { FilterQuery } from 'mongoose';
 
 @injectable()
 export class UserQueryRepository {
   async findAll(inputFilter: GetAllUsersQueryParams): Promise<OutputModelTypeWithInfo<OutputUserAccountType>> {
     const { sortDirection, sortBy, pageSize, pageNumber, searchLoginTerm, searchEmailTerm } = inputFilter;
-    let filter = {} as Filter<UserDbType>;
+    let filter: FilterQuery<UserDbType> = {};
 
     if (searchLoginTerm) {
       if (!filter?.$or) {
@@ -32,14 +34,12 @@ export class UserQueryRepository {
 
     // Execute queries in parallel for better performance
     const [totalCount, users]: [number, WithId<UserDbType>[]] = await Promise.all([
-      db.getCollections().usersCollection.countDocuments(filter), // Fetch total count
-      db
-        .getCollections()
-        .usersCollection.find(filter)
+      UserModel.countDocuments(filter), // Fetch total count
+      UserModel.find(filter)
         .sort({ [`accountData.${sortBy}`]: sortDirection === 'asc' ? 1 : -1 })
         .skip(skip)
         .limit(convertedPageSize)
-        .toArray(),
+        .lean(),
     ]);
 
     return {
@@ -52,14 +52,16 @@ export class UserQueryRepository {
   }
 
   async findById(id: string) {
-    const result = await db.getCollections().usersCollection.findOne({ _id: new ObjectId(id) });
+    const result = await UserModel.findById(id).lean();
     return result ? userMapper.mapUserToOutputType(result) : null;
   }
 
   async findByLoginOrEmail(loginOrEmail: string) {
-    const result = await db
-      .getCollections()
-      .usersCollection.findOne({ $or: [{ email: loginOrEmail }, { login: loginOrEmail }] });
+    const query = UserModel.findOne();
+    const result = await query.or([
+      { 'accountData.email': loginOrEmail },
+      { 'accountData.login': loginOrEmail },
+    ]).lean();
     return result ? userMapper.mapUserToOutputType(result) : null;
   }
 }

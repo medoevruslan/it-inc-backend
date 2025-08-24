@@ -5,6 +5,7 @@ import { GetAllQueryParams } from '../shared/types';
 import { db } from '../db/mongoDb';
 import { OutputModelTypeWithInfo } from '../input-output-types/common-types';
 import { injectable } from 'inversify';
+import { PostModel } from '../model/PostModel';
 
 @injectable()
 export class PostRepository {
@@ -21,7 +22,7 @@ export class PostRepository {
 
   async findAll(inputFilter: GetAllQueryParams<PostType>): Promise<OutputModelTypeWithInfo<OutputPostType>> {
     const { sortDirection, sortBy, pageSize, pageNumber, searchNameTerm } = inputFilter;
-    const filter = searchNameTerm ? { name: { $regex: searchNameTerm, $options: 'i' } } : {};
+    const filter = searchNameTerm ? { title: { $regex: searchNameTerm, $options: 'i' } } : {};
 
     const convertedPageSize = Number(pageSize);
 
@@ -29,14 +30,11 @@ export class PostRepository {
 
     // Execute queries in parallel for better performance
     const [totalCount, posts]: [number, WithId<PostDbType>[]] = await Promise.all([
-      db.getCollections().postCollection.countDocuments(filter), // Fetch total count
-      db
-        .getCollections()
-        .postCollection.find(filter)
+      PostModel.countDocuments(filter), // Fetch total count
+      PostModel.find(filter)
         .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
         .skip(skip)
-        .limit(convertedPageSize)
-        .toArray(),
+        .limit(convertedPageSize),
     ]);
 
     return {
