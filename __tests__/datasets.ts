@@ -54,7 +54,7 @@ export const user1: WithId<UserDbType> = {
   },
 };
 
-export const comment1: WithId<CommentDbType> = {
+export const comment1: CommentDbType = {
   _id: new ObjectId(),
   commentatorInfo: { userId: new ObjectId().toString(), userLogin: 'some_login' },
   content: 'some'.repeat(10),

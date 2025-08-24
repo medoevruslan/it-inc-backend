@@ -17,7 +17,7 @@ export enum ResultStatus {
 }
 
 export enum LikeType {
-  Like,
-  Dislike,
-  None
+  Like = 'Like',
+  Dislike = 'Dislike',
+  None = 'None'
 }

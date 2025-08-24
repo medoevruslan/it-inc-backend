@@ -1,6 +1,6 @@
 import { db } from '../db/mongoDb';
 import { ObjectId, WithId } from 'mongodb';
-import { CommentInputType, CommentType, CommentUpdateType } from '../input-output-types/comment-types';
+import { CommentType, CommentUpdateType } from '../input-output-types/comment-types';
 import { CommentDbType } from '../db/comment-db-type';
 import { GetAllQueryParamNoSearchTerm } from '../shared/types';
 import { HttpStatuses } from '../shared/enums';
@@ -47,7 +47,7 @@ export class CommentRepository {
 
     const skip = (Number(pageNumber) - 1) * convertedPageSize;
 
-    const [totalCount, comments]: [number, WithId<CommentDbType>[]] = await Promise.all([
+    const [totalCount, comments]: [number, CommentDbType[]] = await Promise.all([
       db.getCollections().commentsCollection.countDocuments({ postId }), // Fetch total count
       db
         .getCollections()
