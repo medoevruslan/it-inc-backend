@@ -1,24 +1,26 @@
-import { BlogDbTypeWithoutId, BlogType, OutputBlogType, UpdateBlogType } from '../input-output-types/blog-types';
-import { ObjectId, WithId } from 'mongodb';
+import { BlogType, InputBlogType, OutputBlogType, UpdateBlogType } from '../input-output-types/blog-types';
+import { WithId } from 'mongodb';
 import { BlogDbType } from '../db/blog-db-type';
 import { GetAllQueryParams } from '../shared/types';
-import { db } from '../db/mongoDb';
 import { OutputModelTypeWithInfo } from '../input-output-types/common-types';
 import { injectable } from 'inversify';
+import { BlogModel } from '../model/BlogModel';
 
 @injectable()
 export class BlogRepository {
 
-  async create(input: BlogDbTypeWithoutId): Promise<string> {
-    const result = await db.getCollections().blogsCollection.insertOne(input);
-    return result.insertedId.toString();
+  async create(input: InputBlogType): Promise<string> {
+    const blogModel = new BlogModel(input)
+    await blogModel.save()
+    return blogModel._id.toString();
   }
 
   async update({ blogId, update }: UpdateBlogType): Promise<boolean> {
-    const result = await db
-      .getCollections()
-      .blogsCollection.updateOne({ _id: new ObjectId(blogId) }, { $set: { ...update } });
-    return result.matchedCount === 1;
+    const blogModel = await BlogModel.findById(blogId);
+    if (!blogModel) return false
+    Object.assign(blogModel, update)
+    blogModel.save()
+    return true
   }
 
   async findAll(inputFilter: GetAllQueryParams<BlogType>): Promise<OutputModelTypeWithInfo<OutputBlogType>> {
@@ -31,14 +33,12 @@ export class BlogRepository {
 
     // Execute queries in parallel for better performance
     const [totalCount, blogs]: [number, WithId<BlogDbType>[]] = await Promise.all([
-      db.getCollections().blogsCollection.countDocuments(filter), // Fetch total count
-      db
-        .getCollections()
-        .blogsCollection.find(filter)
+      BlogModel.countDocuments(filter), // Fetch total count
+      BlogModel.find(filter)
         .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
         .skip(skip)
         .limit(convertedPageSize)
-        .toArray(),
+        .lean(),
     ]);
 
     return {
@@ -51,18 +51,17 @@ export class BlogRepository {
   }
 
   async findById(id: string): Promise<OutputBlogType | null> {
-    const filter = { _id: new ObjectId(id) };
-    const blog = await db.getCollections().blogsCollection.findOne(filter);
+    const blog = await BlogModel.findById(id).lean()
     return blog === null ? null : this.mapToOutputType(blog);
   }
 
   async deleteById(id: string): Promise<boolean> {
-    const result = await db.getCollections().blogsCollection.deleteOne({ _id: new ObjectId(id) });
-    return result.deletedCount === 1;
+    const result = await BlogModel.findByIdAndDelete(id)
+    return result !== null;
   }
 
 
-  mapToOutputType(blog: BlogDbType): OutputBlogType {
+  private mapToOutputType(blog: BlogDbType): OutputBlogType {
     return {
       id: blog._id.toString(),
       name: blog.name,

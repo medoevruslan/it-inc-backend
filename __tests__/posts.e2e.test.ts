@@ -8,6 +8,7 @@ import { InputPostType, UpdatePostType } from '../src/input-output-types/post-ty
 import { BlogDbType } from '../src/db/blog-db-type';
 import { ObjectId } from 'mongodb';
 import { db } from '../src/db/mongoDb';
+import mongoose from 'mongoose';
 
 jest.setTimeout(100000000);
 
@@ -17,8 +18,13 @@ describe('tests for /posts', () => {
   const codedAuth = toBase64(SETTINGS.ADMIN_AUTH);
 
   beforeAll(async () => {
-    await db.run(SETTINGS.MONGO_URL)
-  })
+    await db.run(SETTINGS.MONGO_URL);
+  });
+
+  afterAll(async () => {
+    await db.close();
+    await mongoose.disconnect();
+  });
 
   beforeEach(() => {
     dataset1 = {

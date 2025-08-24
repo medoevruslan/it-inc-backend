@@ -8,6 +8,7 @@ import { ObjectId } from 'mongodb';
 import { InputPostType } from '../src/input-output-types/post-types';
 import { db } from '../src/db/mongoDb';
 import { HttpStatuses } from '../src/shared/enums';
+import mongoose from 'mongoose';
 
 
 jest.setTimeout(100000000);
@@ -20,6 +21,11 @@ describe('tests for /blogs', () => {
   beforeAll(async () => {
     await db.run(SETTINGS.MONGO_URL);
   });
+
+  afterAll( async () => {
+    await db.close();
+    await mongoose.disconnect()
+  })
 
   beforeEach(async () => {
     dataset1 = {

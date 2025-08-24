@@ -11,13 +11,17 @@ import { PostModel } from '../model/PostModel';
 export class PostRepository {
 
   async create(input: InputPostType & { blogName: string }): Promise<string> {
-    const result = await db.getCollections().postCollection.insertOne(input);
-    return result.insertedId.toString();
+    const postModel = new PostModel(input);
+    await postModel.save();
+    return postModel._id.toString();
   }
 
   async update({ postId, update }: UpdatePostType): Promise<boolean> {
-    const result = await db.getCollections().postCollection.updateOne({ _id: new ObjectId(postId) }, { $set: update });
-    return result.matchedCount === 1;
+    const postModel = await PostModel.findById(postId);
+    if (!postModel) return false;
+    Object.assign(postModel, update);
+    await postModel.save();
+    return true;
   }
 
   async findAll(inputFilter: GetAllQueryParams<PostType>): Promise<OutputModelTypeWithInfo<OutputPostType>> {
@@ -34,7 +38,8 @@ export class PostRepository {
       PostModel.find(filter)
         .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
         .skip(skip)
-        .limit(convertedPageSize),
+        .limit(convertedPageSize)
+        .lean(),
     ]);
 
     return {
@@ -47,7 +52,7 @@ export class PostRepository {
   }
 
   async findById(id: string): Promise<OutputPostType | null> {
-    const post = await db.getCollections().postCollection.findOne({ _id: new ObjectId(id) });
+    const post = await PostModel.findById(id).lean()
     return post === null ? null : this.mapToOutputType(post);
   }
 
@@ -64,14 +69,12 @@ export class PostRepository {
 
     // Execute queries in parallel for better performance
     const [totalCount, posts]: [number, WithId<PostDbType>[]] = await Promise.all([
-      db.getCollections().postCollection.countDocuments(filter), // Fetch total count
-      db
-        .getCollections()
-        .postCollection.find(filter)
+      PostModel.countDocuments(filter), // Fetch total count
+      PostModel.find(filter)
         .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
         .skip(skip)
         .limit(convertedPageSize)
-        .toArray(),
+        .lean(),
     ]);
 
     return {
@@ -84,11 +87,11 @@ export class PostRepository {
   }
 
   async deleteById(id: string): Promise<boolean> {
-    const result = await db.getCollections().postCollection.deleteOne({ _id: new ObjectId(id) });
-    return result.deletedCount === 1;
+    const result = await PostModel.findByIdAndDelete(id);
+    return result !== null;
   }
 
-  mapToOutputType(post: PostDbType): OutputPostType {
+  private mapToOutputType(post: PostDbType): OutputPostType {
     return {
       id: post._id.toString(),
       blogName: post.blogName,

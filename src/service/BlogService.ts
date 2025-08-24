@@ -6,6 +6,7 @@ import { OutputModelTypeWithInfo } from '../input-output-types/common-types';
 import { PostRepository } from '../repository/PostRepository';
 import { BlogRepository } from '../repository/BlogRepository';
 import { inject, injectable } from 'inversify';
+import { HttpStatuses } from '../shared/enums';
 
 @injectable()
 export class BlogService {
@@ -14,17 +15,13 @@ export class BlogService {
   }
 
   async create(input: InputBlogType): Promise<OutputBlogType> {
-    const createdId = await this.blogRepository.create({
-      ...input,
-      createdAt: new Date().toISOString(),
-      isMembership: false,
-    });
+    const createdId = await this.blogRepository.create(input);
 
     // or we just should  skip this step and return just object what we have created here
     const createdBlog = await this.blogRepository.findById(createdId);
 
     if (createdBlog === null) {
-      throw new Error('400');
+      throw new Error(HttpStatuses.NotFound.toString());
     }
 
     return createdBlog;
@@ -32,13 +29,13 @@ export class BlogService {
 
   async update({ blogId, update }: UpdateBlogType): Promise<boolean> {
     if (!ObjectId.isValid(blogId)) {
-      throw new Error('400');
+      throw new Error(HttpStatuses.BadRequest.toString());
     }
 
     const success = await this.blogRepository.update({ blogId, update });
 
     if (!success) {
-      throw new Error('404');
+      throw new Error(HttpStatuses.NotFound.toString());
     }
 
     return success;
@@ -50,12 +47,12 @@ export class BlogService {
 
   async findById(id: string): Promise<OutputBlogType> {
     if (!ObjectId.isValid(id)) {
-      throw new Error('400');
+      throw new Error(HttpStatuses.BadRequest.toString());
     }
     const found = await this.blogRepository.findById(id);
 
     if (found === null) {
-      throw new Error('404');
+      throw new Error(HttpStatuses.NotFound.toString());
     }
 
     return found;
@@ -66,12 +63,12 @@ export class BlogService {
     filter: GetAllQueryParams<PostType>,
   ): Promise<OutputModelTypeWithInfo<OutputPostType>> {
     if (!ObjectId.isValid(id)) {
-      throw new Error('400');
+      throw new Error(HttpStatuses.BadRequest.toString());
     }
     const found = await this.postRepository.findByBlogId(id, filter);
 
     if (found.items.length === 0) {
-      throw new Error('404');
+      throw new Error(HttpStatuses.NotFound.toString());
     }
 
     return found;
@@ -79,13 +76,13 @@ export class BlogService {
 
   async deleteById(id: string): Promise<boolean> {
     if (!ObjectId.isValid(id)) {
-      throw new Error('400');
+      throw new Error(HttpStatuses.BadRequest.toString());
     }
 
     const success = await this.blogRepository.deleteById(id);
 
     if (!success) {
-      throw new Error('404');
+      throw new Error(HttpStatuses.NotFound.toString());
     }
     return success;
   }
