@@ -4,7 +4,7 @@ import { SignOptions } from 'jsonwebtoken';
 
 config();
 
-export const BASE_URL = '/ht_10/api';
+export const BASE_URL = '/ht_11/api';
 
 export const SETTINGS = {
   PORT: process.env.PORT || 3003,
@@ -17,6 +17,18 @@ export const SETTINGS = {
     COMMENTS: `${BASE_URL}/comments`,
     SECURITY: `${BASE_URL}/security`,
     TESTING: `${BASE_URL}/testing/all-data`,
+  },
+  TABLE: {
+    VIDEOS: 'videos',
+    BLOGS: 'blogs',
+    POSTS: 'posts',
+    USERS: 'users',
+    AUTH: 'auth',
+    COMMENTS: 'comments',
+    REFRESH_TOKENS_BLOCKED: 'refreshTokensBlocked',
+    REFRESH_TOKENS_VALID: 'refreshTokensValid',
+    API_REQUESTS_DATA: 'apiRequestsData',
+    DEVICE_AUTH_SESSIONS: 'deviceAuthSessions',
   },
   ADMIN_AUTH: 'admin:qwerty',
   MONGO_URL: Process.env.MONGO_URL || 'mongodb://localhost:27017',

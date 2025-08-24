@@ -1,7 +1,7 @@
 import { body } from 'express-validator';
 
 export const newPasswordBodyValidator = [
-  body('password')
+  body('newPassword')
     .trim()
     .notEmpty()
     .withMessage('required')
