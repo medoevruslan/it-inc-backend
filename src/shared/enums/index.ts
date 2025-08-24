@@ -15,3 +15,9 @@ export enum ResultStatus {
   BadRequest = HttpStatuses.BadRequest,
   ServerError = HttpStatuses.ServerError,
 }
+
+export enum LikeType {
+  Like,
+  Dislike,
+  None
+}

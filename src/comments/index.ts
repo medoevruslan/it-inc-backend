@@ -17,4 +17,9 @@ commentsRouter.put(
   validationErrorMiddleware,
   commentsController.updateComments.bind(commentsController),
 );
+commentsRouter.put(
+  '/:commentId',
+  accessTokenGuard,
+  commentsController.likeComments.bind(commentsController),
+);
 commentsRouter.delete('/:id', accessTokenGuard, commentsController.deleteComments.bind(commentsController));

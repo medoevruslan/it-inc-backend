@@ -45,4 +45,15 @@ export class CommentsController {
     }
   };
 
+  async likeComments(
+    req: Request<{}, {}, { likeStatus: string }>,
+    res: Response,
+  ) {
+    try {
+      res.status(204).send('Like');
+    } catch (err: unknown) {
+      handleApiError(err, res);
+    }
+  };
+
 }

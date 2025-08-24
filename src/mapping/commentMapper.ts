@@ -12,6 +12,11 @@ export const commentMapper = {
         userId: comment.commentatorInfo.userId,
         userLogin: comment.commentatorInfo.userLogin,
       },
+      likesInfo: {
+        likesCount: 0,
+        dislikesCount: 0,
+        myStatus: 'Like'
+      }
     };
   },
 };
