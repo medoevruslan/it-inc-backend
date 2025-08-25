@@ -1,39 +1,49 @@
 import { DeviceAuthSessionsDbType, DeviceAuthSessionsUpdateType } from '../db/device-auth-sessions-db-type';
 import { db } from '../db/mongoDb';
 import { injectable } from 'inversify';
+import { DeviceAuthSessionsDbModel } from '../model/DeviceAuthSessionsDbModel';
+import exp from 'node:constants';
 
 @injectable()
 export class DeviceAuthSessionsRepository {
   async add(data: DeviceAuthSessionsDbType){
-    const result = await db.getCollections().deviceAuthSessionsCollection.insertOne(data)
-    return result.insertedId
+    const deviceAuthSessionsDbModel = new DeviceAuthSessionsDbModel(data)
+    await deviceAuthSessionsDbModel.save()
+    return deviceAuthSessionsDbModel._id.toString();
   }
 
   async update(data: DeviceAuthSessionsUpdateType) {
     const { deviceId, iat, iatUpdated, expUpdated } = data
-    const result = await db.getCollections().deviceAuthSessionsCollection.updateOne({ deviceId, iat }, { $set: { iat: iatUpdated, exp: expUpdated } })
-    return result.matchedCount === 1
+    const deviceAuthSessionsDbModel = await DeviceAuthSessionsDbModel.findOne({ deviceId, iat })
+    if(!deviceAuthSessionsDbModel) return false
+
+    deviceAuthSessionsDbModel.iat = iatUpdated;
+    deviceAuthSessionsDbModel.exp = expUpdated;
+
+    await deviceAuthSessionsDbModel.save()
+
+    return true
   }
 
   async findAll(){
-      return db.getCollections().deviceAuthSessionsCollection.find().toArray();
+    return DeviceAuthSessionsDbModel.find().lean()
   }
 
   async findByDeviceIdAndIat(deviceId: string, iat: number) {
-    return db.getCollections().deviceAuthSessionsCollection.findOne({ deviceId, iat })
+    return DeviceAuthSessionsDbModel.findOne({ deviceId, iat })
   }
 
   async findByUserId(userId: string) {
-    return db.getCollections().deviceAuthSessionsCollection.find({userId}).toArray()
+    return DeviceAuthSessionsDbModel.find({ userId }).lean()
   }
 
   async delete(deviceId: string){
-    const result = await db.getCollections().deviceAuthSessionsCollection.deleteOne({ deviceId })
-    return result.deletedCount === 1
+    const result = await DeviceAuthSessionsDbModel.findByIdAndDelete(deviceId)
+    return result !== null
   }
 
   async deleteByUserId(userId: string, options: { skip: {deviceId: string} }) {
-    const result = await db.getCollections().deviceAuthSessionsCollection.deleteMany({ userId, deviceId: { $ne: options.skip.deviceId } })
+    const result = await DeviceAuthSessionsDbModel.deleteMany({ userId, deviceId: { $ne: options.skip.deviceId } })
     return result.deletedCount > 0
   }
 }

@@ -32,6 +32,7 @@ export const SETTINGS = {
   },
   ADMIN_AUTH: 'admin:qwerty',
   MONGO_URL: Process.env.MONGO_URL || 'mongodb://localhost:27017',
+  MONGOOSE_URL: Process.env.MONGOOSE_URL || 'mongodb://localhost:27017',
   DATABASE: Process.env.DATABASE || 'test',
   JWT: Process.env.JWT_SECRET as string,
   ACCESS_TOKEN_EXP_TIME: Process.env.ACCESS_EXP_TIME as SignOptions['expiresIn'],

@@ -1,13 +1,15 @@
 import { db } from '../db/mongoDb';
 import { MongoServerError } from 'mongodb';
 import { injectable } from 'inversify';
+import { TokenDbModel } from '../model/TokenDbModel';
 
 @injectable()
 export class RefreshTokenBlockedRepository {
   async add(token: string) {
     try {
-      const added = await db.getCollections().refreshTokensBlockedCollection.insertOne({ token })
-      return added.insertedId
+      const tokenDbModel = new TokenDbModel(token)
+      await tokenDbModel.save()
+      return tokenDbModel._id.toString()
     } catch (err: any) {
       if (err instanceof MongoServerError) {
         console.error('Got error on add RefreshTokenBlocked:: ', err.errmsg)
@@ -23,15 +25,15 @@ export class RefreshTokenBlockedRepository {
   }
 
   async findAll() {
-    return await db.getCollections().refreshTokensBlockedCollection.find({}).toArray();
+    return TokenDbModel.find().lean();
   }
 
   async findByToken(token: string) {
-    return await db.getCollections().refreshTokensBlockedCollection.findOne({ token });
+    return TokenDbModel.findOne().where('token').equals(token);
   }
 
   async delete(token: string) {
-    const result = await db.getCollections().refreshTokensBlockedCollection.deleteOne({ token });
+    const result = await TokenDbModel.deleteOne({ token });
     return result.deletedCount === 1;
   }
 }

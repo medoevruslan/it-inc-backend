@@ -1,18 +1,20 @@
-import { db } from '../db/mongoDb';
 import { ApiRequestsDataDbType } from '../db/api-requests-data-db-type';
-import { Filter } from 'mongodb';
+import { ApiRequestsDataDbModel } from '../model/ApiRequestsDataDbModel';
+import { FilterQuery } from 'mongoose';
 
 
 export class ApiRequestsSecurityQueryRepository {
   async add(data: ApiRequestsDataDbType) {
-    return db.getCollections().apiRequestsDataCollection.insertOne(data)
+    const apiRequestsDataDbModel = new ApiRequestsDataDbModel(data);
+    await apiRequestsDataDbModel.save();
+    return apiRequestsDataDbModel._id.toString();
   }
 
- async findAll(filter: Filter<ApiRequestsDataDbType>) {
-    return db.getCollections().apiRequestsDataCollection.find(filter).toArray()
+  async findAll(filter: FilterQuery<ApiRequestsDataDbType>) {
+    return ApiRequestsDataDbModel.find(filter).lean();
   }
 
-  async getDocumentsCount(filter: Filter<ApiRequestsDataDbType>) {
-    return db.getCollections().apiRequestsDataCollection.countDocuments(filter)
+  async getDocumentsCount(filter: FilterQuery<ApiRequestsDataDbType>) {
+    return ApiRequestsDataDbModel.countDocuments(filter);
   }
 }
