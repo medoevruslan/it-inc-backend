@@ -38,8 +38,8 @@ export class DeviceAuthSessionsRepository {
   }
 
   async delete(deviceId: string){
-    const result = await DeviceAuthSessionsDbModel.findByIdAndDelete(deviceId)
-    return result !== null
+    const result = await DeviceAuthSessionsDbModel.deleteOne().where('deviceId').equals(deviceId)
+    return result.deletedCount === 1
   }
 
   async deleteByUserId(userId: string, options: { skip: {deviceId: string} }) {

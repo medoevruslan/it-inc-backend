@@ -2,6 +2,7 @@ import { db } from '../src/db/mongoDb';
 import { InputUserType } from '../src/input-output-types/user-types';
 import { req, toBase64 } from './test-helpers';
 import { SETTINGS } from '../src/settings';
+import mongoose from 'mongoose';
 
 jest.setTimeout(100000000)
 
@@ -9,7 +10,7 @@ describe('test auth', () => {
   const codedAuth = toBase64(SETTINGS.ADMIN_AUTH);
 
   beforeAll(async () => {
-    await db.run(SETTINGS.MONGO_URL);
+    await db.run(SETTINGS.MONGOOSE_URL);
   });
 
   afterAll(async () => {
@@ -95,7 +96,7 @@ describe('test auth', () => {
         .send({ loginOrEmail: newUser.login, password: 'incorrect' })
         .expect(401);
 
-      expect(loginResponse.body.errorMessages).toEqual([
+      expect(loginResponse.body.errorsMessages).toEqual([
         { field: 'email', message: 'login or password is incorrect' },
         { field: 'password', message: 'login or password is incorrect' },
       ]);
@@ -135,7 +136,7 @@ describe('test auth', () => {
     it('should not set new password because it is too short', async () => {
       const newPasswordResponse = await req
         .post(`${SETTINGS.PATH.AUTH}/new-password`)
-        .send({ recoveryCode:'recoveryCode', password: '1' })
+        .send({ recoveryCode:'recoveryCode', newPassword: '1' })
         .expect(400);
 
       expect(newPasswordResponse.body.errorsMessages[0].message).toBe('password should be less than 20 chars and more than 5')

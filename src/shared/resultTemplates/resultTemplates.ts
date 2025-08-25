@@ -15,7 +15,7 @@ export const RESULT = {
     extensions: [
       { field: 'code', message: 'user is already confirmed' },
     ],
-    data: false,
+    data: null,
   } satisfies Result<boolean>,
 
   USER_NOT_FOUND_BY_EMAIL: {

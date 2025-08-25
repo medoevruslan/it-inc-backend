@@ -145,7 +145,12 @@ export class AuthService {
     }
 
     if (user.emailConfirmation.expirationDate < new Date()) {
-      return RESULT.CODE_EXPIRED;
+      return {
+        status: ResultStatus.BadRequest,
+        errorMessage: 'Confirmation code has been expired',
+        extensions: [{ field: 'confirmationCode', message: 'Confirmation code has been expired' }],
+        data: false,
+      };
     }
 
     const isUpdated = await this.userRepository.update(user._id.toString(), {
@@ -190,7 +195,14 @@ export class AuthService {
     }
 
     if (user.emailConfirmation.isConfirmed) {
-      return RESULT.USER_IS_ALREADY_CONFIRMED;
+      return {
+        status: ResultStatus.BadRequest,
+        errorMessage: 'Email is already confirmed',
+        extensions: [
+          { field: 'code', message: 'user is already confirmed' },
+        ],
+        data: null
+      };
     }
 
     const verificationCode = uuidV4();

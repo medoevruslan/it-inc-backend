@@ -10,7 +10,20 @@ export class Db {
 
   public async run(uri: string) {
     try {
-      await mongoose.connect(`${SETTINGS.MONGOOSE_URL}/${SETTINGS.DATABASE}?retryWrites=true&w=majority&appName=lesson-3`)
+      await mongoose.connect(`${uri}/${SETTINGS.DATABASE}?retryWrites=true&w=majority&appName=lesson-3`)
+      await this.init()
+      console.log('Pinged your deployment. You successfully connected to MongoDB!');
+      return true;
+    } catch (err) {
+      console.error(err);
+      await mongoose.disconnect()
+      return false;
+    }
+  }
+
+  public async runTesting(uri: string) {
+    try {
+      await mongoose.connect(uri)
       await this.init()
       console.log('Pinged your deployment. You successfully connected to MongoDB!');
       return true;

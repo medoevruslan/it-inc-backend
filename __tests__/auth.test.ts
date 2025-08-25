@@ -14,6 +14,8 @@ import { UserService } from '../src/service/UserService';
 import { RefreshTokenBlockedRepository } from '../src/repository/RefreshTokenBlockedRepository';
 import { DeviceAuthSessionsRepository } from '../src/repository/DeviceAuthSessionsRepository';
 import { DeviceSessionsService } from '../src/service/DeviceSessionsService';
+import { UserModel } from '../src/model';
+import { TokenDbModel } from '../src/model/TokenDbModel';
 
 jest.mock('../src/managers/EmailManager', () => {
   const mock = {
@@ -35,13 +37,14 @@ describe('integration tests for auth', () => {
 
   beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
-    const uri = mongoServer.getUri();
-    await db.run(uri);
+    const uri = mongoServer.getUri()
+
+    await db.runTesting(uri);
   });
 
   afterAll(async () => {
-    await db.close();
     await mongoServer.stop();
+    await db.close()
   });
 
   beforeEach(() => {
@@ -62,7 +65,7 @@ describe('integration tests for auth', () => {
 
   describe('should create and return user', () => {
     it('should return created user', async () => {
-      const login = 'some user';
+      const login = 'some_user';
       const email = 'medoev1986@gmail.com';
       const password = '12345';
 
@@ -80,7 +83,7 @@ describe('integration tests for auth', () => {
       expect(emailManager.sendEmailConfirmation).toHaveBeenCalledTimes(1);
     });
     it('should return null because user with same name is registered', async () => {
-      const login = 'some user';
+      const login = 'some_user';
       const email = 'medoev@gmail.com';
       const password = '12345';
 
@@ -113,7 +116,6 @@ describe('integration tests for auth', () => {
   describe('email confirmation', () => {
     it('should reject user because code expired', async () => {
       await db.seed({ users: [user1] });
-
       const result = await authService.registrationConfirm(user1.emailConfirmation.confirmationCode);
 
       expect(result.data).toBeFalsy();
@@ -134,7 +136,7 @@ describe('integration tests for auth', () => {
       await db.seed({ users: [userWithGoodCode] });
 
       const result = await authService.registrationConfirm(user1.emailConfirmation.confirmationCode);
-      const user = await db.getCollections().usersCollection.findOne({ _id: userWithGoodCode._id });
+      const user = await UserModel.findById(userWithGoodCode._id);
 
       expect(result.data).toBeTruthy();
       expect(user?.emailConfirmation.isConfirmed).toBeTruthy();
@@ -202,7 +204,7 @@ describe('integration tests for auth', () => {
         recoveryCode: expect.any(String),
       });
 
-      const users1 = await db.getCollections().usersCollection.find({}).toArray();
+      const users1 = await UserModel.find().lean();
 
       const recoveryCode = users1[0].passwordRecovery?.recoveryCode;
 
@@ -212,7 +214,7 @@ describe('integration tests for auth', () => {
 
       expect(resultNewPassword.data).toBe(true);
 
-      const users2 = await db.getCollections().usersCollection.find({}).toArray();
+      const users2 = await UserModel.find().lean();
       expect(users2[0].passwordRecovery).toBeFalsy();
     });
 
@@ -229,7 +231,7 @@ describe('integration tests for auth', () => {
         recoveryCode: expect.any(String),
       });
 
-      const users1 = await db.getCollections().usersCollection.find({}).toArray();
+      const users1 = await UserModel.find().lean();
 
       const recoveryCode = users1[0].passwordRecovery?.recoveryCode;
 
@@ -238,7 +240,7 @@ describe('integration tests for auth', () => {
       const resultNewPassword = await authService.newPassword('new_password', 'wrong code');
 
       expect(resultNewPassword.data).toBe(false);
-      expect(resultNewPassword.extensions[0]).toEqual({ field: 'code', message: 'Code is incorrect' });
+      expect(resultNewPassword.extensions[0]).toEqual({ field: 'recoveryCode', message: 'Code is incorrect' });
 
     });
 
@@ -260,7 +262,7 @@ describe('integration tests for auth', () => {
   });
   describe('logout', () => {
     it('add refresh token to black list on logout', async () => {
-      const tokens1 = await db.getCollections().refreshTokensBlockedCollection.find().toArray();
+      const tokens1 = await TokenDbModel.find().lean();
 
       expect(tokens1.length).toBe(0);
 
@@ -275,7 +277,7 @@ describe('integration tests for auth', () => {
 
       await req.post(`${SETTINGS.PATH.AUTH}/logout`).set('Cookie', cookies).expect(204);
 
-      const tokens2 = await db.getCollections().refreshTokensBlockedCollection.find().toArray();
+      const tokens2 = await TokenDbModel.find().lean();
 
       expect(tokens2.length).toBe(1);
     });

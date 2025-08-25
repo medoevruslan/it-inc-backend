@@ -9,21 +9,31 @@ import { TokenDbType } from './token-db-type';
 import { ApiRequestsDataDbType } from './api-requests-data-db-type';
 import { DeviceAuthSessionsDbType } from './device-auth-sessions-db-type';
 import mongoose from 'mongoose';
+import { Db } from './Database';
 
-export const db = {
+
+export const db = new Db()
+
+export const _db = {
   client: {} as MongoClient,
 
   getDbName() {
     return this.client.db(SETTINGS.DATABASE);
   },
 
-  async run(uri: string) {
+  async run(uri: string, testing?: boolean) {
     try {
       this.client = new MongoClient(uri);
 
       // Connect the client to the server	(optional starting in v4.7)
       await this.client.connect();
-      await mongoose.connect('mongodb+srv://admin:admin@lesson-3.zyrid.mongodb.net/blogs-platform?retryWrites=true&w=majority&appName=lesson-3');
+
+      if (testing) {
+        await mongoose.connect(uri)
+      } else {
+        await mongoose.connect('mongodb+srv://admin:admin@lesson-3.zyrid.mongodb.net/blogs-platform?retryWrites=true&w=majority&appName=lesson-3');
+      }
+
 
       if (mongoose.connection.readyState === 1) {
         console.log('✅ Mongoose connected successfully');

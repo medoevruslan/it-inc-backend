@@ -25,7 +25,7 @@ export class DeviceSessionsService {
   }
 
   public async findAll(): Promise<DeviceAuthSessionsDbType[]> {
-    return db.getCollections().deviceAuthSessionsCollection.find().toArray();
+    return this.deviceAuthSessionsRepository.findAll();
   }
 
   public async findSessionsByUserId(userId: string): Promise<Result<OutputDeviceSessionType[]>> {

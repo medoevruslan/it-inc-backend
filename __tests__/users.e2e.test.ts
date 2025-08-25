@@ -11,12 +11,11 @@ describe('tests for /users', () => {
   const codedAuth = toBase64(SETTINGS.ADMIN_AUTH);
 
   beforeAll(async () => {
-    await db.run(SETTINGS.MONGO_URL);
+    await db.run(SETTINGS.MONGOOSE_URL);
   });
 
   afterAll(async () => {
     await db.close();
-    await mongoose.disconnect()
   });
 
   describe('test get users', () => {

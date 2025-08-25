@@ -7,9 +7,9 @@ import { TokenDbModel } from '../model/TokenDbModel';
 export class RefreshTokenBlockedRepository {
   async add(token: string) {
     try {
-      const tokenDbModel = new TokenDbModel(token)
-      await tokenDbModel.save()
-      return tokenDbModel._id.toString()
+      const tokenDbModel = new TokenDbModel({ token })
+      const result = await tokenDbModel.save()
+      return result._id.toString()
     } catch (err: any) {
       if (err instanceof MongoServerError) {
         console.error('Got error on add RefreshTokenBlocked:: ', err.errmsg)

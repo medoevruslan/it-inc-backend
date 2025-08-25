@@ -4,6 +4,7 @@ import { SETTINGS } from '../src/settings';
 import { db } from '../src/db/mongoDb';
 import { HttpStatuses } from '../src/shared/enums';
 import { OutputDeviceSessionType } from '../src/input-output-types/device-session-types';
+import { DeviceAuthSessionsDbModel } from '../src/model/DeviceAuthSessionsDbModel';
 
 jest.setTimeout(100000000);
 
@@ -28,7 +29,7 @@ describe('tests for device sessions', () => {
   });
 
   it('should login and add device sessions', async () => {
-    const sessions1 = await db.getCollections().deviceAuthSessionsCollection.find().toArray();
+    const sessions1 = await DeviceAuthSessionsDbModel.find().lean();
     const sessionCount = 4;
 
     expect(sessions1.length).toBe(0);
@@ -134,7 +135,7 @@ describe('tests for device sessions', () => {
     const logoutResult = await req.post(`${SETTINGS.PATH.AUTH}/logout`).set('Cookie', loginResponseCookies).expect(HttpStatuses.NoContent);
     const resSessions2 = await req.get(`${SETTINGS.PATH.SECURITY}/devices`).set('Cookie', loginResponseCookies).expect(HttpStatuses.Unauthorized);
 
-    const sessions = await db.getCollections().deviceAuthSessionsCollection.find().toArray()
+    const sessions = await DeviceAuthSessionsDbModel.find().lean()
     expect(sessions.length).toBe(3)
 
   });
@@ -162,7 +163,7 @@ describe('tests for device sessions', () => {
     await req.post(`${SETTINGS.PATH.AUTH}/logout`).set('Cookie', loginResponseCookies).expect(HttpStatuses.NoContent);
     await req.get(`${SETTINGS.PATH.SECURITY}/devices`).set('Cookie', loginResponseCookies).expect(HttpStatuses.Unauthorized);
 
-    const sessions = await db.getCollections().deviceAuthSessionsCollection.find().toArray()
+    const sessions = await DeviceAuthSessionsDbModel.find().lean()
     expect(sessions.length).toBe(3)
 
   });
