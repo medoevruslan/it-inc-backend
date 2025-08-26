@@ -14,6 +14,7 @@ export enum ResultStatus {
   Success = HttpStatuses.Success,
   BadRequest = HttpStatuses.BadRequest,
   ServerError = HttpStatuses.ServerError,
+  NotFound = HttpStatuses.NotFound,
 }
 
 export enum LikeType {

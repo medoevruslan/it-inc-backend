@@ -1,16 +1,22 @@
 import { ObjectId } from 'mongodb';
-import { HttpStatuses, LikeType } from '../shared/enums';
+import { HttpStatuses, LikeType, ResultStatus } from '../shared/enums';
 import { CommentRepository } from '../repository/CommentRepository';
 import { CommentInputType, CommentType, CommentUpdateType } from '../input-output-types/comment-types';
-import { GetAllQueryParamNoSearchTerm } from '../shared/types';
+import { GetAllQueryParamNoSearchTerm, Result } from '../shared/types';
 import { UserQueryRepository } from '../repository/UserQueryRepository';
 import { PostService } from './PostService';
 import { inject, injectable } from 'inversify';
 import { UserRepository } from '../repository/UserRepository';
+import { LikesInfoRepository } from '../repository/LikesInfoRepository';
 
 @injectable()
 export class CommentService {
-  constructor(@inject(PostService)protected postService: PostService, @inject(CommentRepository)protected commentRepository: CommentRepository, @inject(UserQueryRepository)protected usersRepository: UserRepository) {
+  constructor(
+    @inject(PostService) protected postService: PostService,
+    @inject(CommentRepository) protected commentRepository: CommentRepository,
+    @inject(UserQueryRepository) protected usersRepository: UserRepository,
+    @inject(LikesInfoRepository) protected likesInfoRepository: LikesInfoRepository,
+  ) {
   }
 
   async create({ userId, postId, content }: CommentInputType) {
@@ -38,8 +44,8 @@ export class CommentService {
       likesInfo: {
         likesCount: 0,
         dislikesCount: 0,
-        myStatus: LikeType.None
-      }
+        myStatus: LikeType.None,
+      },
     };
 
     return await this.commentRepository.create(newComment);
@@ -96,4 +102,31 @@ export class CommentService {
     return await this.commentRepository.findByPostId(foundPost.id, query);
   }
 
+  public async updateLikeStatus(userId: string, commentId: string, likeStatus: LikeType): Promise<Result> {
+    if (!ObjectId.isValid(commentId)) {
+      console.log('comment id is not valid on updateLikeStatus');
+      return {
+        status: ResultStatus.BadRequest,
+        extensions: [],
+        data: null,
+      };
+    }
+
+    const foundComment = await this.commentRepository.findById(commentId);
+    if (!foundComment) {
+      return {
+        status: ResultStatus.NotFound,
+        extensions: [],
+        data: null,
+      };
+    }
+
+    await this.likesInfoRepository.add({ parentId: commentId, authorId: userId, myStatus: likeStatus });
+
+    return {
+      status: ResultStatus.Success,
+      extensions: [],
+      data: null,
+    };
+  }
 }

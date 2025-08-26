@@ -26,6 +26,7 @@ import { EmailAdapter } from './adapters/EmailAdapter';
 import { CommentsController } from './comments/CommentsController';
 import { DeviceSessionsController } from './device-sessions/DeviceSessionsController';
 import { Db } from './db/Database';
+import { LikesInfoRepository } from './repository/LikesInfoRepository';
 
 export const jwtService = new JwtService();
 
@@ -56,6 +57,7 @@ container.bind(UserQueryRepository).toSelf()
 container.bind(ApiRequestsSecurityQueryRepository).toSelf()
 container.bind(RefreshTokenBlockedRepository).toSelf()
 container.bind(DeviceAuthSessionsRepository).toSelf()
+container.bind(LikesInfoRepository).toSelf()
 
 container.bind(EmailManager).toSelf()
 container.bind(EmailAdapter).toSelf()

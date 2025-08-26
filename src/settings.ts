@@ -25,6 +25,7 @@ export const SETTINGS = {
     USERS: 'users',
     AUTH: 'auth',
     COMMENTS: 'comments',
+    LIKES_INFO: 'likesInfo',
     REFRESH_TOKENS_BLOCKED: 'refreshTokensBlocked',
     REFRESH_TOKENS_VALID: 'refreshTokensValid',
     API_REQUESTS_DATA: 'apiRequestsData',

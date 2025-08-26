@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { HttpStatuses } from '../shared/enums';
+import { HttpStatuses, LikeType } from '../shared/enums';
 import { handleApiError } from '../shared/utils';
 import { CommentUpdateType } from '../input-output-types/comment-types';
 import { CommentService } from '../service/CommentService';
@@ -8,7 +8,10 @@ import { inject } from 'inversify';
 
 export class CommentsController {
 
-  constructor(@inject(CommentService) protected commentService: CommentService, @inject(CommentQueryRepository) protected commentQueryRepository: CommentQueryRepository) {
+  constructor(
+    @inject(CommentService) protected commentService: CommentService,
+    @inject(CommentQueryRepository) protected commentQueryRepository: CommentQueryRepository,
+  ) {
   }
 
   async deleteComments(req: Request<{ id: string }>, res: Response) {
@@ -45,11 +48,14 @@ export class CommentsController {
     }
   };
 
-  async likeComments(
-    req: Request<{}, {}, { likeStatus: string }>,
+  async updateCommentLikeStatus(
+    req: Request<{ commentId: string }, {}, { likeStatus: LikeType }>,
     res: Response,
   ) {
     try {
+      const commentId = req.params.commentId;
+      const userId = req.userId!;
+      const result = await this.commentService.updateLikeStatus(userId, commentId, req.body.likeStatus);
       res.status(204).send('Like');
     } catch (err: unknown) {
       handleApiError(err, res);
