@@ -5,6 +5,9 @@ import { CommentUpdateType } from '../input-output-types/comment-types';
 import { CommentService } from '../service/CommentService';
 import { CommentQueryRepository } from '../repository/CommentQueryRepository';
 import { inject } from 'inversify';
+import { Nullable } from '../shared/types';
+import { UserDbType } from '../db/user-db-type';
+import { jwtService } from '../composition-root';
 
 export class CommentsController {
 
@@ -28,7 +31,20 @@ export class CommentsController {
   async getComments(req: Request<{ id: string }>, res: Response) {
     try {
       console.log(`get comment by id: ${req.params.id}`);
-      const userId = req.userId!
+
+      let userId = '';
+
+      // TODO: use middleware
+      if (req.headers.authorization) {
+        const [authType, token] = req.headers.authorization.split(' ');
+        if (authType === 'Bearer'){
+          const payload = await jwtService.verifyToken<{ userId: string }>(token);
+          if (payload) {
+            userId = payload.userId
+          }
+        }
+      }
+
       const comments = await this.commentQueryRepository.findById(req.params.id, userId);
       res.status(200).send(comments);
     } catch (err: unknown) {
@@ -57,7 +73,7 @@ export class CommentsController {
       const commentId = req.params.commentId;
       const userId = req.userId!;
       const result = await this.commentService.updateLikeStatus(userId, commentId, req.body.likeStatus);
-      res.status(204)
+      res.status(204).send()
     } catch (err: unknown) {
       handleApiError(err, res);
     }

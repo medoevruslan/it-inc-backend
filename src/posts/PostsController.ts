@@ -11,6 +11,7 @@ import { CommentType } from '../input-output-types/comment-types';
 import { CommentRepository } from '../repository/CommentRepository';
 import { commentMapper } from '../mapping/commentMapper';
 import { LikesInfoQueryRepository } from '../repository/LikesInfoQueryRepository';
+import { jwtService } from '../composition-root';
 
 @injectable()
 export class PostsController {
@@ -94,7 +95,19 @@ export class PostsController {
     try {
       console.log(`get by post id: ${req.params.postId} comments`);
 
-      const userId = req.userId!
+      let userId = '';
+
+      // TODO: use middleware
+      if (req.headers.authorization) {
+        const [authType, token] = req.headers.authorization.split(' ');
+        if (authType === 'Bearer'){
+          const payload = await jwtService.verifyToken<{ userId: string }>(token);
+          if (payload) {
+            userId = payload.userId
+          }
+        }
+      }
+
       const comments = await this.commentService.findByPostId(req.params.postId, req.query, userId);
 
       console.log(`found comments: ${JSON.stringify(comments)}`);
