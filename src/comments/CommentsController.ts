@@ -28,7 +28,8 @@ export class CommentsController {
   async getComments(req: Request<{ id: string }>, res: Response) {
     try {
       console.log(`get comment by id: ${req.params.id}`);
-      const comments = await this.commentQueryRepository.findById(req.params.id);
+      const userId = req.userId!
+      const comments = await this.commentQueryRepository.findById(req.params.id, userId);
       res.status(200).send(comments);
     } catch (err: unknown) {
       handleApiError(err, res);
@@ -56,7 +57,7 @@ export class CommentsController {
       const commentId = req.params.commentId;
       const userId = req.userId!;
       const result = await this.commentService.updateLikeStatus(userId, commentId, req.body.likeStatus);
-      res.status(204).send('Like');
+      res.status(204)
     } catch (err: unknown) {
       handleApiError(err, res);
     }

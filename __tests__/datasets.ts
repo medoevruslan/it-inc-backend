@@ -8,7 +8,6 @@ import { UserDbType } from '../src/db/user-db-type';
 import { CommentDbType } from '../src/db/comment-db-type';
 import { v4 as uuidV4 } from 'uuid';
 import { TokenDbType } from '../src/db/token-db-type';
-import { LikeType } from '../src/shared/enums';
 
 export const video1: VideoDBType = {
   id: generateId(),
@@ -61,11 +60,6 @@ export const comment1: CommentDbType = {
   content: 'some'.repeat(10),
   createdAt: new Date().toISOString(),
   postId: new ObjectId().toString(),
-  likesInfo: {
-    likesCount: 0,
-    dislikesCount: 0,
-    myStatus: LikeType.None
-  }
 };
 
 export const refreshToken1: WithId<TokenDbType> = {

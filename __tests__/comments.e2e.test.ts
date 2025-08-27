@@ -2,7 +2,7 @@ import { db } from '../src/db/mongoDb';
 import { SETTINGS } from '../src/settings';
 import { addUser, req, toBase64 } from './test-helpers';
 import { comment1, post1 } from './datasets';
-import { HttpStatuses } from '../src/shared/enums';
+import { HttpStatuses, LikeType } from '../src/shared/enums';
 import { CommentInputType } from '../src/input-output-types/comment-types';
 import { ObjectId } from 'mongodb';
 import mongoose from 'mongoose';
@@ -41,6 +41,9 @@ describe('test /comments', () => {
       expect(commentsResponse.body.createdAt).toBe(comment1.createdAt);
       expect(commentsResponse.body.commentatorInfo.userLogin).toBe(comment1.commentatorInfo.userLogin);
       expect(commentsResponse.body.commentatorInfo.userId).toBe(comment1.commentatorInfo.userId);
+      expect(commentsResponse.body.likesInfo.likesCount).toBe(0);
+      expect(commentsResponse.body.likesInfo.dislikesCount).toBe(0);
+      expect(commentsResponse.body.likesInfo.myStatus).toBe(LikeType.None);
     });
 
     it('should get created comments ', async () => {
