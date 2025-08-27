@@ -15,6 +15,10 @@ export class LikesInfoRepository {
     return result._id.toString();
   }
 
+  public async finaAll(filter: FilterQuery<LikesInfoDbType>) {
+    return LikeInfoModel.find(filter).lean()
+  }
+
   public async findOne(filter: FilterQuery<LikesInfoDbType>) {
     return LikeInfoModel.findOne(filter).lean();
   }

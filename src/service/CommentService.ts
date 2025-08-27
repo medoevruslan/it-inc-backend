@@ -41,11 +41,6 @@ export class CommentService {
         userId: foundUser?.id!,
         userLogin: foundUser?.login!,
       },
-      likesInfo: {
-        likesCount: 0,
-        dislikesCount: 0,
-        myStatus: LikeType.None,
-      },
     };
 
     return await this.commentRepository.create(newComment);
@@ -91,7 +86,7 @@ export class CommentService {
     return this.commentRepository.delete(commentId);
   }
 
-  async findByPostId(postId: string, query: GetAllQueryParamNoSearchTerm<CommentType>) {
+  async findByPostId(postId: string, query: GetAllQueryParamNoSearchTerm<CommentType>, userId: string) {
     if (!ObjectId.isValid(postId)) {
       console.log('post id is not valid on find by post id');
       throw new Error(HttpStatuses.BadRequest.toString());
@@ -99,7 +94,7 @@ export class CommentService {
 
     const foundPost = await this.postService.findById(postId);
 
-    return await this.commentRepository.findByPostId(foundPost.id, query);
+    return this.commentRepository.findByPostId(foundPost.id, query, userId);
   }
 
   public async updateLikeStatus(userId: string, commentId: string, likeStatus: LikeType): Promise<Result> {

@@ -1,18 +1,24 @@
 import { Request, Response } from 'express';
-import { HttpStatuses } from '../shared/enums';
+import { HttpStatuses, LikeType } from '../shared/enums';
 import { handleApiError } from '../shared/utils';
 import { InputPostType, OutputPostType, PostType } from '../input-output-types/post-types';
 import { GetAllQueryParams } from '../shared/types';
 import { OutputModelTypeWithInfo } from '../input-output-types/common-types';
 import { CommentService } from '../service/CommentService';
-import { CommentQueryRepository } from '../repository/CommentQueryRepository';
 import { PostService } from '../service/PostService';
 import { inject, injectable } from 'inversify';
 import { CommentType } from '../input-output-types/comment-types';
+import { CommentRepository } from '../repository/CommentRepository';
+import { commentMapper } from '../mapping/commentMapper';
+import { LikesInfoQueryRepository } from '../repository/LikesInfoQueryRepository';
 
 @injectable()
 export class PostsController {
-  constructor(@inject(PostService) protected postService: PostService, @inject(CommentService) protected commentService: CommentService, @inject(CommentQueryRepository) protected commentQueryRepository: CommentQueryRepository) {
+  constructor(
+    @inject(PostService) protected postService: PostService,
+    @inject(CommentService) protected commentService: CommentService,
+    @inject(CommentRepository) protected commentRepository: CommentRepository,
+    @inject(LikesInfoQueryRepository) protected likesInfoQueryRepository: LikesInfoQueryRepository) {
   }
 
   async createPostComments(
@@ -26,9 +32,24 @@ export class PostsController {
         content: req.body.content,
       });
 
-      const foundComment = await this.commentQueryRepository.findById(createdId);
+      const foundComment = await this.commentRepository.findById(createdId);
+
+      if (!foundComment) {
+        console.log('Could not found just created comment: ', createdId);
+        res.status(HttpStatuses.ServerError).send();
+        return;
+      }
+
       console.log(`create new comment: ${createdId} for post: ${req.params.postId}`);
-      res.status(HttpStatuses.Created).send(foundComment);
+
+      const commentWithLikesInfo = commentMapper.mapCommentToOutputType(foundComment, {
+        likesCount: 0,
+        dislikesCount: 0,
+        myStatus: LikeType.None,
+      });
+
+
+      res.status(HttpStatuses.Created).send(commentWithLikesInfo);
     } catch (err: unknown) {
       handleApiError(err, res);
     }
@@ -72,8 +93,12 @@ export class PostsController {
   }, {}, {}, GetAllQueryParams<CommentType>>, res: Response) {
     try {
       console.log(`get by post id: ${req.params.postId} comments`);
-      const comments = await this.commentService.findByPostId(req.params.postId, req.query);
+
+      const userId = req.userId!
+      const comments = await this.commentService.findByPostId(req.params.postId, req.query, userId);
+
       console.log(`found comments: ${JSON.stringify(comments)}`);
+
       res.status(HttpStatuses.Success).send(comments);
     } catch (err: unknown) {
       handleApiError(err, res);

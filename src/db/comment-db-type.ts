@@ -6,7 +6,6 @@ export type CommentDbType = WithId<{
   commentatorInfo: CommentatorInfo;
   createdAt: string;
   postId: string;
-  likesInfo: LikesInfo
 }>;
 
 type CommentatorInfo = {
@@ -14,9 +13,4 @@ type CommentatorInfo = {
   userLogin: string;
 };
 
-type LikesInfo = {
-  likesCount: number,
-  dislikesCount: number,
-  myStatus: LikeType
-}
 

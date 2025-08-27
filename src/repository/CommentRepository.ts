@@ -2,10 +2,11 @@ import { ObjectId } from 'mongodb';
 import { CommentType, CommentUpdateType } from '../input-output-types/comment-types';
 import { CommentDbType } from '../db/comment-db-type';
 import { GetAllQueryParamNoSearchTerm } from '../shared/types';
-import { HttpStatuses } from '../shared/enums';
+import { HttpStatuses, LikeType } from '../shared/enums';
 import { commentMapper } from '../mapping/commentMapper';
 import { injectable } from 'inversify';
 import { CommentModel } from '../model';
+import { LikeInfoModel } from '../model/LikesInfoModel';
 
 @injectable()
 export class CommentRepository {
@@ -34,10 +35,10 @@ export class CommentRepository {
   }
 
   async findById(commentId: string) {
-    return CommentModel.findById(commentId);
+    return CommentModel.findById(commentId).lean();
   }
 
-  async findByPostId(postId: string, query: GetAllQueryParamNoSearchTerm<CommentType>) {
+  async findByPostId(postId: string, query: GetAllQueryParamNoSearchTerm<CommentType>, userId: string) {
     if (!ObjectId.isValid(postId)) {
       console.log('post id is not valid on find by post id');
       throw new Error(HttpStatuses.BadRequest.toString());
@@ -60,14 +61,58 @@ export class CommentRepository {
         .lean(),
     ]);
 
+    const commentIds = comments.map(c => c._id);
+
+    if (commentIds.length === 0) {
+      return {
+        pagesCount: 0,
+        page: Number(pageNumber),
+        pageSize: convertedPageSize,
+        totalCount: 0,
+        items: [],
+      };
+    }
+
+
+    const [likesAggregation, userLikes] = await Promise.all([
+      LikeInfoModel.aggregate([
+        { $match: { parentId: { $in: commentIds } } },
+        {
+          $group: {
+            _id: '$parentId',
+            likesCount: {
+              $sum: { $cond: [{ $eq: ['$myStatus', LikeType.Like] }, 1, 0] },
+            },
+            dislikesCount: {
+              $sum: { $cond: [{ $eq: ['$myStatus', LikeType.Dislike] }, 1, 0] },
+            },
+          },
+        },
+      ]),
+      LikeInfoModel.find({
+        parentId: { $in: commentIds },
+        authorId: userId,
+      }).lean(),
+    ]);
+
+    const likesInfoMap = new Map(likesAggregation.map(data => [data._id.toString(), {
+      likesCount: data.likesCount,
+      dislikesCount: data.dislikesCount,
+    }]));
+
+    const userLikeMap = new Map(userLikes.map((like) => [like.parentId.toString(), like.myStatus]));
+
     return {
       pagesCount: Math.ceil(totalCount / convertedPageSize),
       page: Number(pageNumber),
       pageSize: convertedPageSize,
       totalCount: totalCount,
-      items: comments.map(commentMapper.mapCommentToOutputType),
+      items: comments.map(c => {
+        const likesInfo = likesInfoMap.get(c._id.toString()) ?? { likesCount: 0, dislikesCount: 0 }
+        const userLikeStatus = userLikeMap.get(c._id.toString()) ?? LikeType.None
+        return commentMapper.mapCommentToOutputType(c, { ...likesInfo, myStatus: userLikeStatus } )
+      })
     };
   }
-
 }
 
