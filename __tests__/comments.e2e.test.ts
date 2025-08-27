@@ -5,7 +5,6 @@ import { comment1, post1 } from './datasets';
 import { HttpStatuses, LikeType } from '../src/shared/enums';
 import { CommentInputType } from '../src/input-output-types/comment-types';
 import { ObjectId } from 'mongodb';
-import mongoose from 'mongoose';
 
 jest.setTimeout(100000000);
 
@@ -56,23 +55,23 @@ describe('test /comments', () => {
         postId: post1._id.toString(),
         content: 'a'.repeat(20) + idx,
         userId: newUser.id,
-      }))
+      }));
 
       const loginResponse = await req
         .post(`${SETTINGS.PATH.AUTH}/login`)
         .send({ loginOrEmail: newUser.login, password: newUser.password })
         .expect(HttpStatuses.Success);
 
-      const promises = newComments.map(newComment => req.post(`${SETTINGS.PATH.POSTS}/${post1._id}/comments`).set('Authorization', `Bearer ${loginResponse.body.accessToken}`).send(newComment).expect(201))
+      const promises = newComments.map(newComment => req.post(`${SETTINGS.PATH.POSTS}/${post1._id}/comments`).set('Authorization', `Bearer ${loginResponse.body.accessToken}`).send(newComment).expect(201));
 
-      await Promise.all(promises)
+      await Promise.all(promises);
 
       const commentsResponse = await req.get(`${SETTINGS.PATH.POSTS}/${post1._id.toString()}/comments/`).expect(HttpStatuses.Success);
 
-      expect(commentsResponse.body.totalCount).toBe(13)
-      expect(commentsResponse.body.pagesCount).toBe(2)
+      expect(commentsResponse.body.totalCount).toBe(13);
+      expect(commentsResponse.body.pagesCount).toBe(2);
 
-    })
+    });
 
     it('should get 404', async () => {
       await db.dropCollections();
@@ -107,7 +106,7 @@ describe('test /comments', () => {
         .expect(HttpStatuses.Success);
 
       expect(getCommentsResponse.body.items.length).toBe(1);
-      expect(getCommentsResponse.body.items[0].content).toBe(newComment.content)
+      expect(getCommentsResponse.body.items[0].content).toBe(newComment.content);
 
     });
     it('should not create new comment because invalid body', async () => {
@@ -288,6 +287,145 @@ describe('test /comments', () => {
       const deleteCommentsResponse = await req
         .put(`${SETTINGS.PATH.COMMENTS}/${comment1._id.toString()}`)
         .expect(HttpStatuses.Unauthorized);
+    });
+    it('should update like status for existent comment', async () => {
+      await db.dropCollections();
+      await db.seed({ comments: [comment1] });
+
+      const newUser = await addUser(codedAuth);
+
+      const loginResponse = await req
+        .post(`${SETTINGS.PATH.AUTH}/login`)
+        .send({ loginOrEmail: newUser.login, password: newUser.password })
+        .expect(HttpStatuses.Success);
+
+      const commentsResponse1 = await req
+        .get(`${SETTINGS.PATH.COMMENTS}/${comment1._id.toString()}`)
+        .expect(HttpStatuses.Success);
+
+      expect(commentsResponse1.body.likesInfo.likesCount).toBe(0);
+      expect(commentsResponse1.body.likesInfo.dislikesCount).toBe(0);
+      expect(commentsResponse1.body.likesInfo.myStatus).toBe(LikeType.None);
+
+      const likeResponse = await req
+        .put(`${SETTINGS.PATH.COMMENTS}/${comment1._id.toString()}/like-status`)
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
+        .send({ likeStatus: LikeType.Like }).expect(HttpStatuses.NoContent);
+
+      const commentsResponse2 = await req
+        .get(`${SETTINGS.PATH.COMMENTS}/${comment1._id.toString()}`)
+        .expect(HttpStatuses.Success);
+
+      expect(commentsResponse2.body.likesInfo.likesCount).toBe(1);
+      expect(commentsResponse2.body.likesInfo.dislikesCount).toBe(0);
+      expect(commentsResponse2.body.likesInfo.myStatus).toBe(LikeType.None);
+    });
+
+    it('should not update like status multiple times for existent comment from one user account', async () => {
+      await db.dropCollections();
+      await db.seed({ comments: [comment1] });
+
+      const newUser = await addUser(codedAuth);
+
+      const loginResponse = await req
+        .post(`${SETTINGS.PATH.AUTH}/login`)
+        .send({ loginOrEmail: newUser.login, password: newUser.password })
+        .expect(HttpStatuses.Success);
+
+      const commentsResponse1 = await req
+        .get(`${SETTINGS.PATH.COMMENTS}/${comment1._id.toString()}`)
+        .expect(HttpStatuses.Success);
+
+      expect(commentsResponse1.body.likesInfo.likesCount).toBe(0);
+      expect(commentsResponse1.body.likesInfo.dislikesCount).toBe(0);
+      expect(commentsResponse1.body.likesInfo.myStatus).toBe(LikeType.None);
+
+      const likeActions = Array.from({ length: 5 }).map(_ => req
+        .put(`${SETTINGS.PATH.COMMENTS}/${comment1._id.toString()}/like-status`)
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
+        .send({ likeStatus: LikeType.Like }).expect(HttpStatuses.NoContent))
+
+      await Promise.all(likeActions)
+
+      const commentsResponse2 = await req
+        .get(`${SETTINGS.PATH.COMMENTS}/${comment1._id.toString()}`)
+        .expect(HttpStatuses.Success);
+
+      expect(commentsResponse2.body.likesInfo.likesCount).toBe(1);
+      expect(commentsResponse2.body.likesInfo.dislikesCount).toBe(0);
+      expect(commentsResponse2.body.likesInfo.myStatus).toBe(LikeType.None);
+    });
+
+    it('should set Like and get this status for existent user', async () => {
+      await db.dropCollections();
+      await db.seed({ comments: [comment1] });
+
+      const newUser = await addUser(codedAuth);
+
+      const loginResponse = await req
+        .post(`${SETTINGS.PATH.AUTH}/login`)
+        .send({ loginOrEmail: newUser.login, password: newUser.password })
+        .expect(HttpStatuses.Success);
+
+      const commentsResponse1 = await req
+        .get(`${SETTINGS.PATH.COMMENTS}/${comment1._id.toString()}`)
+        .expect(HttpStatuses.Success);
+
+      expect(commentsResponse1.body.likesInfo.likesCount).toBe(0);
+      expect(commentsResponse1.body.likesInfo.dislikesCount).toBe(0);
+      expect(commentsResponse1.body.likesInfo.myStatus).toBe(LikeType.None);
+
+      const likeActions = Array.from({ length: 5 }).map(_ => req
+        .put(`${SETTINGS.PATH.COMMENTS}/${comment1._id.toString()}/like-status`)
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
+        .send({ likeStatus: LikeType.Like }).expect(HttpStatuses.NoContent))
+
+      await Promise.all(likeActions)
+
+      const commentsResponse2 = await req
+        .get(`${SETTINGS.PATH.COMMENTS}/${comment1._id.toString()}`)
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
+        .expect(HttpStatuses.Success);
+
+      expect(commentsResponse2.body.likesInfo.likesCount).toBe(1);
+      expect(commentsResponse2.body.likesInfo.dislikesCount).toBe(0);
+      expect(commentsResponse2.body.likesInfo.myStatus).toBe(LikeType.Like);
+    });
+
+    it('should set Dislike and get this status for existent user', async () => {
+      await db.dropCollections();
+      await db.seed({ comments: [comment1] });
+
+      const newUser = await addUser(codedAuth);
+
+      const loginResponse = await req
+        .post(`${SETTINGS.PATH.AUTH}/login`)
+        .send({ loginOrEmail: newUser.login, password: newUser.password })
+        .expect(HttpStatuses.Success);
+
+      const commentsResponse1 = await req
+        .get(`${SETTINGS.PATH.COMMENTS}/${comment1._id.toString()}`)
+        .expect(HttpStatuses.Success);
+
+      expect(commentsResponse1.body.likesInfo.likesCount).toBe(0);
+      expect(commentsResponse1.body.likesInfo.dislikesCount).toBe(0);
+      expect(commentsResponse1.body.likesInfo.myStatus).toBe(LikeType.None);
+
+      const likeActions = Array.from({ length: 5 }).map(_ => req
+        .put(`${SETTINGS.PATH.COMMENTS}/${comment1._id.toString()}/like-status`)
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
+        .send({ likeStatus: LikeType.Dislike }).expect(HttpStatuses.NoContent))
+
+      await Promise.all(likeActions)
+
+      const commentsResponse2 = await req
+        .get(`${SETTINGS.PATH.COMMENTS}/${comment1._id.toString()}`)
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
+        .expect(HttpStatuses.Success);
+
+      expect(commentsResponse2.body.likesInfo.likesCount).toBe(0);
+      expect(commentsResponse2.body.likesInfo.dislikesCount).toBe(1);
+      expect(commentsResponse2.body.likesInfo.myStatus).toBe(LikeType.Dislike);
     });
   });
 });

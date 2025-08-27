@@ -18,7 +18,7 @@ commentsRouter.put(
   commentsController.updateComments.bind(commentsController),
 );
 commentsRouter.put(
-  '/:commentId',
+  '/:commentId/like-status',
   accessTokenGuard,
   commentsController.updateCommentLikeStatus.bind(commentsController),
 );

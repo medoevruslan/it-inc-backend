@@ -1,5 +1,4 @@
 import { WithId } from 'mongodb';
-import { LikeType } from '../shared/enums';
 
 export type CommentDbType = WithId<{
   content: string;

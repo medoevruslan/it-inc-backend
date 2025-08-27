@@ -73,7 +73,6 @@ export class CommentRepository {
       };
     }
 
-
     const [likesAggregation, userLikes] = await Promise.all([
       LikeInfoModel.aggregate([
         { $match: { parentId: { $in: commentIds } } },
