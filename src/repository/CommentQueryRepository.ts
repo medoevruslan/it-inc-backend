@@ -63,9 +63,11 @@ export class CommentQueryRepository {
       throw new Error(HttpStatuses.NotFound.toString());
     }
 
+    const parentId = new ObjectId(commentId)
+
     const [likesInfo, currentUserLikeStatus] = await Promise.all([
       LikeInfoModel.aggregate([
-        { $match: { parentId: commentId } },
+        { $match: { parentId } },
         {
           $group: {
             _id: '$parentId',
@@ -78,7 +80,7 @@ export class CommentQueryRepository {
           },
         },
       ]),
-      LikeInfoModel.findOne({ parentId: commentId, authorId: userId }).lean(),
+      LikeInfoModel.findOne({ parentId, authorId: userId }).lean(),
     ]);
 
     const likesMap = new Map(likesInfo.map(data => [data._id.toString(), {
