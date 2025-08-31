@@ -4,12 +4,16 @@ import { CommentDbType } from '../db/comment-db-type';
 import { GetAllQueryParamNoSearchTerm } from '../shared/types';
 import { HttpStatuses, LikeType } from '../shared/enums';
 import { commentMapper } from '../mapping/commentMapper';
-import { injectable } from 'inversify';
+import { inject, injectable } from 'inversify';
 import { CommentModel } from '../model';
 import { LikeInfoModel } from '../model/LikesInfoModel';
+import { LikeInfoService } from '../service/LikeInfoService';
 
 @injectable()
 export class CommentRepository {
+
+  constructor(@inject(LikeInfoService) protected likesInfoService: LikeInfoService) {
+  }
 
   async create(comment: CommentType) {
     const commentModel = new CommentModel(comment);
@@ -73,33 +77,7 @@ export class CommentRepository {
       };
     }
 
-    const [likesAggregation, userLikes] = await Promise.all([
-      LikeInfoModel.aggregate([
-        { $match: { parentId: { $in: commentIds } } },
-        {
-          $group: {
-            _id: '$parentId',
-            likesCount: {
-              $sum: { $cond: [{ $eq: ['$myStatus', LikeType.Like] }, 1, 0] },
-            },
-            dislikesCount: {
-              $sum: { $cond: [{ $eq: ['$myStatus', LikeType.Dislike] }, 1, 0] },
-            },
-          },
-        },
-      ]),
-      LikeInfoModel.find({
-        parentId: { $in: commentIds },
-        authorId: userId,
-      }).lean(),
-    ]);
-
-    const likesInfoMap = new Map(likesAggregation.map(data => [data._id.toString(), {
-      likesCount: data.likesCount,
-      dislikesCount: data.dislikesCount,
-    }]));
-
-    const userLikeMap = new Map(userLikes.map((like) => [like.parentId.toString(), like.myStatus]));
+    const { userLikeMap, likesInfoMap } = await this.likesInfoService.getLikesInfoAll(userId, commentIds)
 
     return {
       pagesCount: Math.ceil(totalCount / convertedPageSize),

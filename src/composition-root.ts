@@ -28,6 +28,7 @@ import { DeviceSessionsController } from './device-sessions/DeviceSessionsContro
 import { Db } from './db/Database';
 import { LikesInfoRepository } from './repository/LikesInfoRepository';
 import { LikesInfoQueryRepository } from './repository/LikesInfoQueryRepository';
+import { LikeInfoService } from './service/LikeInfoService';
 
 export const jwtService = new JwtService();
 
@@ -48,6 +49,7 @@ container.bind(UserService).toSelf()
 container.bind(AuthService).toSelf()
 container.bind(JwtService).toSelf()
 container.bind(DeviceSessionsService).toSelf()
+container.bind(LikeInfoService).toSelf()
 
 container.bind(UserRepository).toSelf()
 container.bind(CommentQueryRepository).toSelf()

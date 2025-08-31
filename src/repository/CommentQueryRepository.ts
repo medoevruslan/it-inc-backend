@@ -1,12 +1,16 @@
 import { ObjectId } from 'mongodb';
 import { HttpStatuses, LikeType } from '../shared/enums';
 import { commentMapper } from '../mapping/commentMapper';
-import { injectable } from 'inversify';
+import { inject, injectable } from 'inversify';
 import { CommentModel } from '../model';
-import { LikeInfoModel } from '../model/LikesInfoModel';
+import { LikeInfoService } from '../service/LikeInfoService';
 
 @injectable()
 export class CommentQueryRepository {
+
+  constructor(@inject(LikeInfoService) protected likesInfoService: LikeInfoService) {
+  }
+
   async findAll(userId: string) {
     const comments = await CommentModel.find().lean();
 
@@ -16,33 +20,7 @@ export class CommentQueryRepository {
       return [];
     }
 
-    const [likesAggregation, userLikes] = await Promise.all([
-      LikeInfoModel.aggregate([
-        { $match: { parentId: { $in: commentIds } } },
-        {
-          $group: {
-            _id: '$parentId',
-            likesCount: {
-              $sum: { $cond: [{ $eq: ['$myStatus', LikeType.Like] }, 1, 0] },
-            },
-            dislikesCount: {
-              $sum: { $cond: [{ $eq: ['$myStatus', LikeType.Dislike] }, 1, 0] },
-            },
-          },
-        },
-      ]),
-      LikeInfoModel.find({
-        parentId: { $in: commentIds },
-        authorId: userId,
-      }).lean(),
-    ]);
-
-    const likesInfoMap = new Map(likesAggregation.map(data => [data._id.toString(), {
-      likesCount: data.likesCount,
-      dislikesCount: data.dislikesCount,
-    }]));
-
-    const userLikeMap = new Map(userLikes.map((like) => [like.parentId.toString(), like.myStatus]));
+    const { likesInfoMap, userLikeMap } = await this.likesInfoService.getLikesInfoAll(userId, commentIds)
 
     return comments.map(c => {
       const likesInfo = likesInfoMap.get(c._id.toString()) ?? { likesCount: 0, dislikesCount: 0 };
@@ -65,35 +43,7 @@ export class CommentQueryRepository {
 
     const parentId = new ObjectId(commentId)
 
-    const [likesInfo, currentUserLikeStatus] = await Promise.all([
-      LikeInfoModel.aggregate([
-        { $match: { parentId } },
-        {
-          $group: {
-            _id: '$parentId',
-            likesCount: {
-              $sum: { $cond: [{ $eq: ['$myStatus', LikeType.Like] }, 1, 0] },
-            },
-            dislikesCount: {
-              $sum: { $cond: [{ $eq: ['$myStatus', LikeType.Dislike] }, 1, 0] },
-            },
-          },
-        },
-      ]),
-      LikeInfoModel.findOne({ parentId, authorId: userId }).lean(),
-    ]);
-
-    const likesMap = new Map(likesInfo.map(data => [data._id.toString(), {
-      likesCount: data.likesCount,
-      dislikesCount: data.dislikesCount,
-      myStatus: currentUserLikeStatus?.myStatus ?? LikeType.None,
-    }]));
-
-    const commentLikeInfo = likesMap.get(foundComment._id.toString()) ?? {
-      likesCount: 0,
-      dislikesCount: 0,
-      myStatus: LikeType.None,
-    };
+    const { commentLikeInfo } = await this.likesInfoService.getLikesInfoSingle(userId, parentId)
 
     return commentMapper.mapCommentToOutputType(foundComment, commentLikeInfo);
   }

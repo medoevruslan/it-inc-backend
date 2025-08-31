@@ -1,5 +1,6 @@
 import { PostDbType } from '../db/post-db.type';
 import { OptionalUnlessRequiredId } from 'mongodb';
+import { LikesInfo } from './comment-types';
 
 export type InputPostType = OptionalUnlessRequiredId<Omit<PostDbType, 'blogName'>>;
 export type PostDbTypeWithoutId = OptionalUnlessRequiredId<PostDbType>;

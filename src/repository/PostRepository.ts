@@ -1,11 +1,11 @@
 import { InputPostType, OutputPostType, PostType, UpdatePostType } from '../input-output-types/post-types';
 import { PostDbType } from '../db/post-db.type';
-import { ObjectId, WithId } from 'mongodb';
+import { WithId } from 'mongodb';
 import { GetAllQueryParams } from '../shared/types';
-import { db } from '../db/mongoDb';
 import { OutputModelTypeWithInfo } from '../input-output-types/common-types';
 import { injectable } from 'inversify';
-import { PostModel } from '../model/PostModel';
+import { PostModel } from '../model';
+import { postMapper } from '../mapping/postMapper';
 
 @injectable()
 export class PostRepository {
@@ -47,13 +47,13 @@ export class PostRepository {
       page: Number(pageNumber),
       pageSize: convertedPageSize,
       totalCount: totalCount,
-      items: posts.map(this.mapToOutputType),
+      items: posts.map(postMapper.mapPostToOutputType),
     };
   }
 
   async findById(id: string): Promise<OutputPostType | null> {
     const post = await PostModel.findById(id).lean()
-    return post === null ? null : this.mapToOutputType(post);
+    return post === null ? null : postMapper.mapPostToOutputType(post);
   }
 
   async findByBlogId(
@@ -82,25 +82,13 @@ export class PostRepository {
       page: Number(pageNumber),
       pageSize: convertedPageSize,
       totalCount: totalCount,
-      items: posts.map(this.mapToOutputType),
+      items: posts.map(postMapper.mapPostToOutputType),
     };
   }
 
   async deleteById(id: string): Promise<boolean> {
     const result = await PostModel.findByIdAndDelete(id);
     return result !== null;
-  }
-
-  private mapToOutputType(post: PostDbType): OutputPostType {
-    return {
-      id: post._id.toString(),
-      blogName: post.blogName,
-      title: post.title,
-      blogId: post.blogId,
-      content: post.content,
-      shortDescription: post.shortDescription,
-      createdAt: post.createdAt,
-    };
   }
 
 }
