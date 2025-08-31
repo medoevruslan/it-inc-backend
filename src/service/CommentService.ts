@@ -100,20 +100,21 @@ export class CommentService {
   public async updateLikeStatus(userId: string, commentId: string, likeStatus: LikeType): Promise<Result> {
     if (!ObjectId.isValid(commentId)) {
       console.log('comment id is not valid on updateLikeStatus');
+     throw new Error(ResultStatus.BadRequest.toString())
+    }
+
+    if (!Object.values(LikeType).includes(likeStatus)) {
       return {
         status: ResultStatus.BadRequest,
-        extensions: [],
+        extensions: [{ field: 'likeStatus', message: 'Bad like status'  }],
+        errorMessage: 'Bad likeStatus',
         data: null,
       };
     }
 
     const foundComment = await this.commentRepository.findById(commentId);
     if (!foundComment) {
-      return {
-        status: ResultStatus.NotFound,
-        extensions: [],
-        data: null,
-      };
+      throw new Error(ResultStatus.NotFound.toString())
     }
 
     await this.likesInfoRepository.add({ parentId: commentId, authorId: userId, myStatus: likeStatus });

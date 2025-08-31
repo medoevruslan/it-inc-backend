@@ -6,7 +6,9 @@ import { db } from './composition-root';
 app.set('trust proxy', true);
 
 const startApp = async () => {
-  const isDbStarted = await db.run(SETTINGS.MONGO_URL);
+
+  console.log('connection string is:: ', SETTINGS.MONGOOSE_URL);
+  const isDbStarted = await db.run(SETTINGS.MONGOOSE_URL);
 
   if (!isDbStarted) {
     Process.exit(1);

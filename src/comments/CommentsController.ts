@@ -1,12 +1,10 @@
 import { Request, Response } from 'express';
-import { HttpStatuses, LikeType } from '../shared/enums';
+import { HttpStatuses, LikeType, ResultStatus } from '../shared/enums';
 import { handleApiError } from '../shared/utils';
 import { CommentUpdateType } from '../input-output-types/comment-types';
 import { CommentService } from '../service/CommentService';
 import { CommentQueryRepository } from '../repository/CommentQueryRepository';
 import { inject } from 'inversify';
-import { Nullable } from '../shared/types';
-import { UserDbType } from '../db/user-db-type';
 import { jwtService } from '../composition-root';
 
 export class CommentsController {
@@ -37,10 +35,10 @@ export class CommentsController {
       // TODO: use middleware
       if (req.headers.authorization) {
         const [authType, token] = req.headers.authorization.split(' ');
-        if (authType === 'Bearer'){
+        if (authType === 'Bearer') {
           const payload = await jwtService.verifyToken<{ userId: string }>(token);
           if (payload) {
-            userId = payload.userId
+            userId = payload.userId;
           }
         }
       }
@@ -73,7 +71,13 @@ export class CommentsController {
       const commentId = req.params.commentId;
       const userId = req.userId!;
       const result = await this.commentService.updateLikeStatus(userId, commentId, req.body.likeStatus);
-      res.status(204).send()
+
+      if (result.status !== ResultStatus.Success) {
+        res.status(result.status).send({ errorsMessages: result.extensions });
+        return;
+      }
+
+      res.status(204).send();
     } catch (err: unknown) {
       handleApiError(err, res);
     }
