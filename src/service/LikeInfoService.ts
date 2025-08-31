@@ -61,12 +61,12 @@ export class LikeInfoService {
       myStatus: currentUserLikeStatus?.myStatus ?? LikeType.None,
     }]));
 
-    const commentLikeInfo = likesInfoMap.get(targetId.toString()) ?? {
+    const targetLikeInfo = likesInfoMap.get(targetId.toString()) ?? {
       likesCount: 0,
       dislikesCount: 0,
       myStatus: LikeType.None,
     };
 
-    return { likesInfoMap, commentLikeInfo }
+    return { likesInfoMap, targetLikeInfo }
   }
 }

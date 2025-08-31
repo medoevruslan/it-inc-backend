@@ -7,6 +7,7 @@ import { commentsQueryValidator } from '../validation/commentQueryValidator';
 import { commentBodyValidator } from '../validation/commentBodyValidator';
 import { container } from '../composition-root';
 import { PostsController } from './PostsController';
+import { commentsRouter } from '../comments';
 
 const postsController = container.get(PostsController)
 
@@ -19,3 +20,8 @@ postsRouter.put('/:id', postBodyValidator, baseAuthGuard, validationErrorMiddlew
 postsRouter.delete('/:id', baseAuthGuard, postsController.deletePost.bind(postsController));
 postsRouter.post('/:postId/comments', commentBodyValidator, accessTokenGuard, validationErrorMiddleware, postsController.createPostComments.bind(postsController));
 postsRouter.get('/:postId/comments', commentsQueryValidator,  postsController.getPostComments.bind(postsController));
+postsRouter.put(
+  '/:postId/like-status',
+  accessTokenGuard,
+  postsController.updatePostLikeStatus.bind(postsController),
+);

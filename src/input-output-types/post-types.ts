@@ -8,4 +8,4 @@ export type PostType = Omit<PostDbType, '_id'>;
 export type UpdatePostType = { postId: string; update: PostType };
 
 // Represents the output when sending data to client
-export type OutputPostType = PostType & { id: string };
+export type OutputPostType = PostType & { id: string, likesInfo: LikesInfo };

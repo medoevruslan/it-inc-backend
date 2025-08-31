@@ -25,7 +25,7 @@ export class CommentService {
       throw new Error(HttpStatuses.BadRequest.toString());
     }
 
-    const foundPost = await this.postService.findById(postId);
+    const foundPost = await this.postService.findById(postId, userId);
 
     if (!foundPost) {
       console.log(`post ${postId} not found on create comment`);
@@ -92,7 +92,7 @@ export class CommentService {
       throw new Error(HttpStatuses.BadRequest.toString());
     }
 
-    const foundPost = await this.postService.findById(postId);
+    const foundPost = await this.postService.findById(postId, userId);
 
     return this.commentRepository.findByPostId(foundPost.id, query, userId);
   }

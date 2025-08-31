@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { HttpStatuses, LikeType } from '../shared/enums';
+import { HttpStatuses, LikeType, ResultStatus } from '../shared/enums';
 import { handleApiError } from '../shared/utils';
 import { InputPostType, OutputPostType, PostType } from '../input-output-types/post-types';
 import { GetAllQueryParams } from '../shared/types';
@@ -11,7 +11,7 @@ import { CommentType } from '../input-output-types/comment-types';
 import { CommentRepository } from '../repository/CommentRepository';
 import { commentMapper } from '../mapping/commentMapper';
 import { LikesInfoQueryRepository } from '../repository/LikesInfoQueryRepository';
-import { jwtService } from '../composition-root';
+import { JwtService } from '../service/JwtService';
 
 @injectable()
 export class PostsController {
@@ -19,7 +19,9 @@ export class PostsController {
     @inject(PostService) protected postService: PostService,
     @inject(CommentService) protected commentService: CommentService,
     @inject(CommentRepository) protected commentRepository: CommentRepository,
-    @inject(LikesInfoQueryRepository) protected likesInfoQueryRepository: LikesInfoQueryRepository) {
+    @inject(LikesInfoQueryRepository) protected likesInfoQueryRepository: LikesInfoQueryRepository,
+    @inject(JwtService) protected jwtService: JwtService,
+  ) {
   }
 
   async createPostComments(
@@ -58,7 +60,8 @@ export class PostsController {
 
   async createPost(req: Request<{}, {}, InputPostType>, res: Response) {
     try {
-      const createdPost = await this.postService.create(req.body);
+      const userId = req.userId!;
+      const createdPost = await this.postService.create(req.body, userId);
       res.status(201).send(createdPost);
     } catch (err: unknown) {
       handleApiError(err, res);
@@ -76,7 +79,21 @@ export class PostsController {
 
   async getPostById(req: Request<{ id: string }>, res: Response) {
     try {
-      const found = await this.postService.findById(req.params.id);
+
+      let userId = '';
+
+      // TODO: use middleware
+      if (req.headers.authorization) {
+        const [authType, token] = req.headers.authorization.split(' ');
+        if (authType === 'Bearer') {
+          const payload = await this.jwtService.verifyToken<{ userId: string }>(token);
+          if (payload) {
+            userId = payload.userId;
+          }
+        }
+      }
+
+      const found = await this.postService.findById(req.params.id, userId);
       res.send(found);
     } catch (err: unknown) {
       const error = err as Error;
@@ -100,10 +117,10 @@ export class PostsController {
       // TODO: use middleware
       if (req.headers.authorization) {
         const [authType, token] = req.headers.authorization.split(' ');
-        if (authType === 'Bearer'){
-          const payload = await jwtService.verifyToken<{ userId: string }>(token);
+        if (authType === 'Bearer') {
+          const payload = await this.jwtService.verifyToken<{ userId: string }>(token);
           if (payload) {
-            userId = payload.userId
+            userId = payload.userId;
           }
         }
       }
@@ -123,7 +140,21 @@ export class PostsController {
     res: Response<OutputModelTypeWithInfo<OutputPostType>>,
   ) {
     try {
-      const posts = await this.postService.findAll(req.query);
+
+      let userId = '';
+
+      // TODO: use middleware
+      if (req.headers.authorization) {
+        const [authType, token] = req.headers.authorization.split(' ');
+        if (authType === 'Bearer') {
+          const payload = await this.jwtService.verifyToken<{ userId: string }>(token);
+          if (payload) {
+            userId = payload.userId;
+          }
+        }
+      }
+
+      const posts = await this.postService.findAll(req.query, userId);
       res.status(HttpStatuses.Success).send(posts);
     } catch (err: unknown) {
       handleApiError(err, res);
@@ -138,4 +169,24 @@ export class PostsController {
       handleApiError(err, res);
     }
   }
+
+  async updatePostLikeStatus(
+    req: Request<{ postId: string }, {}, { likeStatus: LikeType }>,
+    res: Response,
+  ) {
+    try {
+      const postId = req.params.postId;
+      const userId = req.userId!;
+      const result = await this.postService.updateLikeStatus(userId, postId, req.body.likeStatus);
+
+      if (result.status !== ResultStatus.Success) {
+        res.status(result.status).send({ errorsMessages: result.extensions });
+        return;
+      }
+
+      res.status(204).send();
+    } catch (err: unknown) {
+      handleApiError(err, res);
+    }
+  };
 }

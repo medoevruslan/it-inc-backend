@@ -61,11 +61,12 @@ export class BlogService {
   async findPostsByBlogId(
     id: string,
     filter: GetAllQueryParams<PostType>,
+    userId: string
   ): Promise<OutputModelTypeWithInfo<OutputPostType>> {
     if (!ObjectId.isValid(id)) {
       throw new Error(HttpStatuses.BadRequest.toString());
     }
-    const found = await this.postRepository.findByBlogId(id, filter);
+    const found = await this.postRepository.findByBlogId(id, filter, userId);
 
     if (found.items.length === 0) {
       throw new Error(HttpStatuses.NotFound.toString());

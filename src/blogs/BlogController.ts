@@ -6,10 +6,11 @@ import { BlogService } from '../service/BlogService';
 import { PostService } from '../service/PostService';
 import { handleApiError } from '../shared/utils';
 import { inject } from 'inversify';
+import { JwtService } from '../service/JwtService';
 
 export class BlogController {
 
-  constructor(@inject(BlogService) protected blogService: BlogService, @inject(PostService) protected postService: PostService) {
+  constructor(@inject(BlogService) protected blogService: BlogService, @inject(PostService) protected postService: PostService, @inject(JwtService) protected jwtService: JwtService) {
   }
 
   async createBlog(req: Request<{}, {}, InputBlogType>, res: Response) {
@@ -26,7 +27,8 @@ export class BlogController {
     res: Response,
   ) {
     try {
-      const post = await this.postService.create({ blogId: req.params.blogId, ...req.body });
+      const userId = req.userId!
+      const post = await this.postService.create({ blogId: req.params.blogId, ...req.body }, userId);
       res.status(201).send(post);
     } catch (err: unknown) {
       handleApiError(err, res);
@@ -71,7 +73,21 @@ export class BlogController {
     res: Response,
   ) {
     try {
-      const posts = await this.blogService.findPostsByBlogId(req.params.blogId, req.query);
+
+      let userId = '';
+
+      // TODO: use middleware
+      if (req.headers.authorization) {
+        const [authType, token] = req.headers.authorization.split(' ');
+        if (authType === 'Bearer'){
+          const payload = await this.jwtService.verifyToken<{ userId: string }>(token);
+          if (payload) {
+            userId = payload.userId
+          }
+        }
+      }
+
+      const posts = await this.blogService.findPostsByBlogId(req.params.blogId, req.query, userId);
       res.send(posts);
     } catch (err: unknown) {
       handleApiError(err, res);

@@ -9,6 +9,7 @@ import { BlogDbType } from '../src/db/blog-db-type';
 import { ObjectId } from 'mongodb';
 import { db } from '../src/db/mongoDb';
 import mongoose from 'mongoose';
+import { HttpStatuses, LikeType } from '../src/shared/enums';
 
 jest.setTimeout(100000000);
 
@@ -52,6 +53,9 @@ describe('tests for /posts', () => {
 
       expect(res.body.items.length).toBe(1);
       expect(res.body.items[0].title).toEqual(dataset1.posts[0].title);
+      expect(res.body.items[0].likesInfo.myStatus).toEqual(LikeType.None);
+      expect(res.body.items[0].likesInfo.likesCount).toEqual(0);
+      expect(res.body.items[0].likesInfo.dislikesCount).toEqual(0);
     });
   });
 
@@ -436,4 +440,112 @@ describe('tests for /posts', () => {
         .expect(201);
     });
   });
+  describe('test update post like status', () => {
+    it('should not update like status multiple times for existent posts from one user account', async () => {
+      await db.dropCollections();
+      await db.seed({ posts: [post1] });
+
+      const newUser = await addUser(codedAuth);
+
+      const loginResponse = await req
+        .post(`${SETTINGS.PATH.AUTH}/login`)
+        .send({ loginOrEmail: newUser.login, password: newUser.password })
+        .expect(HttpStatuses.Success);
+
+      const postReponse1 = await req
+        .get(`${SETTINGS.PATH.POSTS}/${post1._id.toString()}`)
+        .expect(HttpStatuses.Success);
+
+      expect(postReponse1.body.likesInfo.likesCount).toBe(0);
+      expect(postReponse1.body.likesInfo.dislikesCount).toBe(0);
+      expect(postReponse1.body.likesInfo.myStatus).toBe(LikeType.None);
+
+      const likeActions = Array.from({ length: 5 }).map(_ => req
+        .put(`${SETTINGS.PATH.POSTS}/${post1._id.toString()}/like-status`)
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
+        .send({ likeStatus: LikeType.Like }).expect(HttpStatuses.NoContent))
+
+      await Promise.all(likeActions)
+
+      const postResponse2 = await req
+        .get(`${SETTINGS.PATH.POSTS}/${post1._id.toString()}`)
+        .expect(HttpStatuses.Success);
+
+      expect(postResponse2.body.likesInfo.likesCount).toBe(1);
+      expect(postResponse2.body.likesInfo.dislikesCount).toBe(0);
+      expect(postResponse2.body.likesInfo.myStatus).toBe(LikeType.None);
+    });
+
+    it('should set Like and get this status for existent user', async () => {
+      await db.dropCollections();
+      await db.seed({ posts: [post1] });
+
+      const newUser = await addUser(codedAuth);
+
+      const loginResponse = await req
+        .post(`${SETTINGS.PATH.AUTH}/login`)
+        .send({ loginOrEmail: newUser.login, password: newUser.password })
+        .expect(HttpStatuses.Success);
+
+      const postResponse1 = await req
+        .get(`${SETTINGS.PATH.POSTS}/${post1._id.toString()}`)
+        .expect(HttpStatuses.Success);
+
+      expect(postResponse1.body.likesInfo.likesCount).toBe(0);
+      expect(postResponse1.body.likesInfo.dislikesCount).toBe(0);
+      expect(postResponse1.body.likesInfo.myStatus).toBe(LikeType.None);
+
+      const likeActions = Array.from({ length: 5 }).map(_ => req
+        .put(`${SETTINGS.PATH.POSTS}/${post1._id.toString()}/like-status`)
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
+        .send({ likeStatus: LikeType.Like }).expect(HttpStatuses.NoContent))
+
+      await Promise.all(likeActions)
+
+      const postResponse2 = await req
+        .get(`${SETTINGS.PATH.POSTS}/${post1._id.toString()}`)
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
+        .expect(HttpStatuses.Success);
+
+      expect(postResponse2.body.likesInfo.likesCount).toBe(1);
+      expect(postResponse2.body.likesInfo.dislikesCount).toBe(0);
+      expect(postResponse2.body.likesInfo.myStatus).toBe(LikeType.Like);
+    });
+
+    it('should set Dislike and get this status for existent user', async () => {
+      await db.dropCollections();
+      await db.seed({ posts: [post1] });
+
+      const newUser = await addUser(codedAuth);
+
+      const loginResponse = await req
+        .post(`${SETTINGS.PATH.AUTH}/login`)
+        .send({ loginOrEmail: newUser.login, password: newUser.password })
+        .expect(HttpStatuses.Success);
+
+      const postResponse1 = await req
+        .get(`${SETTINGS.PATH.POSTS}/${post1._id.toString()}`)
+        .expect(HttpStatuses.Success);
+
+      expect(postResponse1.body.likesInfo.likesCount).toBe(0);
+      expect(postResponse1.body.likesInfo.dislikesCount).toBe(0);
+      expect(postResponse1.body.likesInfo.myStatus).toBe(LikeType.None);
+
+      const likeActions = Array.from({ length: 5 }).map(_ => req
+        .put(`${SETTINGS.PATH.POSTS}/${post1._id.toString()}/like-status`)
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
+        .send({ likeStatus: LikeType.Dislike }).expect(HttpStatuses.NoContent))
+
+      await Promise.all(likeActions)
+
+      const postResponse2 = await req
+        .get(`${SETTINGS.PATH.POSTS}/${post1._id.toString()}`)
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
+        .expect(HttpStatuses.Success);
+
+      expect(postResponse2.body.likesInfo.likesCount).toBe(0);
+      expect(postResponse2.body.likesInfo.dislikesCount).toBe(1);
+      expect(postResponse2.body.likesInfo.myStatus).toBe(LikeType.Dislike);
+    });
+  })
 });

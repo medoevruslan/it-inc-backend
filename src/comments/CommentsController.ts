@@ -5,13 +5,14 @@ import { CommentUpdateType } from '../input-output-types/comment-types';
 import { CommentService } from '../service/CommentService';
 import { CommentQueryRepository } from '../repository/CommentQueryRepository';
 import { inject } from 'inversify';
-import { jwtService } from '../composition-root';
+import { JwtService } from '../service/JwtService';
 
 export class CommentsController {
 
   constructor(
     @inject(CommentService) protected commentService: CommentService,
     @inject(CommentQueryRepository) protected commentQueryRepository: CommentQueryRepository,
+    @inject(JwtService) protected jwtService: JwtService
   ) {
   }
 
@@ -36,7 +37,7 @@ export class CommentsController {
       if (req.headers.authorization) {
         const [authType, token] = req.headers.authorization.split(' ');
         if (authType === 'Bearer') {
-          const payload = await jwtService.verifyToken<{ userId: string }>(token);
+          const payload = await this.jwtService.verifyToken<{ userId: string }>(token);
           if (payload) {
             userId = payload.userId;
           }

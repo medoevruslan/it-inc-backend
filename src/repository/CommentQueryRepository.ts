@@ -43,9 +43,9 @@ export class CommentQueryRepository {
 
     const parentId = new ObjectId(commentId)
 
-    const { commentLikeInfo } = await this.likesInfoService.getLikesInfoSingle(userId, parentId)
+    const { targetLikeInfo } = await this.likesInfoService.getLikesInfoSingle(userId, parentId)
 
-    return commentMapper.mapCommentToOutputType(foundComment, commentLikeInfo);
+    return commentMapper.mapCommentToOutputType(foundComment, targetLikeInfo);
   }
 
 }

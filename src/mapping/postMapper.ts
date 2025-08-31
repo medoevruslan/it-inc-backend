@@ -4,7 +4,7 @@ import { OutputPostType } from '../input-output-types/post-types';
 import { PostDbType } from '../db/post-db.type';
 
 export const postMapper = {
-  mapPostToOutputType(post: PostDbType): OutputPostType {
+  mapPostToOutputType(post: PostDbType, likesInfo: LikesInfo): OutputPostType {
     return {
       id: post._id.toString(),
       blogName: post.blogName,
@@ -13,7 +13,7 @@ export const postMapper = {
       content: post.content,
       shortDescription: post.shortDescription,
       createdAt: post.createdAt,
-      // likesInfo
+      likesInfo
     };
   },
 };

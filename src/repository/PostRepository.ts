@@ -1,14 +1,19 @@
 import { InputPostType, OutputPostType, PostType, UpdatePostType } from '../input-output-types/post-types';
 import { PostDbType } from '../db/post-db.type';
-import { WithId } from 'mongodb';
+import { ObjectId, WithId } from 'mongodb';
 import { GetAllQueryParams } from '../shared/types';
 import { OutputModelTypeWithInfo } from '../input-output-types/common-types';
-import { injectable } from 'inversify';
+import { inject, injectable } from 'inversify';
 import { PostModel } from '../model';
 import { postMapper } from '../mapping/postMapper';
+import { LikeInfoService } from '../service/LikeInfoService';
+import { LikeType } from '../shared/enums';
 
 @injectable()
 export class PostRepository {
+
+  constructor(@inject(LikeInfoService) protected likesInfoService: LikeInfoService) {
+  }
 
   async create(input: InputPostType & { blogName: string }): Promise<string> {
     const postModel = new PostModel(input);
@@ -24,7 +29,7 @@ export class PostRepository {
     return true;
   }
 
-  async findAll(inputFilter: GetAllQueryParams<PostType>): Promise<OutputModelTypeWithInfo<OutputPostType>> {
+  async findAll(inputFilter: GetAllQueryParams<PostType>, userId: string): Promise<OutputModelTypeWithInfo<OutputPostType>> {
     const { sortDirection, sortBy, pageSize, pageNumber, searchNameTerm } = inputFilter;
     const filter = searchNameTerm ? { title: { $regex: searchNameTerm, $options: 'i' } } : {};
 
@@ -42,23 +47,35 @@ export class PostRepository {
         .lean(),
     ]);
 
+    const postsIds = posts.map(p => p._id)
+
+    const { likesInfoMap, userLikeMap  } = await this.likesInfoService.getLikesInfoAll(userId, postsIds)
+
     return {
       pagesCount: Math.ceil(totalCount / convertedPageSize),
       page: Number(pageNumber),
       pageSize: convertedPageSize,
       totalCount: totalCount,
-      items: posts.map(postMapper.mapPostToOutputType),
+      items: posts.map(p => {
+        const likesInfo = likesInfoMap.get(p._id.toString()) ?? { likesCount: 0, dislikesCount: 0 }
+        const userLikeStatus = userLikeMap.get(p._id.toString()) ?? LikeType.None
+        return postMapper.mapPostToOutputType(p, { ...likesInfo, myStatus: userLikeStatus } )
+      })
     };
   }
 
-  async findById(id: string): Promise<OutputPostType | null> {
+  async findById(id: string, userId: string): Promise<OutputPostType | null> {
     const post = await PostModel.findById(id).lean()
-    return post === null ? null : postMapper.mapPostToOutputType(post);
+
+    const { targetLikeInfo } = await this.likesInfoService.getLikesInfoSingle(userId, new ObjectId(id))
+
+    return post === null ? null : postMapper.mapPostToOutputType(post, targetLikeInfo);
   }
 
   async findByBlogId(
     id: string,
     inputFilter: GetAllQueryParams<PostType>,
+    userId: string
   ): Promise<OutputModelTypeWithInfo<OutputPostType>> {
     const { sortDirection, sortBy, pageSize, pageNumber, searchNameTerm } = inputFilter;
     const filter = searchNameTerm ? { blogId: id, name: { $regex: searchNameTerm, $options: 'i' } } : { blogId: id };
@@ -77,12 +94,20 @@ export class PostRepository {
         .lean(),
     ]);
 
+    const postsIds = posts.map(p => p._id)
+
+    const { likesInfoMap, userLikeMap  } = await this.likesInfoService.getLikesInfoAll(userId, postsIds)
+
     return {
       pagesCount: Math.ceil(totalCount / convertedPageSize),
       page: Number(pageNumber),
       pageSize: convertedPageSize,
       totalCount: totalCount,
-      items: posts.map(postMapper.mapPostToOutputType),
+      items: posts.map(p => {
+        const likesInfo = likesInfoMap.get(p._id.toString()) ?? { likesCount: 0, dislikesCount: 0 }
+        const userLikeStatus = userLikeMap.get(p._id.toString()) ?? LikeType.None
+        return postMapper.mapPostToOutputType(p, { ...likesInfo, myStatus: userLikeStatus } )
+      })
     };
   }
 
