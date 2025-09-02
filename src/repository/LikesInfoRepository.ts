@@ -1,13 +1,13 @@
 import { injectable } from 'inversify';
 import { LikeInfoModel } from '../model/LikesInfoModel';
-import { LikesInfoDbType } from '../db/likes-info-db-type';
+import { LikesInfoDbType, LikesInfoInputDbType } from '../db/likes-info-db-type';
 import { FilterQuery } from 'mongoose';
 
 @injectable()
 export class LikesInfoRepository {
 
-  public async add({ authorId, parentId, myStatus }: LikesInfoDbType) {
-    const result = await LikeInfoModel.findOneAndUpdate({ authorId, parentId }, { $set: { myStatus } }, {
+  public async add({ login, authorId, parentId, myStatus }: LikesInfoInputDbType) {
+    const result = await LikeInfoModel.findOneAndUpdate({ authorId, parentId, login }, { $set: { myStatus } }, {
       upsert: true,
       new: true,
       setDefaultsOnInsert: true,

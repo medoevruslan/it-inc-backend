@@ -20,7 +20,7 @@ app.use(cookieParser())
 
 app.get('/', (req, res) => {
   // shows project version
-  res.status(200).json({ version: '11.0' });
+  res.status(200).json({ version: '12.0' });
 });
 
 app.use(SETTINGS.PATH.VIDEOS, videosRouter);

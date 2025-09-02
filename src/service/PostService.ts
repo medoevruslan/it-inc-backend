@@ -8,6 +8,7 @@ import { PostRepository } from '../repository/PostRepository';
 import { inject, injectable } from 'inversify';
 import { LikeInfoService } from './LikeInfoService';
 import { LikesInfoRepository } from '../repository/LikesInfoRepository';
+import { UserRepository } from '../repository/UserRepository';
 
 @injectable()
 export class PostService {
@@ -16,6 +17,7 @@ export class PostService {
     @inject(BlogRepository) protected blogRepository: BlogRepository,
     @inject(PostRepository) protected postRepository: PostRepository,
     @inject(LikesInfoRepository) protected likesInfoRepository: LikesInfoRepository,
+    @inject(UserRepository) protected usersRepository: UserRepository
   ) {
   }
 
@@ -107,7 +109,13 @@ export class PostService {
       throw new Error(ResultStatus.NotFound.toString());
     }
 
-    await this.likesInfoRepository.add({ parentId: postId, authorId: userId, myStatus: likeStatus });
+    const foundUser = await this.usersRepository.findById(userId)
+
+    if (!foundUser) {
+      throw new Error(ResultStatus.NotFound.toString())
+    }
+
+    await this.likesInfoRepository.add({login: foundUser.login, parentId: postId, authorId: userId, myStatus: likeStatus });
 
     return {
       status: ResultStatus.Success,

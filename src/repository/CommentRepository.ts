@@ -6,7 +6,6 @@ import { HttpStatuses, LikeType } from '../shared/enums';
 import { commentMapper } from '../mapping/commentMapper';
 import { inject, injectable } from 'inversify';
 import { CommentModel } from '../model';
-import { LikeInfoModel } from '../model/LikesInfoModel';
 import { LikeInfoService } from '../service/LikeInfoService';
 
 @injectable()

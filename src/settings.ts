@@ -4,7 +4,7 @@ import { SignOptions } from 'jsonwebtoken';
 
 config();
 
-export const BASE_URL = '/ht_11/api';
+export const BASE_URL = '/ht_12/api';
 
 export const SETTINGS = {
   PORT: process.env.PORT || 3003,

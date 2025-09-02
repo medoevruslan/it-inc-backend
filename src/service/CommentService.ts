@@ -117,7 +117,13 @@ export class CommentService {
       throw new Error(ResultStatus.NotFound.toString())
     }
 
-    await this.likesInfoRepository.add({ parentId: commentId, authorId: userId, myStatus: likeStatus });
+    const foundUser = await this.usersRepository.findById(userId)
+
+    if (!foundUser) {
+      throw new Error(ResultStatus.NotFound.toString())
+    }
+
+    await this.likesInfoRepository.add({ login: foundUser.login, parentId: commentId, authorId: userId, myStatus: likeStatus });
 
     return {
       status: ResultStatus.Success,

@@ -27,15 +27,24 @@ export class LikeInfoService {
       }).lean(),
     ]);
 
-    const likesInfoMap = new Map(likesAggregation.map(data => [data._id.toString(), {
+    const likesInfoMap = new Map<string, {
+      likesCount: number,
+      dislikesCount: number,
+      addedAt: string,
+      login: string
+    }>(likesAggregation.map(data => [data._id.toString(), {
       likesCount: data.likesCount,
       dislikesCount: data.dislikesCount,
+      addedAt: data.createdAt,
+      login: data.login,
     }]));
+
 
     const userLikeMap = new Map(userLikes.map((like) => [like.parentId.toString(), like.myStatus]));
 
-    return { likesInfoMap, userLikeMap }
+    return { likesInfoMap, userLikeMap };
   }
+
   public async getLikesInfoSingle(userId: string, targetId: ObjectId) {
     const [likesInfo, currentUserLikeStatus] = await Promise.all([
       LikeInfoModel.aggregate([
@@ -59,6 +68,8 @@ export class LikeInfoService {
       likesCount: data.likesCount,
       dislikesCount: data.dislikesCount,
       myStatus: currentUserLikeStatus?.myStatus ?? LikeType.None,
+      addedAt: currentUserLikeStatus?.createdAt ?? 'unknown',
+      login: currentUserLikeStatus?.login ?? 'unknown',
     }]));
 
     const targetLikeInfo = likesInfoMap.get(targetId.toString()) ?? {
@@ -67,6 +78,8 @@ export class LikeInfoService {
       myStatus: LikeType.None,
     };
 
-    return { likesInfoMap, targetLikeInfo }
+    const newestLikes = [...likesInfoMap.values()].map(info => ({ addedAt: info.addedAt, login: info.login, userId }))
+
+    return { likesInfoMap, targetLikeInfo, newestLikes };
   }
 }

@@ -452,13 +452,14 @@ describe('tests for /posts', () => {
         .send({ loginOrEmail: newUser.login, password: newUser.password })
         .expect(HttpStatuses.Success);
 
-      const postReponse1 = await req
+      const postsReponse1 = await req
         .get(`${SETTINGS.PATH.POSTS}/${post1._id.toString()}`)
         .expect(HttpStatuses.Success);
 
-      expect(postReponse1.body.likesInfo.likesCount).toBe(0);
-      expect(postReponse1.body.likesInfo.dislikesCount).toBe(0);
-      expect(postReponse1.body.likesInfo.myStatus).toBe(LikeType.None);
+      expect(postsReponse1.body.extendedLikesInfo.likesCount).toBe(0);
+      expect(postsReponse1.body.extendedLikesInfo.dislikesCount).toBe(0);
+      expect(postsReponse1.body.extendedLikesInfo.myStatus).toBe(LikeType.None);
+      expect(postsReponse1.body.extendedLikesInfo.newestLikes.length).toBe(0);
 
       const likeActions = Array.from({ length: 5 }).map(_ => req
         .put(`${SETTINGS.PATH.POSTS}/${post1._id.toString()}/like-status`)
@@ -469,11 +470,15 @@ describe('tests for /posts', () => {
 
       const postResponse2 = await req
         .get(`${SETTINGS.PATH.POSTS}/${post1._id.toString()}`)
+        .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
         .expect(HttpStatuses.Success);
 
-      expect(postResponse2.body.likesInfo.likesCount).toBe(1);
-      expect(postResponse2.body.likesInfo.dislikesCount).toBe(0);
-      expect(postResponse2.body.likesInfo.myStatus).toBe(LikeType.None);
+      expect(postResponse2.body.extendedLikesInfo.likesCount).toBe(1);
+      expect(postResponse2.body.extendedLikesInfo.dislikesCount).toBe(0);
+      expect(postResponse2.body.extendedLikesInfo.myStatus).toBe(LikeType.Like);
+      expect(postResponse2.body.extendedLikesInfo.newestLikes.length).toBe(1);
+      expect(postResponse2.body.extendedLikesInfo.newestLikes[0].login).toBe(newUser.login);
+      expect(postResponse2.body.extendedLikesInfo.newestLikes[0].userId).toBe(newUser.id);
     });
 
     it('should set Like and get this status for existent user', async () => {
@@ -491,9 +496,10 @@ describe('tests for /posts', () => {
         .get(`${SETTINGS.PATH.POSTS}/${post1._id.toString()}`)
         .expect(HttpStatuses.Success);
 
-      expect(postResponse1.body.likesInfo.likesCount).toBe(0);
-      expect(postResponse1.body.likesInfo.dislikesCount).toBe(0);
-      expect(postResponse1.body.likesInfo.myStatus).toBe(LikeType.None);
+      expect(postResponse1.body.extendedLikesInfo.likesCount).toBe(0);
+      expect(postResponse1.body.extendedLikesInfo.dislikesCount).toBe(0);
+      expect(postResponse1.body.extendedLikesInfo.myStatus).toBe(LikeType.None);
+      expect(postResponse1.body.extendedLikesInfo.newestLikes.length).toBe(0);
 
       const likeActions = Array.from({ length: 5 }).map(_ => req
         .put(`${SETTINGS.PATH.POSTS}/${post1._id.toString()}/like-status`)
@@ -507,9 +513,12 @@ describe('tests for /posts', () => {
         .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
         .expect(HttpStatuses.Success);
 
-      expect(postResponse2.body.likesInfo.likesCount).toBe(1);
-      expect(postResponse2.body.likesInfo.dislikesCount).toBe(0);
-      expect(postResponse2.body.likesInfo.myStatus).toBe(LikeType.Like);
+      expect(postResponse2.body.extendedLikesInfo.likesCount).toBe(1);
+      expect(postResponse2.body.extendedLikesInfo.dislikesCount).toBe(0);
+      expect(postResponse2.body.extendedLikesInfo.myStatus).toBe(LikeType.Like);
+      expect(postResponse2.body.extendedLikesInfo.newestLikes.length).toBe(1);
+      expect(postResponse2.body.extendedLikesInfo.newestLikes[0].login).toBe(newUser.login);
+      expect(postResponse2.body.extendedLikesInfo.newestLikes[0].userId).toBe(newUser.id);
     });
 
     it('should set Dislike and get this status for existent user', async () => {
@@ -527,9 +536,9 @@ describe('tests for /posts', () => {
         .get(`${SETTINGS.PATH.POSTS}/${post1._id.toString()}`)
         .expect(HttpStatuses.Success);
 
-      expect(postResponse1.body.likesInfo.likesCount).toBe(0);
-      expect(postResponse1.body.likesInfo.dislikesCount).toBe(0);
-      expect(postResponse1.body.likesInfo.myStatus).toBe(LikeType.None);
+      expect(postResponse1.body.extendedLikesInfo.likesCount).toBe(0);
+      expect(postResponse1.body.extendedLikesInfo.dislikesCount).toBe(0);
+      expect(postResponse1.body.extendedLikesInfo.myStatus).toBe(LikeType.None);
 
       const likeActions = Array.from({ length: 5 }).map(_ => req
         .put(`${SETTINGS.PATH.POSTS}/${post1._id.toString()}/like-status`)
@@ -543,9 +552,12 @@ describe('tests for /posts', () => {
         .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
         .expect(HttpStatuses.Success);
 
-      expect(postResponse2.body.likesInfo.likesCount).toBe(0);
-      expect(postResponse2.body.likesInfo.dislikesCount).toBe(1);
-      expect(postResponse2.body.likesInfo.myStatus).toBe(LikeType.Dislike);
+      expect(postResponse2.body.extendedLikesInfo.likesCount).toBe(0);
+      expect(postResponse2.body.extendedLikesInfo.dislikesCount).toBe(1);
+      expect(postResponse2.body.extendedLikesInfo.myStatus).toBe(LikeType.Dislike);
+      expect(postResponse2.body.extendedLikesInfo.newestLikes.length).toBe(1);
+      expect(postResponse2.body.extendedLikesInfo.newestLikes[0].login).toBe(newUser.login);
+      expect(postResponse2.body.extendedLikesInfo.newestLikes[0].userId).toBe(newUser.id);
     });
   })
 });
