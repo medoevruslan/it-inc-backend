@@ -49,7 +49,7 @@ export class PostRepository {
 
     const postsIds = posts.map(p => p._id);
 
-    const { likesInfoMap, userLikeMap } = await this.likesInfoService.getLikesInfoAll(userId, postsIds);
+    const { likesInfoMap, userLikeMap, newestLikesMap } = await this.likesInfoService.getLikesInfoAll(userId, postsIds);
 
     return {
       pagesCount: Math.ceil(totalCount / convertedPageSize),
@@ -59,11 +59,10 @@ export class PostRepository {
       items: posts.map(p => {
         const likesInfo = likesInfoMap.get(p._id.toString()) ?? { likesCount: 0, dislikesCount: 0 };
         const userLikeStatus = userLikeMap.get(p._id.toString()) ?? LikeType.None;
-        const recentLikes = [...likesInfoMap.values()].map(info => ({ addedAt: info.addedAt, login: info.login, userId }))
         return postMapper.mapPostToOutputType(p, {
           ...likesInfo,
           myStatus: userLikeStatus,
-          newestLikes: [...recentLikes.toSorted((a, b) => new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime()).slice(0, 3)],
+          newestLikes: newestLikesMap.get(p._id.toString()) ?? [],
         });
       }),
     };
@@ -101,7 +100,7 @@ export class PostRepository {
 
     const postsIds = posts.map(p => p._id);
 
-    const { likesInfoMap, userLikeMap } = await this.likesInfoService.getLikesInfoAll(userId, postsIds);
+    const { likesInfoMap, userLikeMap, newestLikesMap } = await this.likesInfoService.getLikesInfoAll(userId, postsIds);
 
     return {
       pagesCount: Math.ceil(totalCount / convertedPageSize),
@@ -111,11 +110,10 @@ export class PostRepository {
       items: posts.map(p => {
         const likesInfo = likesInfoMap.get(p._id.toString()) ?? { likesCount: 0, dislikesCount: 0 };
         const userLikeStatus = userLikeMap.get(p._id.toString()) ?? LikeType.None;
-        const recentLikes = [...likesInfoMap.values()].map(info => ({ addedAt: info.addedAt, login: info.login, userId }))
         return postMapper.mapPostToOutputType(p, {
           ...likesInfo,
           myStatus: userLikeStatus,
-          newestLikes: [...recentLikes.toSorted((a, b) => new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime()).slice(0, 3)],
+          newestLikes: newestLikesMap.get(p._id.toString()) ?? [],
         });
       }),
     };

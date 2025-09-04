@@ -7,7 +7,6 @@ import { commentsQueryValidator } from '../validation/commentQueryValidator';
 import { commentBodyValidator } from '../validation/commentBodyValidator';
 import { container } from '../composition-root';
 import { PostsController } from './PostsController';
-import { commentsRouter } from '../comments';
 
 const postsController = container.get(PostsController)
 

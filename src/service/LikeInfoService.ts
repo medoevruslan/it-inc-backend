@@ -2,11 +2,22 @@ import { injectable } from 'inversify';
 import { LikeInfoModel } from '../model/LikesInfoModel';
 import { LikeType } from '../shared/enums';
 import { ObjectId } from 'mongodb';
+import { FilterQuery } from 'mongoose';
+import { LikesInfoDbType } from '../db/likes-info-db-type';
 
 @injectable()
 export class LikeInfoService {
+
+  public async findAll() {
+    return LikeInfoModel.find().lean();
+  }
+
+  public async findByFilter(filter: FilterQuery<LikesInfoDbType>) {
+    return LikeInfoModel.find(filter).lean();
+  }
+
   public async getLikesInfoAll(userId: string, targetIds: ObjectId[]) {
-    const [likesAggregation, userLikes] = await Promise.all([
+    const [likesAggregation, userLikes, newestLikesAgg] = await Promise.all([
       LikeInfoModel.aggregate([
         { $match: { parentId: { $in: targetIds } } },
         {
@@ -25,28 +36,45 @@ export class LikeInfoService {
         parentId: { $in: targetIds },
         authorId: userId,
       }).lean(),
+      LikeInfoModel.aggregate([
+        { $match: { parentId: { $in: targetIds }, myStatus: LikeType.Like } },
+        { $sort: { updatedAt: -1 } },
+        {
+          $group: {
+            _id: '$parentId',
+            newestLikes: {
+              $push: {
+                addedAt: '$updatedAt',
+                login: '$login',
+                userId: '$authorId',
+              },
+            },
+          },
+        },
+        { $project: { newestLikes: { $slice: ['$newestLikes', 3] } } },
+      ]),
     ]);
 
     const likesInfoMap = new Map<string, {
       likesCount: number,
       dislikesCount: number,
-      addedAt: string,
-      login: string
     }>(likesAggregation.map(data => [data._id.toString(), {
       likesCount: data.likesCount,
       dislikesCount: data.dislikesCount,
-      addedAt: data.createdAt,
-      login: data.login,
     }]));
 
 
     const userLikeMap = new Map(userLikes.map((like) => [like.parentId.toString(), like.myStatus]));
+    const newestLikesMap = new Map(newestLikesAgg.map(data => [
+      data._id.toString(),
+      data.newestLikes
+    ]));
 
-    return { likesInfoMap, userLikeMap };
+    return { likesInfoMap, userLikeMap, newestLikesMap };
   }
 
   public async getLikesInfoSingle(userId: string, targetId: ObjectId) {
-    const [likesInfo, currentUserLikeStatus] = await Promise.all([
+    const [likesInfo, currentUserLikeStatus, newestLikesRaw] = await Promise.all([
       LikeInfoModel.aggregate([
         { $match: { parentId: targetId } },
         {
@@ -62,14 +90,16 @@ export class LikeInfoService {
         },
       ]),
       LikeInfoModel.findOne({ parentId: targetId, authorId: userId }).lean(),
+      LikeInfoModel.find({
+        parentId: targetId,
+        myStatus: LikeType.Like,
+      }).sort({ updatedAt: 'desc' }).limit(3).lean(),
     ]);
 
     const likesInfoMap = new Map(likesInfo.map(data => [data._id.toString(), {
       likesCount: data.likesCount,
       dislikesCount: data.dislikesCount,
       myStatus: currentUserLikeStatus?.myStatus ?? LikeType.None,
-      addedAt: currentUserLikeStatus?.createdAt ?? 'unknown',
-      login: currentUserLikeStatus?.login ?? 'unknown',
     }]));
 
     const targetLikeInfo = likesInfoMap.get(targetId.toString()) ?? {
@@ -78,7 +108,11 @@ export class LikeInfoService {
       myStatus: LikeType.None,
     };
 
-    const newestLikes = [...likesInfoMap.values()].map(info => ({ addedAt: info.addedAt, login: info.login, userId }))
+    const newestLikes = newestLikesRaw.map(info => ({
+      addedAt: info.updatedAt ?? info.createdAt,
+      login: info.login,
+      userId: info.authorId,
+    }));
 
     return { likesInfoMap, targetLikeInfo, newestLikes };
   }
