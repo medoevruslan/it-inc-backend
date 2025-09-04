@@ -11,10 +11,10 @@ export const toBase64 = (authString: string) => {
   return buffer.toString('base64');
 };
 
-export const addUser = async (auth: string): Promise<OutputUserAccountType & { password: string }> => {
+export const addUser = async (auth: string, randomSeed: string = Math.random().toString(36).slice(2, 5)): Promise<OutputUserAccountType & { password: string }> => {
   const newUser: Partial<InputUserType> = {
-    login: 'newlgn',
-    email: 'newwmail@some.com',
+    login: 'newlgn' + randomSeed,
+    email: `newwmail${randomSeed}@some.com`,
     password: 'new password',
   };
 
